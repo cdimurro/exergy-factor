@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Exergy Factor Calculator</title>
+    <meta
+      name="description"
+      content="A simple calculator for writing energy as quantity plus Exergy Factor, for example 1 MWh, f_X = 0.73."
+    />
+    <link rel="canonical" href="https://exergyfactor.com/" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#calculator" aria-label="Exergy Factor calculator">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>Exergy Factor</span>
+      </a>
+      <nav aria-label="Page navigation">
+        <a href="#calculator">Calculator</a>
+        <a href="#method">Method</a>
+        <a href="#examples">Examples</a>
+        <a href="https://github.com/cdimurro/quantity-and-quality/raw/main/paper/quantity-and-quality-standard-reporting-framework.pdf">Paper</a>
+      </nav>
+    </header>
+
+    <main>
+      <section id="calculator" class="hero">
+        <div class="intro">
+          <p class="eyebrow">Energy quantity plus energy quality</p>
+          <h1>Convert energy into Exergy Factor notation.</h1>
+          <p>
+            Enter an energy quantity and either provide an Exergy Factor directly or let the calculator estimate it from source and sink temperatures.
+          </p>
+          <div class="notation-example" aria-label="Example notation">
+            <span id="hero-notation">1 MWh, f_X = 0.73</span>
+          </div>
+        </div>
+
+        <section class="calculator-panel" aria-label="Exergy Factor calculator">
+          <div class="panel-head">
+            <h2>Calculator</h2>
+            <button class="ghost-button" id="reset-button" type="button">Reset</button>
+          </div>
+
+          <form id="calculator-form">
+            <div class="field-row">
+              <div class="field-label">
+                <label for="energy-value">Energy Quantity</label>
+                <button class="info-button" type="button" aria-label="Energy quantity help" data-tooltip="The ordinary amount of energy being reported. Use the same number already in your meter, invoice, model, or dataset. Example: 1 MWh, 500 kWh, 3.6 GJ.">i</button>
+              </div>
+              <div class="input-pair">
+                <input id="energy-value" type="number" min="0" step="any" value="1" inputmode="decimal" />
+                <select id="energy-unit" aria-label="Energy quantity unit">
+                  <option value="Wh">Wh</option>
+                  <option value="kWh">kWh</option>
+                  <option value="MWh" selected>MWh</option>
+                  <option value="kWh_th">kWh_th</option>
+                  <option value="MWh_th">MWh_th</option>
+                  <option value="MWh_solar">MWh_solar</option>
+                  <option value="MWh_LHV">MWh_LHV</option>
+                  <option value="MWh_HHV">MWh_HHV</option>
+                  <option value="MWh_cooling">MWh_cooling</option>
+                  <option value="GWh">GWh</option>
+                  <option value="J">J</option>
+                  <option value="kJ">kJ</option>
+                  <option value="MJ">MJ</option>
+                  <option value="GJ">GJ</option>
+                  <option value="TJ">TJ</option>
+                  <option value="Btu">Btu</option>
+                  <option value="MMBtu">MMBtu</option>
+                  <option value="therm">therm</option>
+                  <option value="boe">boe</option>
+                </select>
+              </div>
+              <p class="hint">Example format: <code>1 MWh</code>, <code>500 kWh</code>, <code>1 MWh_th</code>, <code>3.6 GJ</code></p>
+            </div>
+
+            <div class="field-row">
+              <div class="field-label">
+                <label for="source-temp">Temperature Source</label>
+                <button class="info-button" type="button" aria-label="Temperature source help" data-tooltip="The temperature of the heat source or stream. For a heat network, this may be supply temperature. For waste heat, use the measured stream temperature at the recovery boundary.">i</button>
+              </div>
+              <div class="input-pair">
+                <input id="source-temp" type="number" step="any" value="80" inputmode="decimal" />
+                <select id="source-unit" aria-label="Temperature source unit">
+                  <option value="C" selected>C</option>
+                  <option value="F">F</option>
+                  <option value="K">K</option>
+                </select>
+              </div>
+              <p class="hint">For heat examples: <code>80 C</code>, <code>150 C</code>, <code>350 K</code></p>
+            </div>
+
+            <div class="field-row">
+              <div class="field-label">
+                <label for="exergy-factor">Exergy Factor</label>
+                <button class="info-button" type="button" aria-label="Exergy Factor help" data-tooltip="Accessible work potential per unit energy. Enter directly when known, or use the temperature fields to estimate thermal f_X = 1 - T_sink / T_source. Example: 0.73 means 1 MWh carries 0.73 MWh_ex.">i</button>
+              </div>
+              <div class="input-pair">
+                <input id="exergy-factor" type="number" min="0" step="any" value="0.17" inputmode="decimal" />
+                <select id="factor-unit" aria-label="Exergy Factor unit">
+                  <option value="decimal" selected>decimal</option>
+                  <option value="percent">percent</option>
+                </select>
+              </div>
+              <div class="inline-actions">
+                <label class="checkline">
+                  <input id="auto-factor" type="checkbox" checked />
+                  <span>Calculate from temperatures</span>
+                </label>
+                <button class="ghost-button" id="use-factor-example" type="button">Use 0.73 example</button>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field-label">
+                <label for="sink-temp">Temperature Sink</label>
+                <button class="info-button" type="button" aria-label="Temperature sink help" data-tooltip="The reference sink or receiving temperature. Use ambient, return-line, condenser, chilled-water, or service boundary temperature depending on the reporting purpose. Declare it with the result.">i</button>
+              </div>
+              <div class="input-pair">
+                <input id="sink-temp" type="number" step="any" value="20" inputmode="decimal" />
+                <select id="sink-unit" aria-label="Temperature sink unit">
+                  <option value="C" selected>C</option>
+                  <option value="F">F</option>
+                  <option value="K">K</option>
+                </select>
+              </div>
+              <p class="hint">Common references: <code>20 C</code> ambient, return-line temperature, condenser sink</p>
+            </div>
+          </form>
+
+          <section class="results" aria-live="polite">
+            <div>
+              <span class="result-label">New notation</span>
+              <strong id="notation-output">1 MWh, f_X = 0.17</strong>
+            </div>
+            <div>
+              <span class="result-label">Accessible exergy</span>
+              <strong id="exergy-output">0.17 MWh_ex</strong>
+            </div>
+            <div>
+              <span class="result-label">Method</span>
+              <strong id="method-output">Thermal Carnot factor</strong>
+            </div>
+          </section>
+
+          <div class="conversion-grid" id="conversion-grid" aria-label="Converted energy and exergy units"></div>
+        </section>
+      </section>
+
+      <section id="method" class="section-band">
+        <div class="content-grid">
+          <article>
+            <p class="eyebrow">What it is</p>
+            <h2>Exergy Factor is a quality number attached to an energy number.</h2>
+            <p>
+              Conventional reporting says how much energy exists or moves. Exergy Factor adds how much accessible work potential that energy carries at the declared boundary.
+            </p>
+            <p>
+              The reporting format is intentionally simple: <code>quantity, f_X = value</code>. For example, <code>1 MWh, f_X = 0.73</code> means one megawatt-hour of energy with 0.73 megawatt-hours of accessible work potential.
+            </p>
+          </article>
+          <article>
+            <p class="eyebrow">Methodology</p>
+            <h2>For heat, this calculator uses the Carnot factor.</h2>
+            <p>
+              When the source and sink temperatures are provided, the calculator estimates thermal Exergy Factor as:
+            </p>
+            <pre><code>f_X = 1 - T_sink / T_source</code></pre>
+            <p>
+              Temperatures are converted to kelvin before calculation. If you already know the Exergy Factor for electricity, fuel, solar radiation, storage, or another carrier, enter it directly and uncheck automatic temperature calculation.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="examples" class="section">
+        <div class="section-heading">
+          <p class="eyebrow">Examples</p>
+          <h2>Common formats people can use immediately.</h2>
+        </div>
+        <div class="example-grid">
+          <button type="button" data-example="electric">1 MWh, f_X = 1</button>
+          <button type="button" data-example="adoption">1 MWh, f_X = 0.73</button>
+          <button type="button" data-example="heat80">1 MWh_th, f_X = 0.17</button>
+          <button type="button" data-example="steam150">1 MWh_th, f_X = 0.307</button>
+          <button type="button" data-example="methane">1 MWh_LHV, f_X = 1.04</button>
+          <button type="button" data-example="hydrogen">1 MWh_HHV, f_X = 0.83</button>
+        </div>
+      </section>
+
+      <section class="paper-strip">
+        <div>
+          <h2>Learn more</h2>
+          <p>
+            This calculator is based on Christopher DiMurro's paper, <em>Quantity and Quality: A Standard Reporting Framework for Energy Systems</em>.
+          </p>
+        </div>
+        <a class="primary-link" href="https://github.com/cdimurro/quantity-and-quality/raw/main/paper/quantity-and-quality-standard-reporting-framework.pdf">Download the paper</a>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>Exergy Factor</span>
+      <a href="https://github.com/cdimurro/quantity-and-quality">Companion repository</a>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
