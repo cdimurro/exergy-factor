@@ -29,6 +29,15 @@ const examples = {
   hydrogen: { energy: 1, unit: "MWh_HHV", fx: 0.83, auto: false },
 };
 
+const comparePresets = {
+  electricity: { label: "Electricity", unit: "MWh", fx: 1 },
+  heat80: { label: "80 C heat", unit: "MWh_th", fx: 0.17 },
+  steam150: { label: "150 C steam", unit: "MWh_th", fx: 0.307 },
+  methane: { label: "Methane LHV", unit: "MWh_LHV", fx: 1.04 },
+  hydrogen: { label: "Hydrogen HHV", unit: "MWh_HHV", fx: 0.83 },
+  custom: { label: "Custom", unit: "MWh", fx: 0.73 },
+};
+
 const fields = {};
 
 function byId(id) {
@@ -51,6 +60,16 @@ function cacheFields() {
     "method-output",
     "conversion-grid",
     "hero-notation",
+    "compare-a-preset",
+    "compare-a-quantity",
+    "compare-a-unit",
+    "compare-a-factor",
+    "compare-b-preset",
+    "compare-b-quantity",
+    "compare-b-unit",
+    "compare-b-factor",
+    "compare-bars",
+    "compare-summary",
   ].forEach((id) => {
     fields[id] = byId(id);
   });
@@ -131,6 +150,73 @@ function renderConversions(energyJ, exergyJ) {
     .join("");
 }
 
+function compareRow(side) {
+  const prefix = `compare-${side}`;
+  const presetKey = fields[`${prefix}-preset`].value;
+  const preset = comparePresets[presetKey] || comparePresets.custom;
+  const quantity = Number(fields[`${prefix}-quantity`].value);
+  const unit = fields[`${prefix}-unit`].value;
+  const factor = Number(fields[`${prefix}-factor`].value);
+  const energyJ = Number.isFinite(quantity) && quantity >= 0 && ENERGY_TO_J[unit]
+    ? quantity * ENERGY_TO_J[unit]
+    : NaN;
+  const exergyJ = Number.isFinite(energyJ) && Number.isFinite(factor) && factor >= 0
+    ? energyJ * factor
+    : NaN;
+  return {
+    side: side.toUpperCase(),
+    label: preset.label,
+    quantity,
+    unit,
+    factor,
+    energyJ,
+    exergyJ,
+    mwhEx: exergyJ / ENERGY_TO_J.MWh,
+  };
+}
+
+function renderCompare() {
+  const rows = [compareRow("a"), compareRow("b")];
+  if (rows.some((row) => !Number.isFinite(row.exergyJ))) {
+    fields["compare-bars"].innerHTML = "";
+    fields["compare-summary"].textContent = "Check comparison inputs.";
+    return;
+  }
+
+  const max = Math.max(...rows.map((row) => row.mwhEx), 0);
+  fields["compare-bars"].innerHTML = rows
+    .map((row) => {
+      const width = max > 0 ? Math.max(4, (row.mwhEx / max) * 100) : 0;
+      return `
+        <div class="bar-row">
+          <div class="bar-meta">
+            <span>${row.side}</span>
+            <strong>${row.label}</strong>
+            <em>${format(row.quantity, 3)} ${row.unit}, f_X = ${format(row.factor, 3)}</em>
+          </div>
+          <div class="bar-track">
+            <span class="bar-fill" style="width:${width}%"></span>
+          </div>
+          <div class="bar-value">${format(row.mwhEx, 4)} MWh_ex</div>
+        </div>
+      `;
+    })
+    .join("");
+
+  const [a, b] = rows;
+  if (a.mwhEx === 0 && b.mwhEx === 0) {
+    fields["compare-summary"].textContent = "Both records have zero accessible exergy.";
+    return;
+  }
+  const higher = a.mwhEx >= b.mwhEx ? a : b;
+  const lower = a.mwhEx >= b.mwhEx ? b : a;
+  if (lower.mwhEx === 0) {
+    fields["compare-summary"].textContent = `${higher.label} carries accessible exergy; ${lower.label} is zero for these inputs.`;
+    return;
+  }
+  fields["compare-summary"].textContent = `${higher.label} carries ${format(higher.mwhEx / lower.mwhEx, 2)}x the accessible exergy of ${lower.label} for these quantities.`;
+}
+
 function updateCalculator() {
   const energy = Number(fields["energy-value"].value);
   const energyUnit = normalizeUnit(fields["energy-unit"].value);
@@ -156,6 +242,14 @@ function updateCalculator() {
   fields["exergy-output"].textContent = `${format(exergyInInputUnit, 4)} ${exergyUnit}`;
   fields["method-output"].textContent = method;
   renderConversions(energyJ, exergyJ);
+  renderCompare();
+}
+
+function applyComparePreset(side) {
+  const preset = comparePresets[fields[`compare-${side}-preset`].value] || comparePresets.custom;
+  fields[`compare-${side}-unit`].value = preset.unit;
+  fields[`compare-${side}-factor`].value = preset.fx;
+  renderCompare();
 }
 
 function setExample(name) {
@@ -198,6 +292,18 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   byId("reset-button").addEventListener("click", resetCalculator);
   byId("use-factor-example").addEventListener("click", () => setExample("adoption"));
+  ["a", "b"].forEach((side) => {
+    fields[`compare-${side}-preset`].addEventListener("change", () => applyComparePreset(side));
+    fields[`compare-${side}-quantity`].addEventListener("input", renderCompare);
+    fields[`compare-${side}-unit`].addEventListener("change", () => {
+      fields[`compare-${side}-preset`].value = "custom";
+      renderCompare();
+    });
+    fields[`compare-${side}-factor`].addEventListener("input", () => {
+      fields[`compare-${side}-preset`].value = "custom";
+      renderCompare();
+    });
+  });
   document.querySelectorAll("[data-example]").forEach((button) => {
     button.addEventListener("click", () => setExample(button.dataset.example));
   });

@@ -19,6 +19,7 @@
       </a>
       <nav aria-label="Page navigation">
         <a href="#calculator">Calculator</a>
+        <a href="#compare">Compare</a>
         <a href="#method">Method</a>
         <a href="#examples">Examples</a>
         <a href="https://github.com/cdimurro/quantity-and-quality/raw/main/paper/quantity-and-quality-standard-reporting-framework.pdf">Paper</a>
@@ -147,6 +148,76 @@
           </section>
 
           <div class="conversion-grid" id="conversion-grid" aria-label="Converted energy and exergy units"></div>
+
+          <section id="compare" class="compare-panel" aria-label="Compare energy forms">
+            <div class="compare-head">
+              <div>
+                <p class="eyebrow">Compare</p>
+                <h2>Quantity x quality</h2>
+              </div>
+              <p>Compare two energy records by accessible work potential.</p>
+            </div>
+
+            <div class="compare-rows">
+              <div class="compare-row" data-compare-row="a">
+                <label for="compare-a-preset">A</label>
+                <select id="compare-a-preset" aria-label="Comparison A energy form">
+                  <option value="electricity">Electricity</option>
+                  <option value="heat80">80 C heat</option>
+                  <option value="steam150">150 C steam</option>
+                  <option value="methane">Methane LHV</option>
+                  <option value="hydrogen">Hydrogen HHV</option>
+                  <option value="custom">Custom</option>
+                </select>
+                <input id="compare-a-quantity" type="number" min="0" step="any" value="1" aria-label="Comparison A quantity" />
+                <select id="compare-a-unit" aria-label="Comparison A unit">
+                  <option value="kWh">kWh</option>
+                  <option value="MWh" selected>MWh</option>
+                  <option value="MWh_th">MWh_th</option>
+                  <option value="MWh_LHV">MWh_LHV</option>
+                  <option value="MWh_HHV">MWh_HHV</option>
+                  <option value="GJ">GJ</option>
+                  <option value="MMBtu">MMBtu</option>
+                </select>
+                <input id="compare-a-factor" type="number" min="0" step="any" value="1" aria-label="Comparison A Exergy Factor" />
+              </div>
+
+              <div class="compare-row" data-compare-row="b">
+                <label for="compare-b-preset">B</label>
+                <select id="compare-b-preset" aria-label="Comparison B energy form">
+                  <option value="electricity">Electricity</option>
+                  <option value="heat80" selected>80 C heat</option>
+                  <option value="steam150">150 C steam</option>
+                  <option value="methane">Methane LHV</option>
+                  <option value="hydrogen">Hydrogen HHV</option>
+                  <option value="custom">Custom</option>
+                </select>
+                <input id="compare-b-quantity" type="number" min="0" step="any" value="1" aria-label="Comparison B quantity" />
+                <select id="compare-b-unit" aria-label="Comparison B unit">
+                  <option value="kWh">kWh</option>
+                  <option value="MWh">MWh</option>
+                  <option value="MWh_th" selected>MWh_th</option>
+                  <option value="MWh_LHV">MWh_LHV</option>
+                  <option value="MWh_HHV">MWh_HHV</option>
+                  <option value="GJ">GJ</option>
+                  <option value="MMBtu">MMBtu</option>
+                </select>
+                <input id="compare-b-factor" type="number" min="0" step="any" value="0.17" aria-label="Comparison B Exergy Factor" />
+              </div>
+            </div>
+
+            <div class="compare-labels" aria-hidden="true">
+              <span>Form</span>
+              <span>Quantity</span>
+              <span>Unit</span>
+              <span>f_X</span>
+            </div>
+
+            <div class="compare-result" aria-live="polite">
+              <div class="compare-bars" id="compare-bars"></div>
+              <strong id="compare-summary">Electricity carries 5.88x the accessible exergy of 80 C heat for these quantities.</strong>
+            </div>
+          </section>
         </section>
       </section>
 
