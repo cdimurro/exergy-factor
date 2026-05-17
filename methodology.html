@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Methodology | Exergy Factor</title>
+    <meta
+      name="description"
+      content="Learn how Exergy Factor adds thermodynamic quality to ordinary energy quantity reporting."
+    />
+    <link rel="canonical" href="https://exergyfactor.com/methodology.html" />
+    <link rel="stylesheet" href="styles.css?v=20260517ay" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="Exergy Factor calculator">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>Exergy Factor</span>
+      </a>
+      <nav aria-label="Page navigation">
+        <a href="index.html">Calculate</a>
+        <a href="compare.html">Compare</a>
+        <a href="methodology.html">Methodology</a>
+        <a href="paper/quantity-and-quality-standard-reporting-framework.pdf">Paper</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="page-hero">
+        <p class="eyebrow">Methodology</p>
+        <h1>The energy industry needs a new reporting framework</h1>
+        <p>
+          Standard energy reporting usually measures energy quantities in: kWhs, EJs, BTUs, or MMcf. All of these scalar units lack critical thermodynamic context: how much of that energy is actually available to do useful work.
+        </p>
+      </section>
+
+      <section class="section-band">
+        <div class="content-grid">
+          <article>
+            <p class="eyebrow">The Problem</p>
+            <h2>Using a single number for energy can never tell the full picture.</h2>
+            <p>
+              Using a single number to report energy quantities treats every unit of energy as interchangeable. That is fundamentally incosistent with the law of thermodynamics. Electricity, chemical fuel, high-temperature heat, low-temperature heat, solar radiation, and cooling can all be have the exact same quantity of energy while having totally different amounts thermodynamic usefulness.
+            </p>
+            <p>
+              Reporting energy quantities only, hides a massive amount of information that is essential for understanding where the waste and inefficiencies are. It also makes it impossible to compare different forms of energy to each other because we do not have all of the information that we need to make apples-to-apples comparisons.
+            </p>
+          </article>
+          <article>
+            <p class="eyebrow">The Solution</p>
+            <h2>Add a second number for Exergy Factor.</h2>
+            <p>
+              Exergy Factor, written as <code>fx</code>, is the fraction of an energy quantity that is available as useful work potential under the stated reference conditions.
+            </p>
+            <pre><code>1 MWh, fx = 0.73</code></pre>
+            <p>
+              This keeps the familiar energy quantity units but attaches the quality factor needed to allow universal comparisons between different forms of energy. This method provides the full thermodynamic context needed for decision-making and can provide insights that would otherwise be imperceptible.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="method-stack">
+          <article>
+            <p class="eyebrow">Core calculation</p>
+            <h2>Accessible exergy is energy quantity multiplied by Exergy Factor.</h2>
+            <pre><code>work potential = energy quantity x fx</code></pre>
+            <p>
+              If a notation says <code>1 MWh, fx = 0.73</code>, it means that one megawatt-hour carries the work potential of 0.73 megawatt-hours at a declared boundary.
+            </p>
+          </article>
+
+          <article>
+            <p class="eyebrow">Heat</p>
+            <h2>Thermal quality depends on source and sink temperature.</h2>
+            <p>
+              For heat, this calculator estimates ideal thermal availability with the Carnot factor. Temperatures are converted to kelvin before the calculation.
+            </p>
+            <pre><code>fx = 1 - sink temperature / source temperature</code></pre>
+            <p>
+              The same heat quantity can have a different Exergy Factor if the source temperature or reference sink temperature changes. That is why thermal records should declare the source and sink temperatures when the record needs to be verified.
+            </p>
+          </article>
+
+          <article>
+            <p class="eyebrow">Reporting</p>
+            <h2>The simple notation can be short or self-verifying.</h2>
+            <p>
+              For broad adoption, the short form should stay easy to read: <code>1 MWh, fx = 0.73</code>. When the record needs auditability, add context such as source temperature, sink temperature, fuel basis, boundary, or reference environment.
+            </p>
+            <pre><code>1 MWh, fx = 0.17
+form = 80 °C hot water
+source = 80 °C
+sink = 20 °C</code></pre>
+            <p>
+              This keeps ordinary reporting simple while giving engineers, institutions, and standards bodies enough information to reproduce or challenge the result.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="content-grid">
+          <article>
+            <p class="eyebrow">Flexible use cases</p>
+            <h2>The framework is not limited any form of energy.</h2>
+            <p>
+              Electricity is commonly treated near <code>fx = 1</code> at the point of use because it is already high-grade work potential. Fuels can be reported with HHV or LHV basis. Solar radiation, stored energy, cooling, and recovered heat can each be reported with the same quantity-plus-quality structure.
+            </p>
+            <p>
+              The important rule is consistency: declare the boundary, basis, and reference conditions when those details affect interpretation.
+            </p>
+          </article>
+          <article>
+            <p class="eyebrow">Why it bridges the gap</p>
+            <h2>It works with existing units instead of replacing them.</h2>
+            <p>
+              Organizations do not need to abandon MWh, kWh, GJ, MMBtu, or other familiar units. They can keep their existing meters, datasets, invoices, and models, then simply add Exergy Factor (fx) as a second number after the quantity which immediately provides more thermodynamically context.
+            </p>
+            <p>
+              The new standard in energy reporting becomes (E, fx). This makes the framework practical for industry to adopt and it fills in the missing information that's needed to conduct honest energy analyses.
+            </p>
+          </article>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="paper-strip">
+      <div>
+        <h2>Read the full paper</h2>
+        <p>
+          The full paper provides the formal reporting framework, reference examples, and thermodynamic basis behind the calculator.
+        </p>
+      </div>
+      <a class="primary-link" href="paper/quantity-and-quality-standard-reporting-framework.pdf">Download the paper</a>
+    </footer>
+  </body>
+</html>
