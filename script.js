@@ -52,7 +52,23 @@ const comparePresets = {
   custom: { label: "Custom", unit: "MWh", fx: 0.73, basis: "User-defined Exergy Factor" },
 };
 
+applyCanonicalReferenceData(
+  comparePresets,
+  window.EXERGY_FACTOR_REFERENCE_DATA && window.EXERGY_FACTOR_REFERENCE_DATA.presets,
+);
+
 const fields = {};
+
+function applyCanonicalReferenceData(presets, canonicalPresets) {
+  if (!canonicalPresets) return;
+  Object.entries(canonicalPresets).forEach(([key, canonical]) => {
+    const preset = presets[key];
+    if (!preset) return;
+    if (Number.isFinite(canonical.fx)) preset.fx = canonical.fx;
+    if (Number.isFinite(canonical.sourceC)) preset.sourceC = canonical.sourceC;
+    if (Number.isFinite(canonical.sinkC)) preset.sinkC = canonical.sinkC;
+  });
+}
 
 function byId(id) {
   return document.getElementById(id);
