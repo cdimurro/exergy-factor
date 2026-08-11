@@ -148,10 +148,14 @@ function cacheFields() {
     "compare-a-quantity",
     "compare-a-unit",
     "compare-a-factor",
+    "compare-a-source",
+    "compare-a-sink",
     "compare-b-preset",
     "compare-b-quantity",
     "compare-b-unit",
     "compare-b-factor",
+    "compare-b-source",
+    "compare-b-sink",
     "compare-bars",
     "compare-summary",
     "compare-equivalence",
@@ -467,13 +471,32 @@ function renderConversions(energyJ, exergyJ) {
     .join("");
 }
 
+// Heat and cooling get their factor from this row's own temperatures. Everything
+// else keeps the editable factor field, which is the right control for a carrier
+// whose factor is a property of the fuel rather than of your site.
+function compareRowTemperatures(side, preset) {
+  if (!preset.needsTemperature) return {};
+  const sourceC = Number(fields[`compare-${side}-source`]?.value);
+  const sinkC = Number(fields[`compare-${side}-sink`]?.value);
+  if (!Number.isFinite(sourceC) || !Number.isFinite(sinkC)) return { factor: NaN };
+  const sourceK = sourceC + 273.15;
+  const sinkK = sinkC + 273.15;
+  if (preset.needsTemperature === "cooling") {
+    if (sourceC >= sinkC) return { factor: NaN };
+    return { factor: sinkK / sourceK - 1, coldC: sourceC, sinkC };
+  }
+  if (sourceC <= sinkC) return { factor: NaN };
+  return { factor: 1 - sinkK / sourceK, sourceC, sinkC };
+}
+
 function compareRow(side) {
   const prefix = `compare-${side}`;
   const presetKey = fields[`${prefix}-preset`].value;
   const preset = comparePresets[presetKey] || comparePresets.custom;
   const quantity = Number(fields[`${prefix}-quantity`].value);
   const unit = fields[`${prefix}-unit`].value;
-  const factor = Number(fields[`${prefix}-factor`].value);
+  const derived = compareRowTemperatures(side, preset);
+  const factor = preset.needsTemperature ? derived.factor : Number(fields[`${prefix}-factor`].value);
   const energyJ = Number.isFinite(quantity) && quantity >= 0 && ENERGY_TO_J[unit]
     ? quantity * ENERGY_TO_J[unit]
     : NaN;
@@ -487,9 +510,9 @@ function compareRow(side) {
     quantity,
     unit,
     displayUnit: displayUnit(unit, preset),
-    // This page has no temperature inputs, so a heat or cooling row has nothing
-    // to declare and correctly stays short. A fuel row does have a basis.
-    bracket: declarationBracket({ preset }),
+    // Now that a heat or cooling row carries its own temperatures, it has a full
+    // declaration to publish like everything else.
+    bracket: declarationBracket({ preset, ...derived }),
     factor,
     energyJ,
     exergyJ,
@@ -655,17 +678,28 @@ function applyComparePreset(side) {
 
   const preset = comparePresets[fields[`compare-${side}-preset`].value] || comparePresets.custom;
   fields[`compare-${side}-unit`].value = preset.unit;
-  // Heat and cooling have no fixed factor — it depends on the temperatures, which
-  // this page does not ask for. Writing `preset.fx` here would put the string
-  // "undefined" in the box. The field is editable, so it becomes the input: enter
-  // the factor, or get it from the Calculate page.
-  const factorField = fields[`compare-${side}-factor`];
-  if (preset.needsTemperature) {
-    factorField.value = "";
-    factorField.placeholder = "enter fx";
+
+  // Show whichever control this carrier actually needs — the factor, or the two
+  // temperatures it is derived from. They are alternatives, so the row does not
+  // grow. Heat and cooling used to show an empty "enter fx" box with nowhere to
+  // get the number, which asked the visitor for the one thing they came without.
+  const factorRow = byId(`compare-${side}-factor-row`);
+  const tempsRow = byId(`compare-${side}-temps`);
+  const needsTemps = Boolean(preset.needsTemperature);
+  if (factorRow) factorRow.hidden = needsTemps;
+  if (tempsRow) tempsRow.hidden = !needsTemps;
+
+  if (needsTemps) {
+    const source = fields[`compare-${side}-source`];
+    const sink = fields[`compare-${side}-sink`];
+    if (source) {
+      source.value = "";
+      source.placeholder = preset.needsTemperature === "cooling" ? "7" : "80";
+    }
+    // Cooling is rejected to ambient, which is warmer than the service.
+    if (sink) sink.value = preset.needsTemperature === "cooling" ? "30" : "20";
   } else {
-    factorField.value = preset.fx;
-    factorField.placeholder = "";
+    fields[`compare-${side}-factor`].value = preset.fx;
   }
   renderCompare();
 }
@@ -767,13 +801,19 @@ document.addEventListener("DOMContentLoaded", () => {
     ["a", "b"].forEach((side) => {
       fields[`compare-${side}-preset`].addEventListener("change", () => applyComparePreset(side));
       fields[`compare-${side}-quantity`].addEventListener("input", renderCompare);
-      fields[`compare-${side}-unit`].addEventListener("change", () => {
-        fields[`compare-${side}-preset`].value = "custom";
-        renderCompare();
-      });
+      // Changing the unit no longer drops the row to "Custom". The carrier and
+      // the unit are independent — natural gas is natural gas whether you meter
+      // it in MMBtu or MWh — and for a heat row the reset was worse than
+      // surprising: it hid the temperature fields mid-entry and put the empty
+      // factor box back.
+      fields[`compare-${side}-unit`].addEventListener("change", renderCompare);
+      // Typing a factor by hand IS an override, so that still becomes Custom.
       fields[`compare-${side}-factor`].addEventListener("input", () => {
         fields[`compare-${side}-preset`].value = "custom";
         renderCompare();
+      });
+      [`compare-${side}-source`, `compare-${side}-sink`].forEach((id) => {
+        if (fields[id]) fields[id].addEventListener("input", renderCompare);
       });
     });
   }

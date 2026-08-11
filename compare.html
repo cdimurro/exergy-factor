@@ -46,7 +46,7 @@
           <div class="compare-rows">
             <div class="compare-row" data-compare-row="a">
               <div class="compare-side-label" aria-hidden="true">A</div>
-              <div class="field-row">
+              <div class="field-row" id="compare-a-factor-row">
                 <div class="field-label">
                   <label for="compare-a-preset">Energy Form</label>
                   <button class="info-button" type="button" aria-label="Comparison A energy form help" data-tooltip="Choose the first energy form you want to compare. Example: Electricity, 150 °C steam, Natural gas HHV, or Custom. This sets the reference Exergy Factor and typed carrier suffix unless you edit it.">ⓘ</button>
@@ -108,11 +108,21 @@
                 </div>
                 <input id="compare-a-factor" type="number" min="0" step="any" value="1" aria-label="Comparison A Exergy Factor" />
               </div>
+              <div class="field-row" id="compare-a-temps" hidden>
+                <div class="field-label">
+                  <label for="compare-a-source">Temperatures</label>
+                  <button class="info-button" type="button" aria-label="Comparison A temperatures help" data-tooltip="The temperature the heat is delivered at, and the reference environment it is rejected to. For cooling, the temperature you are cooling to and the ambient. These set the Exergy Factor for this row.">ⓘ</button>
+                </div>
+                <div class="input-pair">
+                  <input id="compare-a-source" type="number" step="any" inputmode="decimal" placeholder="80" aria-label="Comparison A source temperature, degrees C" />
+                  <input id="compare-a-sink" type="number" step="any" inputmode="decimal" placeholder="20" aria-label="Comparison A reference temperature, degrees C" />
+                </div>
+              </div>
             </div>
 
             <div class="compare-row" data-compare-row="b">
               <div class="compare-side-label" aria-hidden="true">B</div>
-              <div class="field-row">
+              <div class="field-row" id="compare-b-factor-row">
                 <div class="field-label visually-hidden">
                   <label for="compare-b-preset">Energy Form</label>
                   <button class="info-button" type="button" aria-label="Comparison B energy form help" data-tooltip="Choose the second energy form you want to compare. Example: Electricity, 80 °C hot water, hydrogen HHV, or Custom. This sets the reference Exergy Factor and typed carrier suffix unless you edit it.">ⓘ</button>
@@ -173,6 +183,16 @@
                   <button class="info-button" type="button" aria-label="Comparison B Exergy Factor help" data-tooltip="The quality multiplier for side B. Presets fill this automatically, but you can edit it for a custom basis. Example: 1 for electricity, 0.17 for 80 °C hot water, or 0.73 for a custom record.">ⓘ</button>
                 </div>
                 <input id="compare-b-factor" type="number" min="0" step="any" value="0.17" aria-label="Comparison B Exergy Factor" />
+              </div>
+              <div class="field-row" id="compare-b-temps" hidden>
+                <div class="field-label visually-hidden">
+                  <label for="compare-b-source">Temperatures</label>
+                  <button class="info-button" type="button" aria-label="Comparison B temperatures help" data-tooltip="The temperature the heat is delivered at, and the reference environment it is rejected to. For cooling, the temperature you are cooling to and the ambient. These set the Exergy Factor for this row.">ⓘ</button>
+                </div>
+                <div class="input-pair">
+                  <input id="compare-b-source" type="number" step="any" inputmode="decimal" placeholder="80" aria-label="Comparison B source temperature, degrees C" />
+                  <input id="compare-b-sink" type="number" step="any" inputmode="decimal" placeholder="20" aria-label="Comparison B reference temperature, degrees C" />
+                </div>
               </div>
             </div>
           </div>

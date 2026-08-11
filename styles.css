@@ -86,10 +86,13 @@ nav {
   flex: 1;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
+  /* Sits right of centre: far enough from the brand to read as its own thing,
+     without going back to the flush-right huddle it started as. */
+  justify-content: flex-end;
   /* Scales with the window: wide screens get real separation between the links
      instead of a tight cluster, and a narrow one still fits before wrapping. */
   gap: clamp(22px, 5vw, 72px);
+  padding-right: clamp(0px, 4vw, 64px);
   font-size: 1rem;
 }
 
