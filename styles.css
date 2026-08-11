@@ -77,39 +77,37 @@ textarea {
     linear-gradient(0deg, transparent 46%, var(--amber) 47%, var(--amber) 53%, transparent 54%);
 }
 
-/* The nav was `justify-content: flex-end` at 0.94rem in the muted grey, so on a
-   wide screen five links crowded into the right corner as small low-contrast
-   text with no hit area and no indication of which page you were on. These are
-   the site's only navigation; they need to read as buttons you can aim at. */
+/* The nav was `justify-content: flex-end`, so five links crowded into the right
+   corner of a wide screen. It takes the space between the brand and the right
+   edge and centres itself in it, with the links spread far enough apart to read
+   as separate destinations. Plain text — no pills, no filled backgrounds. */
 nav {
   display: flex;
+  flex: 1;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 34px;
   font-size: 1rem;
 }
 
 nav a {
-  border-radius: 8px;
   color: var(--ink, #1d2b2b);
-  display: inline-block;
   font-weight: 600;
-  padding: 9px 14px;
+  padding: 4px 0;
   text-decoration: none;
-  transition: background-color 120ms ease, color 120ms ease;
+  transition: color 120ms ease;
   white-space: nowrap;
 }
 
 nav a:hover,
 nav a:focus-visible {
-  background: rgba(15, 118, 110, 0.10);
   color: var(--teal-deep);
 }
 
-/* Where am I. Without this every page's nav looked identical. */
+/* Where am I — a rule under the word, not a box around it. */
 nav a[aria-current="page"] {
-  background: rgba(15, 118, 110, 0.14);
-  box-shadow: inset 0 -2px 0 var(--teal);
+  border-bottom: 2px solid var(--teal);
   color: var(--teal-deep);
 }
 
@@ -407,11 +405,18 @@ button:focus-visible {
 
 /* Fixed by the unit you picked, not by you. A locked field has to look locked or
    it reads as one you failed to fill in. */
-input[readonly],
 select:disabled {
   background: rgba(23, 32, 29, 0.05);
   color: var(--muted);
   cursor: not-allowed;
+}
+
+/* Says what a locked value is and why, without taking a form row to do it. */
+.input-note {
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.4;
+  margin: 0;
 }
 
 .advanced-options {

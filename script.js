@@ -28,12 +28,17 @@ function apiBaseUrl() {
   return "https://api.exergyfactor.com/v1";
 }
 
+// These name carriers, so they had to follow the carrier list when it was
+// deduplicated: `heat80`, `steam150` and `methaneHhv` no longer exist, and
+// setting a <select> to a value that is not in it leaves the control on whatever
+// was there before — the example button appeared to do nothing. The two heat
+// examples now select "Heat" and supply their temperature, which is the point.
 const examples = {
   electric: { energy: 1, unit: "MWh", form: "electricity", fx: 1, auto: false },
   adoption: { energy: 1, unit: "kWh", form: "custom", fx: 0.73, auto: false },
-  heat80: { energy: 4, unit: "MWh", form: "heat80", source: 80, sourceUnit: "C", sink: 20, sinkUnit: "C", auto: true },
-  steam150: { energy: 0.5, unit: "Btu", form: "steam150", source: 150, sourceUnit: "C", sink: 20, sinkUnit: "C", auto: true },
-  methane: { energy: 1.3, unit: "MWh", form: "methaneHhv", fx: 0.93, auto: false },
+  heat80: { energy: 4, unit: "MWh", form: "heat", source: 80, sourceUnit: "C", sink: 20, sinkUnit: "C", auto: true },
+  steam150: { energy: 0.5, unit: "Btu", form: "heat", source: 150, sourceUnit: "C", sink: 20, sinkUnit: "C", auto: true },
+  methane: { energy: 1.3, unit: "MWh", form: "naturalGasHhv", fx: 0.93, auto: false },
   hydrogen: { energy: 2.47, unit: "MWh", form: "hydrogen", fx: 0.83, auto: false },
 };
 
@@ -43,7 +48,7 @@ const comparePresets = {
   // work were five separate options with the same fx, the same typed unit and
   // different prose. Five ways to say the same thing is a choice the reader has
   // to make and cannot get right, so it is one option that names them all.
-  electricity: { label: "Electricity, PV, battery or shaft work", unit: "MWh", typedUnit: "MWh_e", fx: 1, tier: "F1", basis: "Delivered work at point of use" },
+  electricity: { label: "Electricity", unit: "MWh", typedUnit: "MWh_e", fx: 1, tier: "F1", basis: "Delivered work at point of use" },
 
   // `needsTemperature` means the user supplies the number, not a preset. There
   // used to be thirteen fixed heat temperatures — 35, 40, 50, 60, 70, 80, 90,
@@ -56,17 +61,17 @@ const comparePresets = {
   // Natural gas is ~93% methane and the framework's screening factor is the same
   // number, so they were literally duplicate rows: `methane` and `naturalGasLhv`
   // carried identical fx AND identical typed units. Named together instead.
-  naturalGasHhv: { label: "Natural gas / methane — HHV", unit: "MWh", typedUnit: "MWh_HHV_NG", fx: 0.93, tier: "F1", basis: "Higher heating value fuel basis" },
-  naturalGasLhv: { label: "Natural gas / methane — LHV", unit: "MWh", typedUnit: "MWh_LHV_CH4", fx: 1.04, tier: "F1", basis: "Lower heating value fuel basis" },
-  hydrogen: { label: "Hydrogen — HHV", unit: "MWh", typedUnit: "MWh_HHV_H2", fx: 0.83, tier: "F1", basis: "Higher heating value hydrogen basis" },
-  hydrogenLhv: { label: "Hydrogen — LHV", unit: "MWh", typedUnit: "MWh_LHV_H2", fx: 0.98, tier: "F1", basis: "Lower heating value hydrogen basis" },
-  dieselLhv: { label: "Diesel — LHV", unit: "MWh", typedUnit: "MWh_LHV_diesel", fx: 1.06, tier: "F1", basis: "Lower heating value fuel basis" },
-  gasolineLhv: { label: "Gasoline — LHV", unit: "MWh", typedUnit: "MWh_LHV_gasoline", fx: 1.07, tier: "F1", basis: "Lower heating value fuel basis" },
-  coalLhv: { label: "Coal — LHV", unit: "MWh", typedUnit: "MWh_LHV_coal", fx: 1.05, tier: "F1", basis: "Lower heating value fuel basis" },
+  naturalGasHhv: { label: "Natural gas HHV", unit: "MWh", typedUnit: "MWh_HHV_NG", fx: 0.93, tier: "F1", basis: "Higher heating value fuel basis" },
+  naturalGasLhv: { label: "Natural gas LHV", unit: "MWh", typedUnit: "MWh_LHV_CH4", fx: 1.04, tier: "F1", basis: "Lower heating value fuel basis" },
+  hydrogen: { label: "Hydrogen HHV", unit: "MWh", typedUnit: "MWh_HHV_H2", fx: 0.83, tier: "F1", basis: "Higher heating value hydrogen basis" },
+  hydrogenLhv: { label: "Hydrogen LHV", unit: "MWh", typedUnit: "MWh_LHV_H2", fx: 0.98, tier: "F1", basis: "Lower heating value hydrogen basis" },
+  dieselLhv: { label: "Diesel LHV", unit: "MWh", typedUnit: "MWh_LHV_diesel", fx: 1.06, tier: "F1", basis: "Lower heating value fuel basis" },
+  gasolineLhv: { label: "Gasoline LHV", unit: "MWh", typedUnit: "MWh_LHV_gasoline", fx: 1.07, tier: "F1", basis: "Lower heating value fuel basis" },
+  coalLhv: { label: "Coal LHV", unit: "MWh", typedUnit: "MWh_LHV_coal", fx: 1.05, tier: "F1", basis: "Lower heating value fuel basis" },
   crudeOil: { label: "Crude oil", unit: "MWh", typedUnit: "MWh_LHV_crude", fx: 1.06, tier: "F1", basis: "Approximate crude oil chemical exergy factor" },
 
   solar: { label: "Solar radiation", unit: "MWh", typedUnit: "MWh_solar", fx: 0.932, tier: "F2", basis: "Petela radiation Exergy Factor" },
-  custom: { label: "A factor I already know", unit: "MWh", typedUnit: "", fx: 0.73, tier: "F1", needsCustomFactor: true, basis: "User-defined Exergy Factor" },
+  custom: { label: "Custom", unit: "MWh", typedUnit: "", fx: 0.73, tier: "F1", needsCustomFactor: true, basis: "User-defined Exergy Factor" },
 };
 
 applyCanonicalReferenceData(
@@ -130,7 +135,6 @@ function cacheFields() {
     "sink-unit",
     "calculator-result",
     "notation-output",
-    "heating-value",
     "work-output",
     "exergy-output",
     "method-output",
@@ -254,14 +258,17 @@ const FUEL_VOLUME_UNITS = {
 
 function applyFixedValuesForUnit() {
   if (!hasField("energy-unit") || !hasField("energy-form")) return;
-  const fixed = FUEL_VOLUME_UNITS[fields["energy-unit"].value];
-  const row = byId("fixed-values-row");
+  const selectedUnit = fields["energy-unit"].value;
+  const fixed = FUEL_VOLUME_UNITS[selectedUnit];
+  const note = byId("fixed-note");
   const form = fields["energy-form"];
 
   if (!fixed) {
-    if (row) row.hidden = true;
+    if (note) {
+      note.hidden = true;
+      note.textContent = "";
+    }
     form.disabled = false;
-    form.removeAttribute("aria-describedby");
     return;
   }
 
@@ -271,13 +278,13 @@ function applyFixedValuesForUnit() {
     applyCalculatorForm();
     // applyCalculatorForm resets the unit to the carrier's default, which would
     // undo the very choice that got us here.
-    fields["energy-unit"].value = Object.keys(FUEL_VOLUME_UNITS).find(
-      (key) => FUEL_VOLUME_UNITS[key] === fixed,
-    );
+    fields["energy-unit"].value = selectedUnit;
   }
   form.disabled = true;
-  if (row) row.hidden = false;
-  if (hasField("heating-value")) fields["heating-value"].value = fixed.display;
+  if (note) {
+    note.textContent = `Uses ${fixed.display}. This unit fixes the fuel and its heating value, so both are set for you.`;
+    note.hidden = false;
+  }
 }
 
 function tierDescription(tier) {
@@ -625,7 +632,18 @@ function applyComparePreset(side) {
 
   const preset = comparePresets[fields[`compare-${side}-preset`].value] || comparePresets.custom;
   fields[`compare-${side}-unit`].value = preset.unit;
-  fields[`compare-${side}-factor`].value = preset.fx;
+  // Heat and cooling have no fixed factor — it depends on the temperatures, which
+  // this page does not ask for. Writing `preset.fx` here would put the string
+  // "undefined" in the box. The field is editable, so it becomes the input: enter
+  // the factor, or get it from the Calculate page.
+  const factorField = fields[`compare-${side}-factor`];
+  if (preset.needsTemperature) {
+    factorField.value = "";
+    factorField.placeholder = "enter fx";
+  } else {
+    factorField.value = preset.fx;
+    factorField.placeholder = "";
+  }
   renderCompare();
 }
 
@@ -640,10 +658,15 @@ function setExample(name) {
   applyCalculatorForm();
   fields["energy-unit"].value = example.unit;
 
-  if (hasField("source-temp")) fields["source-temp"].value = "";
-  if (hasField("source-unit")) fields["source-unit"].value = "C";
-  if (hasField("sink-temp")) fields["sink-temp"].value = "20";
-  if (hasField("sink-unit")) fields["sink-unit"].value = "C";
+  // An example that carries temperatures has to keep them. This blanked
+  // source-temp unconditionally, which was harmless while heat came from a fixed
+  // preset and fatal once the temperature became the input: both heat examples
+  // set "Heat", immediately erased their own 80 °C or 150 °C, and rendered
+  // "Check the inputs".
+  if (hasField("source-temp")) fields["source-temp"].value = example.source ?? "";
+  if (hasField("source-unit")) fields["source-unit"].value = example.sourceUnit || "C";
+  if (hasField("sink-temp")) fields["sink-temp"].value = example.sink ?? "20";
+  if (hasField("sink-unit")) fields["sink-unit"].value = example.sinkUnit || "C";
   if (hasField("factor-unit")) fields["factor-unit"].value = "decimal";
   if (hasField("exergy-factor")) fields["exergy-factor"].value = example.fx;
   if (hasField("custom-factor")) {
