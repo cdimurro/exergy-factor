@@ -108,34 +108,21 @@
                 <input id="energy-value" type="number" min="0" step="any" value="1" inputmode="decimal" />
               </div>
 
-              <!-- The two temperatures sit together, and there is no longer an
-                   Exergy Factor input above them. The factor is what this tool
-                   works out; asking for it made the calculator pointless for the
-                   person it is for, and the "Optional Inputs" section it lived in
-                   is gone with it. -->
+              <!-- One temperature control, matching the comparison page, and one
+                   unit for both of them. As two separate rows this was five fields
+                   in a two-column grid, so the last one sat alone with a hole
+                   beside it; and nobody enters a source in Fahrenheit against a
+                   sink in kelvin, so the second unit picker was a control that
+                   only added width. -->
               <div class="field-row">
                 <div class="field-label">
-                  <label for="source-temp">Source Temperature</label>
-                  <button class="info-button" type="button" aria-label="Source temperature help" data-tooltip="The temperature your heat is delivered at: hot water supply, steam, flue gas, or process stream. Enter it for Heat or Cooling; it is what sets the Exergy Factor. Example: 80 for 80 °C hot water.">ⓘ</button>
+                  <label for="source-temp">Temperatures</label>
+                  <button class="info-button" type="button" aria-label="Temperatures help" data-tooltip="The temperature your heat is delivered at, and the reference environment it is rejected to. For cooling, the temperature you are cooling to and the ambient. These are what set the Exergy Factor. 20 °C is a common reference if you do not know your local one.">ⓘ</button>
                 </div>
-                <div class="input-pair">
-                  <input id="source-temp" type="number" step="any" inputmode="decimal" placeholder="80" />
-                  <select id="source-unit" aria-label="Temperature source unit">
-                    <option value="C" selected>°C</option>
-                    <option value="F">°F</option>
-                    <option value="K">K</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="field-row">
-                <div class="field-label">
-                  <label for="sink-temp">Sink Temperature</label>
-                  <button class="info-button" type="button" aria-label="Sink temperature help" data-tooltip="The reference environment or receiving temperature used for thermal quality. If you do not know the local reference environment, leave the default at 20 °C. Example: ambient air at 20 °C or a known return/condenser temperature.">ⓘ</button>
-                </div>
-                <div class="input-pair">
-                  <input id="sink-temp" type="number" step="any" value="20" inputmode="decimal" />
-                  <select id="sink-unit" aria-label="Temperature sink unit">
+                <div class="input-trio">
+                  <input id="source-temp" type="number" step="any" inputmode="decimal" placeholder="source" aria-label="Source temperature" />
+                  <input id="sink-temp" type="number" step="any" value="20" inputmode="decimal" placeholder="reference" aria-label="Reference temperature" />
+                  <select id="source-unit" aria-label="Temperature unit for both temperatures">
                     <option value="C" selected>°C</option>
                     <option value="F">°F</option>
                     <option value="K">K</option>

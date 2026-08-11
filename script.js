@@ -135,7 +135,6 @@ function cacheFields() {
     "exergy-factor",
     "factor-unit",
     "sink-temp",
-    "sink-unit",
     "calculator-result",
     "notation-output",
     "work-output",
@@ -187,6 +186,13 @@ function tempToK(value, unit) {
 function toCelsius(value, unit) {
   const kelvin = tempToK(value, unit);
   return Number.isFinite(kelvin) ? kelvin - 273.15 : NaN;
+}
+
+// One picker now serves both temperatures. `sink-unit` no longer exists in the
+// markup, and reading it would have yielded undefined and made every thermal
+// answer NaN, so every caller comes through here instead.
+function tempUnit() {
+  return fields["source-unit"]?.value || "C";
 }
 
 function format(value, precision = 4) {
@@ -353,8 +359,8 @@ function calculateFactor() {
     // uses a different equation, and the generic thermal branch below would read a
     // chiller as a heat source colder than its sink and simply refuse it.
     if (preset.needsTemperature === "cooling") {
-      const coldC = toCelsius(fields["source-temp"]?.value, fields["source-unit"]?.value);
-      const ambientC = toCelsius(fields["sink-temp"]?.value, fields["sink-unit"]?.value);
+      const coldC = toCelsius(fields["source-temp"]?.value, tempUnit());
+      const ambientC = toCelsius(fields["sink-temp"]?.value, tempUnit());
       if (!Number.isFinite(coldC) || !Number.isFinite(ambientC)) {
         return { factor: NaN, method: "Enter the temperature you are cooling to, and the ambient you reject heat to.", tier: "F2" };
       }
@@ -373,9 +379,9 @@ function calculateFactor() {
     if (hasAdvancedSourceOverride()) {
       const factor = thermalFactorFromTemperatures(
         fields["source-temp"].value,
-        fields["source-unit"].value,
+        tempUnit(),
         fields["sink-temp"].value,
-        fields["sink-unit"].value,
+        tempUnit(),
       );
       if (!Number.isFinite(factor)) {
         return { factor: NaN, method: "Enter source and sink temperatures with source greater than sink.", tier: "F2" };
@@ -387,8 +393,8 @@ function calculateFactor() {
         factor,
         method: "F2 thermal factor from source and sink temperatures.",
         tier: "F2",
-        sourceC: toCelsius(fields["source-temp"].value, fields["source-unit"].value),
-        sinkC: toCelsius(fields["sink-temp"].value, fields["sink-unit"].value),
+        sourceC: toCelsius(fields["source-temp"].value, tempUnit()),
+        sinkC: toCelsius(fields["sink-temp"].value, tempUnit()),
       };
     }
 
@@ -419,9 +425,9 @@ function calculateFactor() {
   if (hasSourceTemp) {
     const factor = thermalFactorFromTemperatures(
       fields["source-temp"].value,
-      fields["source-unit"].value,
+      tempUnit(),
       fields["sink-temp"].value,
-      fields["sink-unit"].value,
+      tempUnit(),
     );
     if (!hasSinkTemp || !Number.isFinite(factor)) {
       return { factor: NaN, method: "Enter source and sink temperatures with source greater than sink.", tier: "F2" };
@@ -601,7 +607,6 @@ function applyCalculatorForm() {
   // Cooling is rejected to ambient, which is warmer than the service, so its
   // sensible default differs from heat's.
   if (hasField("sink-temp")) fields["sink-temp"].value = preset.needsTemperature === "cooling" ? "30" : "20";
-  if (hasField("sink-unit")) fields["sink-unit"].value = "C";
 }
 
 function updateCalculator() {
@@ -734,7 +739,6 @@ function setExample(name) {
   if (hasField("source-temp")) fields["source-temp"].value = example.source ?? "";
   if (hasField("source-unit")) fields["source-unit"].value = example.sourceUnit || "C";
   if (hasField("sink-temp")) fields["sink-temp"].value = example.sink ?? "20";
-  if (hasField("sink-unit")) fields["sink-unit"].value = example.sinkUnit || "C";
   if (hasField("factor-unit")) fields["factor-unit"].value = "decimal";
   if (hasField("exergy-factor")) fields["exergy-factor"].value = example.fx;
   if (hasField("custom-factor")) {
@@ -772,9 +776,9 @@ function exportModel() {
     if (preset.needsTemperature) {
       const isCooling = preset.needsTemperature === "cooling";
       inputs.push([isCooling ? "Cooling to" : "Source temperature",
-        `${fields["source-temp"].value} ${fields["source-unit"].value}`]);
+        `${fields["source-temp"].value} ${tempUnit()}`]);
       inputs.push([isCooling ? "Ambient" : "Reference temperature",
-        `${fields["sink-temp"].value} ${fields["sink-unit"].value}`]);
+        `${fields["sink-temp"].value} ${tempUnit()}`]);
     }
     const fixed = FUEL_VOLUME_UNITS[fields["energy-unit"].value];
     if (fixed) inputs.push(["Heating value", fixed.display]);

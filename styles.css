@@ -355,6 +355,13 @@ label:hover + .info-button,
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
+/* Two temperatures and the one unit that applies to both. */
+.input-trio {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(76px, 0.5fr);
+  gap: 8px;
+}
+
 /* A row entering temperatures needs more room in its last column than a single
    factor box did. */
 .compare-row.has-temps {
