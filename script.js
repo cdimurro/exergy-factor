@@ -690,16 +690,25 @@ function applyComparePreset(side) {
   const needsTemps = Boolean(preset.needsTemperature);
   if (factorRow) factorRow.hidden = needsTemps;
   if (tempsRow) tempsRow.hidden = !needsTemps;
+  // Two temperature boxes need more of the row than one factor box did.
+  const rowEl = document.querySelector(`[data-compare-row="${side}"]`);
+  if (rowEl) rowEl.classList.toggle("has-temps", needsTemps);
 
   if (needsTemps) {
+    const cooling = preset.needsTemperature === "cooling";
     const source = fields[`compare-${side}-source`];
     const sink = fields[`compare-${side}-sink`];
+    // Two bare boxes give no clue which is which, and a placeholder of "7" or
+    // "80" only looks like a value someone forgot to type. They say what they are.
     if (source) {
       source.value = "";
-      source.placeholder = preset.needsTemperature === "cooling" ? "7" : "80";
+      source.placeholder = cooling ? "cooling to" : "source";
     }
     // Cooling is rejected to ambient, which is warmer than the service.
-    if (sink) sink.value = preset.needsTemperature === "cooling" ? "30" : "20";
+    if (sink) {
+      sink.value = cooling ? "30" : "20";
+      sink.placeholder = cooling ? "ambient" : "reference";
+    }
   } else {
     fields[`compare-${side}-factor`].value = preset.fx;
   }

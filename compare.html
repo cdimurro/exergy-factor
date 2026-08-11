@@ -46,7 +46,7 @@
           <div class="compare-rows">
             <div class="compare-row" data-compare-row="a">
               <div class="compare-side-label" aria-hidden="true">A</div>
-              <div class="field-row" id="compare-a-factor-row">
+              <div class="field-row">
                 <div class="field-label">
                   <label for="compare-a-preset">Energy Form</label>
                   <button class="info-button" type="button" aria-label="Comparison A energy form help" data-tooltip="Choose the first energy form you want to compare. Example: Electricity, 150 °C steam, Natural gas HHV, or Custom. This sets the reference Exergy Factor and typed carrier suffix unless you edit it.">ⓘ</button>
@@ -101,7 +101,7 @@
                   <option value="MMcf(natural gas)">MMcf(natural gas)</option>
                 </select>
               </div>
-              <div class="field-row">
+              <div class="field-row" id="compare-a-factor-row">
                 <div class="field-label">
                   <label for="compare-a-factor">Exergy Factor</label>
                   <button class="info-button" type="button" aria-label="Comparison A Exergy Factor help" data-tooltip="The quality multiplier for side A. Presets fill this automatically, but you can edit it for a custom basis. Example: 1 for electricity, 0.17 for 80 °C hot water, or 0.73 for a custom record.">ⓘ</button>
@@ -110,19 +110,19 @@
               </div>
               <div class="field-row" id="compare-a-temps" hidden>
                 <div class="field-label">
-                  <label for="compare-a-source">Temperatures</label>
+                  <label for="compare-a-source">Temperatures (°C)</label>
                   <button class="info-button" type="button" aria-label="Comparison A temperatures help" data-tooltip="The temperature the heat is delivered at, and the reference environment it is rejected to. For cooling, the temperature you are cooling to and the ambient. These set the Exergy Factor for this row.">ⓘ</button>
                 </div>
-                <div class="input-pair">
-                  <input id="compare-a-source" type="number" step="any" inputmode="decimal" placeholder="80" aria-label="Comparison A source temperature, degrees C" />
-                  <input id="compare-a-sink" type="number" step="any" inputmode="decimal" placeholder="20" aria-label="Comparison A reference temperature, degrees C" />
+                <div class="input-pair temperature-pair">
+                  <input id="compare-a-source" type="number" step="any" inputmode="decimal" placeholder="source °C" aria-label="Comparison A source temperature in degrees Celsius" />
+                  <input id="compare-a-sink" type="number" step="any" inputmode="decimal" placeholder="ref °C" aria-label="Comparison A reference temperature in degrees Celsius" />
                 </div>
               </div>
             </div>
 
             <div class="compare-row" data-compare-row="b">
               <div class="compare-side-label" aria-hidden="true">B</div>
-              <div class="field-row" id="compare-b-factor-row">
+              <div class="field-row">
                 <div class="field-label visually-hidden">
                   <label for="compare-b-preset">Energy Form</label>
                   <button class="info-button" type="button" aria-label="Comparison B energy form help" data-tooltip="Choose the second energy form you want to compare. Example: Electricity, 80 °C hot water, hydrogen HHV, or Custom. This sets the reference Exergy Factor and typed carrier suffix unless you edit it.">ⓘ</button>
@@ -177,7 +177,7 @@
                   <option value="MMcf(natural gas)">MMcf(natural gas)</option>
                 </select>
               </div>
-              <div class="field-row">
+              <div class="field-row" id="compare-b-factor-row">
                 <div class="field-label visually-hidden">
                   <label for="compare-b-factor">Exergy Factor</label>
                   <button class="info-button" type="button" aria-label="Comparison B Exergy Factor help" data-tooltip="The quality multiplier for side B. Presets fill this automatically, but you can edit it for a custom basis. Example: 1 for electricity, 0.17 for 80 °C hot water, or 0.73 for a custom record.">ⓘ</button>
@@ -186,12 +186,12 @@
               </div>
               <div class="field-row" id="compare-b-temps" hidden>
                 <div class="field-label visually-hidden">
-                  <label for="compare-b-source">Temperatures</label>
+                  <label for="compare-b-source">Temperatures (°C)</label>
                   <button class="info-button" type="button" aria-label="Comparison B temperatures help" data-tooltip="The temperature the heat is delivered at, and the reference environment it is rejected to. For cooling, the temperature you are cooling to and the ambient. These set the Exergy Factor for this row.">ⓘ</button>
                 </div>
-                <div class="input-pair">
-                  <input id="compare-b-source" type="number" step="any" inputmode="decimal" placeholder="80" aria-label="Comparison B source temperature, degrees C" />
-                  <input id="compare-b-sink" type="number" step="any" inputmode="decimal" placeholder="20" aria-label="Comparison B reference temperature, degrees C" />
+                <div class="input-pair temperature-pair">
+                  <input id="compare-b-source" type="number" step="any" inputmode="decimal" placeholder="source °C" aria-label="Comparison B source temperature in degrees Celsius" />
+                  <input id="compare-b-sink" type="number" step="any" inputmode="decimal" placeholder="ref °C" aria-label="Comparison B reference temperature in degrees Celsius" />
                 </div>
               </div>
             </div>
@@ -210,10 +210,11 @@
               <span class="result-label">Equivalent Quantity</span>
               <strong id="compare-equivalence">1 MWh_e of electricity is equivalent to 5.882 MWh_th of 80 °C hot water.</strong>
             </div>
-            <div class="export-actions result-wide">
-              <button type="button" id="export-csv">Export CSV</button>
-              <button type="button" id="export-png">Export PNG</button>
-            </div>
+          </div>
+
+          <div class="export-actions">
+            <button type="button" id="export-csv">Export CSV</button>
+            <button type="button" id="export-png">Export PNG</button>
           </div>
         </section>
       </section>

@@ -246,6 +246,15 @@ form {
   gap: 12px;
 }
 
+/* The UA stylesheet's `[hidden] { display: none }` loses to ANY author rule that
+   sets display, and half the blocks here are grids. The temperature row on the
+   comparison page therefore never hid: it showed for electricity, and because it
+   still occupied a grid slot it pushed itself onto a second line in the narrow
+   first column. Anything marked hidden is hidden. */
+[hidden] {
+  display: none !important;
+}
+
 .field-row {
   display: grid;
   grid-template-columns: 1fr;
@@ -340,6 +349,18 @@ label:hover + .info-button,
   gap: 8px;
 }
 
+/* Two temperatures, not a value and a unit picker. The default pair reserves
+   170px for a select, which left the first temperature squeezed to nothing. */
+.input-pair.temperature-pair {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+/* A row entering temperatures needs more room in its last column than a single
+   factor box did. */
+.compare-row.has-temps {
+  grid-template-columns: 32px minmax(170px, 1fr) minmax(90px, 0.38fr) minmax(150px, 0.55fr) minmax(180px, 0.8fr);
+}
+
 input,
 select,
 textarea {
@@ -424,20 +445,15 @@ select:disabled {
   margin: 0;
 }
 
-/* Deliberately quiet: these sit under the answer and should not compete with it.
-   Outlined rather than filled, and they fill the row's width only on a phone. */
+/* Outside the results panel, on the page background, aligned to its right edge.
+   Identical on both tools: inside the panel they inherited two different grids
+   and came out different sizes and in different corners. */
 .export-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 4px;
-}
-
-/* On the comparison page the two answers are full sentences, so the buttons take
-   their own row and sit at the end of it rather than being squeezed alongside. */
-.export-actions.result-wide {
   justify-content: flex-end;
-  margin-top: 6px;
+  gap: 16px;
+  margin-top: 14px;
 }
 
 .export-actions button {
@@ -447,9 +463,10 @@ select:disabled {
   color: var(--teal-deep);
   cursor: pointer;
   font-family: inherit;
-  font-size: 0.86rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  padding: 8px 14px;
+  min-width: 132px;
+  padding: 10px 18px;
   transition: background-color 120ms ease, border-color 120ms ease;
 }
 
@@ -648,26 +665,18 @@ button,
    gets the extra room because it is much the longest string — a full declaration
    runs to `100 MWh_th, fx = 0.170 [Th = 80 C, T0 = 20 C]` — and the buttons take
    only what they need. */
+/* Two across now that the buttons have moved out of the panel. The notation gets
+   the wider column: a full declaration runs to
+   `100 MWh_th, fx = 0.170 [Th = 80 C, T0 = 20 C]`. */
 .calculator-result {
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr);
   align-items: start;
   gap: 8px 20px;
-}
-
-/* The notation is the long one and it is the answer, so it keeps the panel's
-   type size while the neighbouring figure gives up a little to make room. */
-.calculator-result .answer-item:nth-child(2) strong {
-  font-size: clamp(0.92rem, 1.7vw, 1.1rem);
 }
 
 /* A long declaration wraps inside its column rather than pushing the row wider. */
 .calculator-result .answer-item strong {
   overflow-wrap: anywhere;
-}
-
-/* Sit on the text baseline of the other two rather than floating at the top. */
-.calculator-result .export-actions {
-  margin-top: 22px;
 }
 
 .answer-item {
