@@ -166,6 +166,8 @@ function cacheFields() {
     "api-intended-use",
     "api-key-status",
     "api-key-dev-output",
+    "export-csv",
+    "export-png",
   ].forEach((id) => {
     fields[id] = byId(id);
   });
@@ -732,6 +734,208 @@ function setExample(name) {
   updateCalculator();
 }
 
+// ---------------------------------------------------------------------------
+// Export
+//
+// Both formats are built with nothing but the platform. The site is deliberately
+// zero-build and zero-dependency, and pulling a screenshot library off a CDN to
+// make an image would trade that for a third-party script on every page load.
+//
+// The PNG is DRAWN rather than screenshotted. A DOM capture would also take the
+// export buttons, the tooltips and whatever the layout happens to be doing at
+// that width, and the usual foreignObject route silently loses external
+// stylesheets and misbehaves in Safari. Drawing the record onto a canvas gives
+// the same information as a deliberate, legible card that looks the same
+// everywhere — and it cannot capture something the reader did not mean to share.
+// ---------------------------------------------------------------------------
+
+/** What is currently on screen, in one shape both exporters can use. */
+function exportModel() {
+  const stamp = new Date().toISOString().slice(0, 19).replace("T", " ") + " UTC";
+
+  if (hasCalculator()) {
+    const preset = comparePresets[fields["energy-form"]?.value] || comparePresets.custom;
+    const inputs = [
+      ["Carrier", preset.label],
+      ["Quantity", fields["energy-value"].value],
+      ["Unit", fields["energy-unit"].value],
+    ];
+    if (preset.needsTemperature) {
+      const isCooling = preset.needsTemperature === "cooling";
+      inputs.push([isCooling ? "Cooling to" : "Source temperature",
+        `${fields["source-temp"].value} ${fields["source-unit"].value}`]);
+      inputs.push([isCooling ? "Ambient" : "Reference temperature",
+        `${fields["sink-temp"].value} ${fields["sink-unit"].value}`]);
+    }
+    const fixed = FUEL_VOLUME_UNITS[fields["energy-unit"].value];
+    if (fixed) inputs.push(["Heating value", fixed.display]);
+    return {
+      kind: "calculator",
+      title: "Exergy Factor",
+      inputs,
+      results: [
+        ["Exergy Factor Notation", fields["notation-output"].textContent.trim()],
+        ["Accessible Exergy", fields["work-output"].textContent.trim()],
+      ],
+      stamp,
+    };
+  }
+
+  if (hasCompare()) {
+    const rows = [compareRow("a"), compareRow("b")];
+    return {
+      kind: "compare",
+      title: "Exergy Factor — comparison",
+      rows: rows.map((row) => ({
+        side: row.side,
+        carrier: row.label,
+        quantity: row.quantity,
+        unit: row.unit,
+        factor: row.factor,
+        notation: `${format(row.quantity, 3)} ${row.displayUnit}, fx = ${formatFactor(row.factor)}${row.bracket}`,
+        exergy: `${format(row.exergyInUnit, 4)} ${row.exergyUnit}`,
+      })),
+      results: [
+        ["Accessible Exergy Ratio", fields["compare-summary"].textContent.trim()],
+        ["Equivalent Quantity", hasField("compare-equivalence") ? fields["compare-equivalence"].textContent.trim() : ""],
+      ].filter((pair) => pair[1]),
+      stamp,
+    };
+  }
+  return null;
+}
+
+function csvCell(value) {
+  const text = String(value ?? "");
+  return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  // Revoking immediately cancels the download in some browsers.
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+function exportCsv() {
+  const model = exportModel();
+  if (!model) return;
+  let lines;
+  if (model.kind === "compare") {
+    lines = [["side", "carrier", "quantity", "unit", "exergy_factor", "notation", "accessible_exergy"].join(",")];
+    for (const row of model.rows) {
+      lines.push([row.side, row.carrier, row.quantity, row.unit, formatFactor(row.factor), row.notation, row.exergy].map(csvCell).join(","));
+    }
+  } else {
+    lines = [["field", "value"].join(",")];
+    for (const [key, value] of [...model.inputs, ...model.results]) {
+      lines.push([key, value].map(csvCell).join(","));
+    }
+  }
+  lines.push([].join(""));
+  lines.push(["generated", model.stamp].map(csvCell).join(","));
+  lines.push(["source", "https://exergyfactor.com/"].map(csvCell).join(","));
+  const stampForName = model.stamp.slice(0, 10);
+  downloadBlob(
+    new Blob([lines.join("\n") + "\n"], { type: "text/csv;charset=utf-8" }),
+    `exergy-factor-${model.kind}-${stampForName}.csv`,
+  );
+}
+
+function exportPng() {
+  const model = exportModel();
+  if (!model) return;
+
+  const scale = Math.min(window.devicePixelRatio || 1, 2);
+  const width = 900;
+  const pad = 48;
+  const lineGap = 30;
+
+  // Lay the card out once to find its height, then draw it. Measuring first
+  // avoids a fixed height that clips a long comparison or leaves a gap under a
+  // short one.
+  const blocks = [];
+  blocks.push({ type: "title", text: model.title });
+  if (model.kind === "compare") {
+    for (const row of model.rows) {
+      blocks.push({ type: "label", text: `Side ${row.side} — ${row.carrier}` });
+      blocks.push({ type: "value", text: row.notation });
+      blocks.push({ type: "value", text: `Accessible exergy: ${row.exergy}` });
+      blocks.push({ type: "gap" });
+    }
+  } else {
+    for (const [key, value] of model.inputs) blocks.push({ type: "pair", key, text: value });
+    blocks.push({ type: "gap" });
+  }
+  for (const [key, value] of model.results) {
+    blocks.push({ type: "label", text: key });
+    blocks.push({ type: "value", text: value });
+  }
+
+  // ONE definition of how far each block advances, used to size the canvas and
+  // again to draw it. Two separate guesses left a band of empty white above the
+  // footer that grew with the number of rows.
+  const advanceFor = (block) => {
+    if (block.type === "gap") return 14;
+    if (block.type === "title") return lineGap + 6;
+    if (block.type === "label") return lineGap - 8;
+    return lineGap;
+  };
+  const height = pad * 2 + 8 + blocks.reduce((total, block) => total + advanceFor(block), 0);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width * scale;
+  canvas.height = height * scale;
+  const ctx = canvas.getContext("2d");
+  // Nothing to draw on. Better to leave the page alone than to throw out of a
+  // click handler and take the rest of the script with it.
+  if (!ctx) return;
+  ctx.scale(scale, scale);
+
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, width, height);
+  ctx.fillStyle = "#0f766e";
+  ctx.fillRect(0, 0, width, 6);
+
+  let y = pad + 8;
+  for (const block of blocks) {
+    if (block.type === "title") {
+      ctx.fillStyle = "#134e4a";
+      ctx.font = "700 24px Arial, Helvetica, sans-serif";
+      ctx.fillText(block.text, pad, y);
+    } else if (block.type === "label") {
+      ctx.fillStyle = "#5b6b68";
+      ctx.font = "600 13px Arial, Helvetica, sans-serif";
+      ctx.fillText(block.text.toUpperCase(), pad, y);
+    } else if (block.type === "pair") {
+      ctx.fillStyle = "#5b6b68";
+      ctx.font = "400 15px Arial, Helvetica, sans-serif";
+      ctx.fillText(block.key, pad, y);
+      ctx.fillStyle = "#1d2b2b";
+      ctx.font = "600 15px Arial, Helvetica, sans-serif";
+      ctx.fillText(String(block.text), pad + 250, y);
+    } else if (block.type === "value") {
+      ctx.fillStyle = "#1d2b2b";
+      ctx.font = "600 17px Arial, Helvetica, sans-serif";
+      ctx.fillText(block.text, pad, y);
+    }
+    y += advanceFor(block);
+  }
+
+  ctx.fillStyle = "#8a9895";
+  ctx.font = "400 12px Arial, Helvetica, sans-serif";
+  ctx.fillText(`exergyfactor.com · ${model.stamp}`, pad, height - 20);
+
+  canvas.toBlob((blob) => {
+    if (blob) downloadBlob(blob, `exergy-factor-${model.kind}-${model.stamp.slice(0, 10)}.png`);
+  }, "image/png");
+}
+
 async function requestApiKey(event) {
   event.preventDefault();
   if (!hasApiKeyForm()) return;
@@ -817,6 +1021,9 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   }
+
+  if (hasField("export-csv")) fields["export-csv"].addEventListener("click", exportCsv);
+  if (hasField("export-png")) fields["export-png"].addEventListener("click", exportPng);
 
   if (hasApiKeyForm()) {
     fields["api-key-form"].addEventListener("submit", requestApiKey);

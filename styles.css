@@ -424,6 +424,34 @@ select:disabled {
   margin: 0;
 }
 
+/* Deliberately quiet: these sit under the answer and should not compete with it.
+   Outlined rather than filled, and they fill the row's width only on a phone. */
+.export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.export-actions button {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--teal-deep);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.export-actions button:hover,
+.export-actions button:focus-visible {
+  background: rgba(15, 118, 110, 0.08);
+  border-color: var(--teal);
+}
+
 .advanced-options {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   border-color: var(--line);
