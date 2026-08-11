@@ -77,20 +77,39 @@ textarea {
     linear-gradient(0deg, transparent 46%, var(--amber) 47%, var(--amber) 53%, transparent 54%);
 }
 
+/* The nav was `justify-content: flex-end` at 0.94rem in the muted grey, so on a
+   wide screen five links crowded into the right corner as small low-contrast
+   text with no hit area and no indication of which page you were on. These are
+   the site's only navigation; they need to read as buttons you can aim at. */
 nav {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 14px;
-  color: var(--muted);
-  font-size: 0.94rem;
+  align-items: center;
+  gap: 4px;
+  font-size: 1rem;
 }
 
 nav a {
+  border-radius: 8px;
+  color: var(--ink, #1d2b2b);
+  display: inline-block;
+  font-weight: 600;
+  padding: 9px 14px;
   text-decoration: none;
+  transition: background-color 120ms ease, color 120ms ease;
+  white-space: nowrap;
 }
 
-nav a:hover {
+nav a:hover,
+nav a:focus-visible {
+  background: rgba(15, 118, 110, 0.10);
+  color: var(--teal-deep);
+}
+
+/* Where am I. Without this every page's nav looked identical. */
+nav a[aria-current="page"] {
+  background: rgba(15, 118, 110, 0.14);
+  box-shadow: inset 0 -2px 0 var(--teal);
   color: var(--teal-deep);
 }
 
@@ -384,6 +403,20 @@ button:focus-visible {
 
 .required-inputs {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* The temperature block is no longer "optional extras" — for heat and cooling it
+   is where the answer comes from, so it reads as a required part of the form. */
+.temperature-section {
+  border-left: 3px solid var(--teal);
+  padding-left: 14px;
+}
+
+.section-note {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: -2px 0 10px;
+  max-width: 52ch;
 }
 
 .advanced-options {

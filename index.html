@@ -18,7 +18,7 @@
         <span>Exergy Factor</span>
       </a>
       <nav aria-label="Page navigation">
-        <a href="index.html">Calculate</a>
+        <a href="index.html" aria-current="page">Calculate</a>
         <a href="compare.html">Compare</a>
         <a href="methodology.html">Methodology</a>
         <a href="api-key.html">API Key</a>
@@ -52,37 +52,27 @@
                   <button class="info-button" type="button" aria-label="Energy form help" data-tooltip="What kind of energy is being reported. Choose the closest match from the list, such as Electricity, 150 °C steam, Natural gas HHV, or Crude oil. This selects the reference Exergy Factor and typed carrier suffix unless you provide an optional override.">ⓘ</button>
                 </div>
                 <select id="energy-form" aria-label="Energy form or reporting basis">
-                  <option value="electricity" selected>Electricity</option>
-                  <option value="mechanical">Mechanical shaft work</option>
-                  <option value="pvDc">PV DC output</option>
-                  <option value="battery">Battery discharge</option>
-                  <option value="pumpedHydro">Pumped hydro output</option>
-                  <option value="solar">Solar radiation</option>
-                  <option value="heat35">35 °C heat</option>
-                  <option value="heat40">40 °C low-grade heat</option>
-                  <option value="heat50">50 °C heat</option>
-                  <option value="heat60">60 °C low-grade heat</option>
-                  <option value="heat70">70 °C district heat</option>
-                  <option value="heat80">80 °C hot water</option>
-                  <option value="district80to50">80/50 °C district heat</option>
-                  <option value="heat90">90 °C district heat</option>
-                  <option value="heat120">120 °C process heat</option>
-                  <option value="steam150">150 °C steam</option>
-                  <option value="heat180">180 °C process heat</option>
-                  <option value="heat250">250 °C process heat</option>
-                  <option value="heat500">500 °C industrial heat</option>
-                  <option value="cooling5">5 °C cooling</option>
-                  <option value="methane">Methane LHV</option>
-                  <option value="methaneHhv">Methane HHV</option>
-                  <option value="naturalGasLhv">Natural gas LHV</option>
-                  <option value="naturalGasHhv">Natural gas HHV</option>
-                  <option value="dieselLhv">Diesel LHV</option>
-                  <option value="gasolineLhv">Gasoline LHV</option>
-                  <option value="crudeOil">Crude oil</option>
-                  <option value="coalLhv">Coal LHV</option>
-                  <option value="hydrogenLhv">Hydrogen LHV</option>
-                  <option value="hydrogen">Hydrogen HHV</option>
-                  <option value="custom">Custom</option>
+                  <optgroup label="Electricity and work">
+                    <option value="electricity" selected>Electricity, PV, battery or shaft work</option>
+                  </optgroup>
+                  <optgroup label="Heat and cooling — you enter the temperature">
+                    <option value="heat">Heat — hot water, steam, process or waste heat</option>
+                    <option value="cooling">Cooling — chilled water or refrigeration</option>
+                  </optgroup>
+                  <optgroup label="Fuels">
+                    <option value="naturalGasHhv">Natural gas / methane — HHV</option>
+                    <option value="naturalGasLhv">Natural gas / methane — LHV</option>
+                    <option value="hydrogen">Hydrogen — HHV</option>
+                    <option value="hydrogenLhv">Hydrogen — LHV</option>
+                    <option value="dieselLhv">Diesel — LHV</option>
+                    <option value="gasolineLhv">Gasoline — LHV</option>
+                    <option value="coalLhv">Coal — LHV</option>
+                    <option value="crudeOil">Crude oil</option>
+                  </optgroup>
+                  <optgroup label="Other">
+                    <option value="solar">Solar radiation</option>
+                    <option value="custom">I already know the Exergy Factor</option>
+                  </optgroup>
                 </select>
               </div>
 
@@ -122,10 +112,36 @@
                 <input id="energy-value" type="number" min="0" step="any" value="1" inputmode="decimal" />
               </div>
 
+            </section>
+
+            <!-- Shown only for heat and cooling, where the temperature IS the
+                 answer. It used to live under "Optional Inputs" below a list of
+                 thirteen fixed temperature presets — 35, 40, 50, 60, 70, 80, 90,
+                 120, 150, 180, 250, 500 °C — which almost nobody's stream matches. -->
+            <section class="input-section temperature-section" id="temperature-section" hidden>
+              <h3 id="temperature-heading">Your stream temperatures</h3>
+              <p class="section-note" id="temperature-note">
+                The Exergy Factor of heat depends entirely on these two numbers. Enter the ones you measured.
+              </p>
               <div class="field-row">
                 <div class="field-label">
-                  <label for="sink-temp">Sink Temperature</label>
-                  <button class="info-button" type="button" aria-label="Sink temperature help" data-tooltip="The reference environment or receiving temperature used for thermal quality. If you do not know the local reference environment, leave the default at 20 °C. Example: ambient air at 20 °C or a known return/condenser temperature.">ⓘ</button>
+                  <label for="source-temp" id="source-temp-label">Temperature of your heat</label>
+                  <button class="info-button" type="button" aria-label="Source temperature help" data-tooltip="The temperature the heat is actually delivered at: hot water supply, steam saturation temperature, flue gas or process stream temperature. This is the number that decides the Exergy Factor.">ⓘ</button>
+                </div>
+                <div class="input-pair">
+                  <input id="source-temp" type="number" step="any" inputmode="decimal" placeholder="e.g. 80" />
+                  <select id="source-unit" aria-label="Temperature source unit">
+                    <option value="C" selected>°C</option>
+                    <option value="F">°F</option>
+                    <option value="K">K</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label">
+                  <label for="sink-temp" id="sink-temp-label">Reference temperature (your environment)</label>
+                  <button class="info-button" type="button" aria-label="Reference temperature help" data-tooltip="The environment the heat is rejected to, usually ambient air or cooling water. The same stream is worth more against a cold environment than a warm one, which is why this is part of the record. 20 °C is a common default if you do not know it.">ⓘ</button>
                 </div>
                 <div class="input-pair">
                   <input id="sink-temp" type="number" step="any" value="20" inputmode="decimal" />
@@ -138,31 +154,19 @@
               </div>
             </section>
 
-            <section class="input-section advanced-options" id="advanced-options">
-              <h3>Optional Inputs</h3>
+            <!-- Shown only when the user says they already know the factor. -->
+            <section class="input-section advanced-options" id="advanced-options" hidden>
+              <h3>Your Exergy Factor</h3>
+              <p class="section-note">
+                Use this when a standard, a measurement or your own model already gives you the number.
+              </p>
               <div class="field-row">
                 <div class="field-label">
                   <label for="custom-factor">Exergy Factor</label>
-                  <button class="info-button" type="button" aria-label="Exergy Factor help" data-tooltip="Optional override for energy quality. Use this only if you already know the factor from a standard, measurement, engineering model, or your own calculation. Example: 0.73 means each unit carries 0.73 units of work potential. Values above 1 can be valid for some fuel reporting bases.">ⓘ</button>
+                  <button class="info-button" type="button" aria-label="Exergy Factor help" data-tooltip="The work potential per unit of energy, between 0 and 1 for most carriers. Values slightly above 1 are valid on an LHV fuel basis. Example: 0.73 means each unit carries 0.73 units of work potential.">ⓘ</button>
                 </div>
                 <input id="custom-factor" type="number" min="0" step="any" inputmode="decimal" placeholder="0.73" />
               </div>
-
-              <div class="field-row">
-                <div class="field-label">
-                  <label for="source-temp">Source Temperature</label>
-                  <button class="info-button" type="button" aria-label="Source temperature help" data-tooltip="Optional heat source temperature. Use this when reporting heat and you know the supply, steam, process, or waste-heat stream temperature. Example: enter 80 °C for hot water or 150 °C for steam. The calculator uses it with the sink temperature to estimate thermal quality.">ⓘ</button>
-                </div>
-                <div class="input-pair">
-                  <input id="source-temp" type="number" step="any" inputmode="decimal" placeholder="80" />
-                  <select id="source-unit" aria-label="Temperature source unit">
-                    <option value="C" selected>°C</option>
-                    <option value="F">°F</option>
-                    <option value="K">K</option>
-                  </select>
-                </div>
-              </div>
-
             </section>
           </form>
 

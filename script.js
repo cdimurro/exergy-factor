@@ -38,37 +38,35 @@ const examples = {
 };
 
 const comparePresets = {
-  electricity: { label: "Electricity", unit: "MWh", typedUnit: "MWh_e", fx: 1, tier: "F1", basis: "Delivered electricity at point of use" },
-  mechanical: { label: "Mechanical shaft work", unit: "MWh", typedUnit: "MWh_m", fx: 1, tier: "F1", basis: "Shaft work at machine boundary" },
-  pvDc: { label: "PV DC output", unit: "MWh", typedUnit: "MWh_e", fx: 1, tier: "F1", basis: "PV electrical output after conversion" },
-  battery: { label: "Battery discharge", unit: "MWh", typedUnit: "MWh_e", fx: 1, tier: "F1", basis: "Delivered electrical discharge" },
-  pumpedHydro: { label: "Pumped hydro output", unit: "MWh", typedUnit: "MWh_e", fx: 1, tier: "F1", basis: "Electrical output boundary" },
+  // ONE entry for everything whose Exergy Factor is 1 by definition. Electricity,
+  // PV DC output, battery discharge, pumped hydro output and mechanical shaft
+  // work were five separate options with the same fx, the same typed unit and
+  // different prose. Five ways to say the same thing is a choice the reader has
+  // to make and cannot get right, so it is one option that names them all.
+  electricity: { label: "Electricity, PV, battery or shaft work", unit: "MWh", typedUnit: "MWh_e", fx: 1, tier: "F1", basis: "Delivered work at point of use" },
+
+  // `needsTemperature` means the user supplies the number, not a preset. There
+  // used to be thirteen fixed heat temperatures — 35, 40, 50, 60, 70, 80, 90,
+  // 120, 150, 180, 250, 500 °C — and the chance a real stream sits exactly on one
+  // of them is close to nil, so almost every visitor either picked a wrong
+  // neighbour or gave up. The temperature is the answer; it should be typed in.
+  heat: { label: "Heat", unit: "MWh", typedUnit: "MWh_th", tier: "F2", needsTemperature: "heat", basis: "Carnot factor from your source and reference temperatures" },
+  cooling: { label: "Cooling", unit: "MWh", typedUnit: "MWh_cooling", tier: "F2", needsTemperature: "cooling", basis: "Cooling service against your stated ambient" },
+
+  // Natural gas is ~93% methane and the framework's screening factor is the same
+  // number, so they were literally duplicate rows: `methane` and `naturalGasLhv`
+  // carried identical fx AND identical typed units. Named together instead.
+  naturalGasHhv: { label: "Natural gas / methane — HHV", unit: "MWh", typedUnit: "MWh_HHV_NG", fx: 0.93, tier: "F1", basis: "Higher heating value fuel basis" },
+  naturalGasLhv: { label: "Natural gas / methane — LHV", unit: "MWh", typedUnit: "MWh_LHV_CH4", fx: 1.04, tier: "F1", basis: "Lower heating value fuel basis" },
+  hydrogen: { label: "Hydrogen — HHV", unit: "MWh", typedUnit: "MWh_HHV_H2", fx: 0.83, tier: "F1", basis: "Higher heating value hydrogen basis" },
+  hydrogenLhv: { label: "Hydrogen — LHV", unit: "MWh", typedUnit: "MWh_LHV_H2", fx: 0.98, tier: "F1", basis: "Lower heating value hydrogen basis" },
+  dieselLhv: { label: "Diesel — LHV", unit: "MWh", typedUnit: "MWh_LHV_diesel", fx: 1.06, tier: "F1", basis: "Lower heating value fuel basis" },
+  gasolineLhv: { label: "Gasoline — LHV", unit: "MWh", typedUnit: "MWh_LHV_gasoline", fx: 1.07, tier: "F1", basis: "Lower heating value fuel basis" },
+  coalLhv: { label: "Coal — LHV", unit: "MWh", typedUnit: "MWh_LHV_coal", fx: 1.05, tier: "F1", basis: "Lower heating value fuel basis" },
+  crudeOil: { label: "Crude oil", unit: "MWh", typedUnit: "MWh_LHV_crude", fx: 1.06, tier: "F1", basis: "Approximate crude oil chemical exergy factor" },
+
   solar: { label: "Solar radiation", unit: "MWh", typedUnit: "MWh_solar", fx: 0.932, tier: "F2", basis: "Petela radiation Exergy Factor" },
-  heat35: { label: "35 °C heat", unit: "MWh", typedUnit: "MWh_th", fx: 0.049, sourceC: 35, sinkC: 20, tier: "F2", basis: "Carnot factor from source and sink temperatures" },
-  heat40: { label: "40 °C low-grade heat", unit: "MWh", typedUnit: "MWh_th", fx: 0.064, sourceC: 40, sinkC: 20, tier: "F2", basis: "Carnot factor from source and sink temperatures" },
-  heat50: { label: "50 °C heat", unit: "MWh", typedUnit: "MWh_th", fx: 0.093, sourceC: 50, sinkC: 20, tier: "F2", basis: "Carnot factor from source and sink temperatures" },
-  heat60: { label: "60 °C low-grade heat", unit: "MWh", typedUnit: "MWh_th", fx: 0.12, sourceC: 60, sinkC: 20, tier: "F2", basis: "Carnot factor from source and sink temperatures" },
-  heat70: { label: "70 °C district heat", unit: "MWh", typedUnit: "MWh_th", fx: 0.146, sourceC: 70, sinkC: 20, tier: "F2", basis: "Carnot factor from source and sink temperatures" },
-  heat80: { label: "80 °C hot water", unit: "MWh", typedUnit: "MWh_th", fx: 0.17, sourceC: 80, sinkC: 20, tier: "F2", basis: "Carnot factor from source and sink temperatures" },
-  district80to50: { label: "80/50 °C district heat", unit: "MWh", typedUnit: "MWh_th", fx: 0.085, sourceC: 80, sinkC: 50, tier: "F2", basis: "Carnot factor using return-line sink" },
-  heat90: { label: "90 °C district heat", unit: "MWh", typedUnit: "MWh_th", fx: 0.192, sourceC: 90, sinkC: 20, tier: "F2", basis: "Carnot factor from source and sink temperatures" },
-  heat120: { label: "120 °C process heat", unit: "MWh", typedUnit: "MWh_th", fx: 0.254, sourceC: 120, sinkC: 20, tier: "F2", basis: "Carnot factor from source and sink temperatures" },
-  steam150: { label: "150 °C steam", unit: "MWh", typedUnit: "MWh_th", fx: 0.307, sourceC: 150, sinkC: 20, tier: "F2", basis: "Carnot factor from source and sink temperatures" },
-  heat180: { label: "180 °C process heat", unit: "MWh", typedUnit: "MWh_th", fx: 0.353, sourceC: 180, sinkC: 20, tier: "F2", basis: "Carnot factor from source and sink temperatures" },
-  heat250: { label: "250 °C process heat", unit: "MWh", typedUnit: "MWh_th", fx: 0.44, sourceC: 250, sinkC: 20, tier: "F2", basis: "Carnot factor from source and sink temperatures" },
-  heat500: { label: "500 °C industrial heat", unit: "MWh", typedUnit: "MWh_th", fx: 0.621, sourceC: 500, sinkC: 20, tier: "F2", basis: "Carnot factor from source and sink temperatures" },
-  cooling5: { label: "5 °C cooling", unit: "MWh", typedUnit: "MWh_cooling", fx: 0.054, sourceC: 20, sinkC: 5, tier: "F2", basis: "Reference cooling quality factor against 20 °C ambient" },
-  methane: { label: "Methane LHV", unit: "MWh", typedUnit: "MWh_LHV_CH4", fx: 1.04, tier: "F1", basis: "Lower heating value fuel basis" },
-  methaneHhv: { label: "Methane HHV", unit: "MWh", typedUnit: "MWh_HHV_CH4", fx: 0.93, tier: "F1", basis: "Higher heating value fuel basis" },
-  naturalGasLhv: { label: "Natural gas LHV", unit: "MWh", typedUnit: "MWh_LHV_CH4", fx: 1.04, tier: "F1", basis: "Lower heating value fuel basis" },
-  naturalGasHhv: { label: "Natural gas HHV", unit: "MWh", typedUnit: "MWh_HHV_NG", fx: 0.93, tier: "F1", basis: "Higher heating value fuel basis" },
-  dieselLhv: { label: "Diesel LHV", unit: "MWh", typedUnit: "MWh_LHV_diesel", fx: 1.06, tier: "F1", basis: "Lower heating value fuel basis" },
-  gasolineLhv: { label: "Gasoline LHV", unit: "MWh", typedUnit: "MWh_LHV_gasoline", fx: 1.07, tier: "F1", basis: "Lower heating value fuel basis" },
-  crudeOil: { label: "Crude oil LHV", unit: "MWh", typedUnit: "MWh_LHV_crude", fx: 1.06, tier: "F1", basis: "Approximate crude oil chemical exergy factor" },
-  coalLhv: { label: "Coal LHV", unit: "MWh", typedUnit: "MWh_LHV_coal", fx: 1.05, tier: "F1", basis: "Lower heating value fuel basis" },
-  hydrogenLhv: { label: "Hydrogen LHV", unit: "MWh", typedUnit: "MWh_LHV_H2", fx: 0.98, tier: "F1", basis: "Lower heating value hydrogen basis" },
-  hydrogen: { label: "Hydrogen HHV", unit: "MWh", typedUnit: "MWh_HHV_H2", fx: 0.83, tier: "F1", basis: "Higher heating value hydrogen basis" },
-  custom: { label: "Custom", unit: "MWh", typedUnit: "", fx: 0.73, tier: "F1", basis: "User-defined Exergy Factor" },
+  custom: { label: "A factor I already know", unit: "MWh", typedUnit: "", fx: 0.73, tier: "F1", needsCustomFactor: true, basis: "User-defined Exergy Factor" },
 };
 
 applyCanonicalReferenceData(
@@ -186,14 +184,16 @@ function format(value, precision = 4) {
   return Number(value.toFixed(precision)).toString();
 }
 
-// The Exergy Factor is a fixed-width field: 0.170, not 0.17, and 1.000, not 1.
-// The paper writes it that way in both worked examples, and the trailing digits
-// are what let a reader see the precision being claimed. Stripping them also made
-// the published figure disagree in appearance with the value a reader recomputes
-// (1 - 293.15/353.15 = 0.16990 -> 0.170), which undercuts the whole point of the
-// notation. The quantity is deliberately NOT padded: the paper writes `1 MWh`.
+// A COMPUTED Exergy Factor keeps its trailing zeros: 0.170, not 0.17, and 0.730,
+// not 0.73. Those digits show the precision being claimed, and dropping them made
+// the published figure look different from the value a reader recomputes
+// (1 - 293.15/353.15 = 0.16990 -> 0.170).
+//
+// An EXACT factor is not padded. Electricity is 1 by definition, not 1 measured to
+// three decimals, so it reads fx = 1.0. The quantity is never padded either.
 function formatFactor(value) {
   if (!Number.isFinite(value)) return "invalid";
+  if (Number.isInteger(value)) return value.toFixed(1);
   return value.toFixed(3);
 }
 
@@ -201,7 +201,9 @@ function formatFactor(value) {
 // notation copy-pasteable into a CSV cell or a plain-text report without an
 // encoding step; the paper's typeset "80°C" and this "80 C" are the same record.
 function formatBracketTemp(celsius) {
-  return `${Number(celsius.toFixed(3))} C`;
+  // One decimal. A stream entered as 340 F is 171.1111... C, and printing
+  // `Th = 171.111 C` claims a precision the reading never had.
+  return `${Number(celsius.toFixed(1))} C`;
 }
 
 function formatDisplayEnergy(value) {
@@ -258,6 +260,27 @@ function calculateFactor() {
     const formKey = fields["energy-form"].value;
     const preset = comparePresets[formKey] || comparePresets.custom;
 
+    // Cooling is decided FIRST. It shares the two temperature inputs with heat but
+    // uses a different equation, and the generic thermal branch below would read a
+    // chiller as a heat source colder than its sink and simply refuse it.
+    if (preset.needsTemperature === "cooling") {
+      const coldC = toCelsius(fields["source-temp"]?.value, fields["source-unit"]?.value);
+      const ambientC = toCelsius(fields["sink-temp"]?.value, fields["sink-unit"]?.value);
+      if (!Number.isFinite(coldC) || !Number.isFinite(ambientC)) {
+        return { factor: NaN, method: "Enter the temperature you are cooling to, and the ambient you reject heat to.", tier: "F2" };
+      }
+      if (coldC >= ambientC) {
+        return { factor: NaN, method: "A cooling service has to be colder than the ambient it is rejected to.", tier: "F2" };
+      }
+      return {
+        factor: (ambientC + 273.15) / (coldC + 273.15) - 1,
+        method: "F2 cooling factor from your service and ambient temperatures.",
+        tier: "F2",
+        coldC,
+        sinkC: ambientC,
+      };
+    }
+
     if (hasAdvancedSourceOverride()) {
       const factor = thermalFactorFromTemperatures(
         fields["source-temp"].value,
@@ -288,23 +311,10 @@ function calculateFactor() {
       return { factor: NaN, method: "Custom Exergy Factor must be a nonnegative number.", tier: "F1" };
     }
 
-    if (Number.isFinite(preset.sourceC) && preset.basis.includes("Carnot") && hasField("sink-temp")) {
-      const factor = thermalFactorFromTemperatures(
-        preset.sourceC,
-        "C",
-        fields["sink-temp"].value,
-        fields["sink-unit"].value,
-      );
-      if (!Number.isFinite(factor)) {
-        return { factor: NaN, method: "Enter sink temperature below the reference source temperature.", tier: "F2" };
-      }
-      return {
-        factor,
-        method: `F2 thermal factor for ${preset.label} from reference source and sink temperature.`,
-        tier: "F2",
-        sourceC: preset.sourceC,
-        sinkC: toCelsius(fields["sink-temp"].value, fields["sink-unit"].value),
-      };
+    // Heat with no temperature yet: say what is needed instead of showing a
+    // number from a preset the visitor did not choose.
+    if (preset.needsTemperature === "heat") {
+      return { factor: NaN, method: "Enter the temperature your heat is delivered at, and your reference temperature.", tier: "F2" };
     }
 
     if (formKey !== "custom") {
@@ -467,18 +477,51 @@ function renderEquivalence(rows) {
   fields["compare-equivalence"].textContent = `${format(a.quantity, 3)} ${a.displayUnit} of ${sentenceLabel(a)} is equivalent to ${format(equivalentQuantity, 3)} ${b.displayUnit} of ${sentenceLabel(b)}.`;
 }
 
+// Show the inputs the selected carrier actually needs, and nothing else. Heat and
+// cooling need two temperatures; a fuel needs neither; "a factor I already know"
+// needs only the factor. Presenting all of them at once, with the ones that matter
+// buried under a heading called "Optional Inputs", is why the temperature fields
+// went unused and people reached for a fixed preset instead.
 function applyCalculatorForm() {
   if (!hasCalculator() || !hasField("energy-form")) return;
 
   const preset = comparePresets[fields["energy-form"].value] || comparePresets.custom;
+  const mode = preset.needsTemperature || "";
+
   if (hasField("energy-unit") && preset.unit && ENERGY_TO_J[preset.unit]) fields["energy-unit"].value = preset.unit;
   if (hasField("factor-unit")) fields["factor-unit"].value = "decimal";
   if (hasField("exergy-factor")) fields["exergy-factor"].value = preset.fx;
   if (hasField("custom-factor")) fields["custom-factor"].value = "";
   if (hasField("source-temp")) fields["source-temp"].value = "";
   if (hasField("source-unit")) fields["source-unit"].value = "C";
-  if (hasField("sink-temp")) fields["sink-temp"].value = Number.isFinite(preset.sinkC) ? preset.sinkC : "20";
+  if (hasField("sink-temp")) fields["sink-temp"].value = "20";
   if (hasField("sink-unit")) fields["sink-unit"].value = "C";
+
+  const temperatureSection = byId("temperature-section");
+  if (temperatureSection) temperatureSection.hidden = !mode;
+  const advanced = byId("advanced-options");
+  if (advanced) advanced.hidden = !preset.needsCustomFactor;
+
+  // Cooling asks a different question from heat, so it should not reuse heat's
+  // wording. "Source temperature" is meaningless for a chiller.
+  const heading = byId("temperature-heading");
+  const note = byId("temperature-note");
+  const sourceLabel = byId("source-temp-label");
+  const sinkLabel = byId("sink-temp-label");
+  if (mode === "cooling") {
+    if (heading) heading.textContent = "Your cooling temperatures";
+    if (note) note.textContent = "Holding something below ambient takes work, and how much depends on these two numbers.";
+    if (sourceLabel) sourceLabel.textContent = "Temperature you are cooling to";
+    if (sinkLabel) sinkLabel.textContent = "Ambient temperature you reject heat to";
+    if (hasField("source-temp")) fields["source-temp"].placeholder = "e.g. 7";
+    if (hasField("sink-temp")) fields["sink-temp"].value = "30";
+  } else if (mode === "heat") {
+    if (heading) heading.textContent = "Your stream temperatures";
+    if (note) note.textContent = "The Exergy Factor of heat depends entirely on these two numbers. Enter the ones you measured.";
+    if (sourceLabel) sourceLabel.textContent = "Temperature of your heat";
+    if (sinkLabel) sinkLabel.textContent = "Reference temperature (your environment)";
+    if (hasField("source-temp")) fields["source-temp"].placeholder = "e.g. 80";
+  }
 }
 
 function updateCalculator() {
@@ -491,10 +534,14 @@ function updateCalculator() {
   const energyUnit = normalizeUnit(fields["energy-unit"].value);
   const preset = comparePresets[fields["energy-form"]?.value] || comparePresets.custom;
   const energyJ = currentEnergyJ();
-  const { factor, method, tier, sourceC, sinkC } = calculateFactor();
+  const { factor, method, tier, sourceC, sinkC, coldC } = calculateFactor();
 
   if (!Number.isFinite(energy) || energy < 0 || !Number.isFinite(energyJ) || !Number.isFinite(factor)) {
     fields["notation-output"].textContent = "Check the inputs";
+    // Clear the derivation too. Leaving the previous stream's arithmetic on
+    // screen next to "Check the inputs" showed a confident-looking check of a
+    // record that is no longer the one being edited.
+    if (hasField("verify-output")) fields["verify-output"].textContent = method;
     if (hasField("work-output")) fields["work-output"].textContent = "No result";
     if (hasField("exergy-output")) fields["exergy-output"].textContent = "No result";
     if (hasField("method-output")) fields["method-output"].textContent = method;
@@ -517,10 +564,14 @@ function updateCalculator() {
   // had both temperatures in hand, while the methodology page promised the
   // notation "can be short or self-verifying" — so the claim was made and the
   // evidence withheld.
-  const declarable = Number.isFinite(sourceC) && Number.isFinite(sinkC) && sourceC > sinkC;
-  const bracket = declarable
-    ? ` [Th = ${formatBracketTemp(sourceC)}, T0 = ${formatBracketTemp(sinkC)}]`
-    : "";
+  const isCooling = Number.isFinite(coldC) && Number.isFinite(sinkC);
+  const isHeat = Number.isFinite(sourceC) && Number.isFinite(sinkC) && sourceC > sinkC;
+  const declarable = isHeat || isCooling;
+  const bracket = isCooling
+    ? ` [Tcold = ${formatBracketTemp(coldC)}, T0 = ${formatBracketTemp(sinkC)}]`
+    : isHeat
+      ? ` [Th = ${formatBracketTemp(sourceC)}, T0 = ${formatBracketTemp(sinkC)}]`
+      : "";
   const notation = `${format(energy, 4)} ${typedEnergyUnit}, fx = ${formatFactor(factor)}${bracket}`;
   const exergyJ = energyJ * factor;
   const exergyInInputUnit = exergyJ / ENERGY_TO_J[fields["energy-unit"].value];
@@ -528,7 +579,12 @@ function updateCalculator() {
 
   fields["notation-output"].textContent = notation;
   if (hasField("verify-output")) {
-    if (declarable) {
+    if (isCooling) {
+      const coldK = coldC + 273.15;
+      const ambientK = sinkC + 273.15;
+      fields["verify-output"].textContent =
+        `fx = T0/Tcold - 1 = ${Number(ambientK.toFixed(2))}/${Number(coldK.toFixed(2))} - 1 = ${(ambientK / coldK - 1).toFixed(3)}`;
+    } else if (isHeat) {
       const sourceK = sourceC + 273.15;
       const sinkK = sinkC + 273.15;
       fields["verify-output"].textContent =
