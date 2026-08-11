@@ -213,6 +213,29 @@ function formatBracketTemp(celsius) {
   return `${Number(celsius.toFixed(1))} C`;
 }
 
+// The declaration bracket, wherever there is one to declare.
+//
+// The full form is the useful one: it carries the conditions the factor was
+// derived at, so a reader can re-derive it instead of taking it on trust. The
+// short form is correct only when there is genuinely nothing to declare —
+// electricity is 1 whatever the environment does.
+//
+// A fuel has something to declare too, and it was being dropped: HHV and LHV give
+// materially different factors for the same fuel (0.930 against 1.040 for natural
+// gas), so a bare `1 MWh_HHV_NG, fx = 0.930` leaves the reader to infer the basis
+// from the unit suffix. The library states it as `[basis = HHV]`; so does this.
+function declarationBracket({ preset, sourceC, sinkC, coldC }) {
+  if (Number.isFinite(coldC) && Number.isFinite(sinkC)) {
+    return ` [Tcold = ${formatBracketTemp(coldC)}, T0 = ${formatBracketTemp(sinkC)}]`;
+  }
+  if (Number.isFinite(sourceC) && Number.isFinite(sinkC) && sourceC > sinkC) {
+    return ` [Th = ${formatBracketTemp(sourceC)}, T0 = ${formatBracketTemp(sinkC)}]`;
+  }
+  const basis = /_(HHV|LHV)_/.exec(preset?.typedUnit || "");
+  if (basis) return ` [basis = ${basis[1]}]`;
+  return "";
+}
+
 function formatDisplayEnergy(value) {
   return format(value, 3);
 }
@@ -464,6 +487,9 @@ function compareRow(side) {
     quantity,
     unit,
     displayUnit: displayUnit(unit, preset),
+    // This page has no temperature inputs, so a heat or cooling row has nothing
+    // to declare and correctly stays short. A fuel row does have a basis.
+    bracket: declarationBracket({ preset }),
     factor,
     energyJ,
     exergyJ,
@@ -492,7 +518,7 @@ function renderCompare() {
           <div class="bar-meta">
             <span>${row.side}</span>
             <strong>${row.label}</strong>
-            <em>${format(row.quantity, 3)} ${row.displayUnit}, f_X = ${formatFactor(row.factor)}</em>
+            <em>${format(row.quantity, 3)} ${row.displayUnit}, fx = ${formatFactor(row.factor)}${row.bracket}</em>
           </div>
           <div class="bar-track" aria-label="${format(row.exergyInUnit, 4)} out of 1 ${row.exergyUnit} accessible exergy">
             <span class="bar-fill" style="width:${width}%"></span>
@@ -605,13 +631,7 @@ function updateCalculator() {
   // notation "can be short or self-verifying" — so the claim was made and the
   // evidence withheld.
   const isCooling = Number.isFinite(coldC) && Number.isFinite(sinkC);
-  const isHeat = Number.isFinite(sourceC) && Number.isFinite(sinkC) && sourceC > sinkC;
-  const declarable = isHeat || isCooling;
-  const bracket = isCooling
-    ? ` [Tcold = ${formatBracketTemp(coldC)}, T0 = ${formatBracketTemp(sinkC)}]`
-    : isHeat
-      ? ` [Th = ${formatBracketTemp(sourceC)}, T0 = ${formatBracketTemp(sinkC)}]`
-      : "";
+  const bracket = declarationBracket({ preset, sourceC, sinkC, coldC });
   const notation = `${format(notationQuantity, 4)} ${typedEnergyUnit}, fx = ${formatFactor(factor)}${bracket}`;
   const exergyJ = energyJ * factor;
   const exergyInInputUnit = fixedForUnit
