@@ -130,6 +130,7 @@ function cacheFields() {
     "sink-unit",
     "calculator-result",
     "notation-output",
+    "meaning-output",
     "work-output",
     "exergy-output",
     "method-output",
@@ -229,11 +230,50 @@ function displayExergyUnit(unit) {
   return `${baseUnit}_ex`;
 }
 
+// "F1 presumptive lookup" is the spec's name for this, and it tells a visitor
+// nothing. The tier is genuinely useful information — it says how much weight the
+// number can carry — so it is said in words instead of a code. The framework's own
+// definitions are the source: F1 is "static lookup suitable for screening", F2 is
+// "asset-specific with declared reference, boundary and basis", F3 is computed
+// from synchronised telemetry, F4 is a full state-vector balance.
+const TIER_IN_PLAIN_WORDS = {
+  F0: "Energy only — no quality claim attached.",
+  F1: "Standard reference value. Fine for a first look; measure your own before deciding on it.",
+  F2: "Based on the temperatures you entered, so it describes your stream, not an average one.",
+  F3: "Computed from metered data over time.",
+  F4: "Full engineering exergy balance.",
+};
+
 function tierDescription(tier) {
-  const tiers = window.EXERGY_FACTOR_REFERENCE_DATA && window.EXERGY_FACTOR_REFERENCE_DATA.fidelity_tiers;
-  const match = Array.isArray(tiers) ? tiers.find((item) => item.tier === tier) : null;
-  if (!match) return tier || "F1";
-  return `${match.tier} ${match.name}`;
+  return TIER_IN_PLAIN_WORDS[tier] || TIER_IN_PLAIN_WORDS.F1;
+}
+
+// The one sentence that says what the number MEANS. Everything else on the panel
+// is a figure or a code; without this a visitor has no way to know whether 0.170
+// is good, bad, or what it implies about their equipment.
+function plainMeaning(factor, preset, isCooling) {
+  if (!Number.isFinite(factor)) return "";
+  // Low-grade heat is where this framework has the most to say, and rounding
+  // 6.4% to "6%" throws away the resolution exactly there. Below 10%, keep a
+  // decimal.
+  const value = factor * 100;
+  const percent = value < 10 ? Number(value.toFixed(1)) : Math.round(value);
+
+  if (isCooling || preset.needsTemperature === "cooling") {
+    return `Cooling is a service you pay work for: delivering this much takes at least ${percent}% of it as work input.`;
+  }
+  if (factor >= 0.999 && factor <= 1.001) {
+    return "All of this can be turned into useful work.";
+  }
+  if (factor > 1) {
+    // LHV fuel bases legitimately exceed 1. Saying "106% can be turned into work"
+    // would be nonsense; the excess is an artefact of what LHV leaves out.
+    return `This fuel carries about ${percent - 100}% more work potential than its LHV energy figure suggests, which is why LHV bases can exceed 1.`;
+  }
+  if (preset.typedUnit && preset.typedUnit.includes("_th")) {
+    return `About ${percent}% of this heat can be turned into useful work. The rest cannot, whatever equipment you use.`;
+  }
+  return `About ${percent}% of this is available as useful work.`;
 }
 
 function hasAdvancedSourceOverride() {
@@ -506,10 +546,15 @@ function updateCalculator() {
 
   if (!Number.isFinite(energy) || energy < 0 || !Number.isFinite(energyJ) || !Number.isFinite(factor)) {
     fields["notation-output"].textContent = "Check the inputs";
+    // `method` already says what is missing in plain words, so it is the most
+    // useful thing to show where the meaning normally goes.
+    if (hasField("meaning-output")) fields["meaning-output"].textContent = method;
     if (hasField("work-output")) fields["work-output"].textContent = "No result";
+    // No number yet means no claim about how solid it is. Leaving the previous
+    // carrier's confidence line up implies one.
+    if (hasField("tier-output")) fields["tier-output"].textContent = "—";
     if (hasField("exergy-output")) fields["exergy-output"].textContent = "No result";
     if (hasField("method-output")) fields["method-output"].textContent = method;
-    if (hasField("tier-output")) fields["tier-output"].textContent = tierDescription(tier);
     if (hasField("basis-output")) fields["basis-output"].textContent = preset.basis || "No basis";
     if (hasField("conversion-grid")) fields["conversion-grid"].innerHTML = "";
     if (hasField("calculator-result")) fields["calculator-result"].hidden = false;
@@ -542,7 +587,22 @@ function updateCalculator() {
   const exergyUnit = displayExergyUnit(energyUnit);
 
   fields["notation-output"].textContent = notation;
-  if (hasField("work-output")) fields["work-output"].textContent = `${formatDisplayEnergy(exergyInInputUnit)} ${exergyUnit}`;
+  if (hasField("meaning-output")) {
+    fields["meaning-output"].textContent = plainMeaning(factor, preset, isCooling);
+  }
+  // The headline figure drops the `_ex` suffix. "0.17 MWh_ex" makes a reader stop
+  // and wonder what MWh_ex is; the units they entered in are the ones they can
+  // reason about. The typed unit is still there in the report line below.
+  if (hasField("work-output")) {
+    fields["work-output"].textContent =
+      `${formatDisplayEnergy(exergyInInputUnit)} ${fields["energy-unit"].value}`;
+  }
+  // For cooling this figure is work you must PUT IN, not work you can take out,
+  // so the label has to change with it or it contradicts the sentence above.
+  const workLabel = byId("work-label");
+  if (workLabel) {
+    workLabel.textContent = isCooling ? "Work needed to deliver it" : "Useful work potential";
+  }
   if (hasField("exergy-output")) fields["exergy-output"].textContent = `${formatDisplayEnergy(exergyInInputUnit)} ${exergyUnit}`;
   if (hasField("method-output")) fields["method-output"].textContent = method;
   if (hasField("tier-output")) fields["tier-output"].textContent = tierDescription(tier);
