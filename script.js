@@ -35,7 +35,10 @@ function apiBaseUrl() {
 // examples now select "Heat" and supply their temperature, which is the point.
 const examples = {
   electric: { energy: 1, unit: "MWh", form: "electricity", fx: 1, auto: false },
-  adoption: { energy: 1, unit: "kWh", form: "custom", fx: 0.73, auto: false },
+  // Replaces an "I already know fx = 0.73" example. That is not something this
+  // tool does any more — the factor is its output — and cooling was the one
+  // path with no example at all.
+  cooling7: { energy: 1, unit: "MWh", form: "cooling", source: 7, sourceUnit: "C", sink: 30, sinkUnit: "C", auto: true },
   heat80: { energy: 4, unit: "MWh", form: "heat", source: 80, sourceUnit: "C", sink: 20, sinkUnit: "C", auto: true },
   steam150: { energy: 0.5, unit: "Btu", form: "heat", source: 150, sourceUnit: "C", sink: 20, sinkUnit: "C", auto: true },
   methane: { energy: 1.3, unit: "MWh", form: "naturalGasHhv", fx: 0.93, auto: false },

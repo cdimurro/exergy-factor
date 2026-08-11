@@ -30,9 +30,9 @@
       <section id="calculator" class="hero">
         <div class="intro">
           <p class="eyebrow">A Framework for Energy Quantity and Energy Quality</p>
-          <h1>Convert any energy quantity into accessible exergy.</h1>
+          <h1>Work out the Exergy Factor of your energy.</h1>
           <p>
-            Select the carrier, enter the quantity, and choose the metered unit. The calculator applies a reference Exergy Factor and reports typed third-draft notation.
+            Enter what you already have — the carrier, the quantity, and the temperatures if it is heat or cooling. The calculator works out the Exergy Factor and the accessible exergy for you.
           </p>
         </div>
 
@@ -64,7 +64,6 @@
                   <option value="coalLhv">Coal LHV</option>
                   <option value="crudeOil">Crude oil</option>
                   <option value="solar">Solar radiation</option>
-                  <option value="custom">Custom</option>
                 </select>
               </div>
 
@@ -109,32 +108,11 @@
                 <input id="energy-value" type="number" min="0" step="any" value="1" inputmode="decimal" />
               </div>
 
-              <div class="field-row">
-                <div class="field-label">
-                  <label for="sink-temp">Sink Temperature</label>
-                  <button class="info-button" type="button" aria-label="Sink temperature help" data-tooltip="The reference environment or receiving temperature used for thermal quality. If you do not know the local reference environment, leave the default at 20 °C. Example: ambient air at 20 °C or a known return/condenser temperature.">ⓘ</button>
-                </div>
-                <div class="input-pair">
-                  <input id="sink-temp" type="number" step="any" value="20" inputmode="decimal" />
-                  <select id="sink-unit" aria-label="Temperature sink unit">
-                    <option value="C" selected>°C</option>
-                    <option value="F">°F</option>
-                    <option value="K">K</option>
-                  </select>
-                </div>
-              </div>
-            </section>
-
-            <section class="input-section advanced-options" id="advanced-options">
-              <h3>Optional Inputs</h3>
-              <div class="field-row">
-                <div class="field-label">
-                  <label for="custom-factor">Exergy Factor</label>
-                  <button class="info-button" type="button" aria-label="Exergy Factor help" data-tooltip="Optional override for energy quality. Use this only if you already know the factor from a standard, measurement, engineering model, or your own calculation. Example: 0.73 means each unit carries 0.73 units of work potential. Values above 1 can be valid for some fuel reporting bases.">ⓘ</button>
-                </div>
-                <input id="custom-factor" type="number" min="0" step="any" inputmode="decimal" placeholder="0.73" />
-              </div>
-
+              <!-- The two temperatures sit together, and there is no longer an
+                   Exergy Factor input above them. The factor is what this tool
+                   works out; asking for it made the calculator pointless for the
+                   person it is for, and the "Optional Inputs" section it lived in
+                   is gone with it. -->
               <div class="field-row">
                 <div class="field-label">
                   <label for="source-temp">Source Temperature</label>
@@ -143,6 +121,21 @@
                 <div class="input-pair">
                   <input id="source-temp" type="number" step="any" inputmode="decimal" placeholder="80" />
                   <select id="source-unit" aria-label="Temperature source unit">
+                    <option value="C" selected>°C</option>
+                    <option value="F">°F</option>
+                    <option value="K">K</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label">
+                  <label for="sink-temp">Sink Temperature</label>
+                  <button class="info-button" type="button" aria-label="Sink temperature help" data-tooltip="The reference environment or receiving temperature used for thermal quality. If you do not know the local reference environment, leave the default at 20 °C. Example: ambient air at 20 °C or a known return/condenser temperature.">ⓘ</button>
+                </div>
+                <div class="input-pair">
+                  <input id="sink-temp" type="number" step="any" value="20" inputmode="decimal" />
+                  <select id="sink-unit" aria-label="Temperature sink unit">
                     <option value="C" selected>°C</option>
                     <option value="F">°F</option>
                     <option value="K">K</option>
@@ -172,12 +165,12 @@
           <h2>Real World Examples:</h2>
         </div>
         <div class="example-grid">
-          <button type="button" data-example="electric">1 MWh_e, f_X = 1</button>
-          <button type="button" data-example="adoption">1 kWh, f_X = 0.73</button>
-          <button type="button" data-example="heat80">4 MWh_th, f_X = 0.17</button>
-          <button type="button" data-example="steam150">0.5 Btu_th, f_X = 0.307</button>
-          <button type="button" data-example="methane">1.3 MWh_HHV_CH4, f_X = 0.93</button>
-          <button type="button" data-example="hydrogen">2.47 MWh_HHV_H2, f_X = 0.83</button>
+          <button type="button" data-example="electric">1 MWh_e, fx = 1.0</button>
+          <button type="button" data-example="cooling7">1 MWh_cooling, fx = 0.082</button>
+          <button type="button" data-example="heat80">4 MWh_th, fx = 0.170</button>
+          <button type="button" data-example="steam150">0.5 Btu_th, fx = 0.307</button>
+          <button type="button" data-example="methane">1.3 MWh_HHV_NG, fx = 0.930</button>
+          <button type="button" data-example="hydrogen">2.47 MWh_HHV_H2, fx = 0.830</button>
         </div>
       </section>
 
