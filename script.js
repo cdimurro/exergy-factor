@@ -130,7 +130,7 @@ function cacheFields() {
     "sink-unit",
     "calculator-result",
     "notation-output",
-    "meaning-output",
+    "heating-value",
     "work-output",
     "exergy-output",
     "method-output",
@@ -230,50 +230,61 @@ function displayExergyUnit(unit) {
   return `${baseUnit}_ex`;
 }
 
-// "F1 presumptive lookup" is the spec's name for this, and it tells a visitor
-// nothing. The tier is genuinely useful information — it says how much weight the
-// number can carry — so it is said in words instead of a code. The framework's own
-// definitions are the source: F1 is "static lookup suitable for screening", F2 is
-// "asset-specific with declared reference, boundary and basis", F3 is computed
-// from synchronised telemetry, F4 is a full state-vector balance.
-const TIER_IN_PLAIN_WORDS = {
-  F0: "Energy only — no quality claim attached.",
-  F1: "Standard reference value. Fine for a first look; measure your own before deciding on it.",
-  F2: "Based on the temperatures you entered, so it describes your stream, not an average one.",
-  F3: "Computed from metered data over time.",
-  F4: "Full engineering exergy balance.",
+// Fuel-volume units carry a heating value the calculator applies for you.
+//
+// A barrel and an scf measure VOLUME, so `ENERGY_TO_J` is already assuming an
+// energy content to convert them — 1,000 Btu per scf, 6.118 GJ per barrel. That
+// assumption was invisible: a visitor picking `bbl(oil)` had no way to see which
+// heating value they had just accepted, and the carrier they picked in the form
+// above could contradict the one the unit implies.
+//
+// Both are now locked and shown. The unit already decides the fuel and its energy
+// content, so those two fields stop being editable, which is also the clearest
+// way to show what IS still theirs to enter.
+// `reportIn` keeps the reported figure at a readable size. A single scf in MWh is
+// 0.0003, and its exergy rounds to a bare "0" on screen — a number that looks like
+// an error rather than a small quantity.
+const FUEL_VOLUME_UNITS = {
+  "boe": { form: "crudeOil", reportIn: "MWh", display: "6.118 GJ (5.80 MMBtu) per barrel of oil equivalent" },
+  "bbl(oil)": { form: "crudeOil", reportIn: "MWh", display: "6.118 GJ (5.80 MMBtu) per barrel" },
+  "scf(natural gas)": { form: "naturalGasHhv", reportIn: "kWh", display: "1,000 Btu (1.055 MJ) per scf, HHV" },
+  "Mcf(natural gas)": { form: "naturalGasHhv", reportIn: "MWh", display: "1.000 MMBtu (1.055 GJ) per Mcf, HHV" },
+  "MMcf(natural gas)": { form: "naturalGasHhv", reportIn: "MWh", display: "1,000 MMBtu (1.055 TJ) per MMcf, HHV" },
 };
 
-function tierDescription(tier) {
-  return TIER_IN_PLAIN_WORDS[tier] || TIER_IN_PLAIN_WORDS.F1;
+function applyFixedValuesForUnit() {
+  if (!hasField("energy-unit") || !hasField("energy-form")) return;
+  const fixed = FUEL_VOLUME_UNITS[fields["energy-unit"].value];
+  const row = byId("fixed-values-row");
+  const form = fields["energy-form"];
+
+  if (!fixed) {
+    if (row) row.hidden = true;
+    form.disabled = false;
+    form.removeAttribute("aria-describedby");
+    return;
+  }
+
+  // The unit names the fuel, so the carrier is not a free choice any more.
+  if (form.value !== fixed.form) {
+    form.value = fixed.form;
+    applyCalculatorForm();
+    // applyCalculatorForm resets the unit to the carrier's default, which would
+    // undo the very choice that got us here.
+    fields["energy-unit"].value = Object.keys(FUEL_VOLUME_UNITS).find(
+      (key) => FUEL_VOLUME_UNITS[key] === fixed,
+    );
+  }
+  form.disabled = true;
+  if (row) row.hidden = false;
+  if (hasField("heating-value")) fields["heating-value"].value = fixed.display;
 }
 
-// The one sentence that says what the number MEANS. Everything else on the panel
-// is a figure or a code; without this a visitor has no way to know whether 0.170
-// is good, bad, or what it implies about their equipment.
-function plainMeaning(factor, preset, isCooling) {
-  if (!Number.isFinite(factor)) return "";
-  // Low-grade heat is where this framework has the most to say, and rounding
-  // 6.4% to "6%" throws away the resolution exactly there. Below 10%, keep a
-  // decimal.
-  const value = factor * 100;
-  const percent = value < 10 ? Number(value.toFixed(1)) : Math.round(value);
-
-  if (isCooling || preset.needsTemperature === "cooling") {
-    return `Cooling is a service you pay work for: delivering this much takes at least ${percent}% of it as work input.`;
-  }
-  if (factor >= 0.999 && factor <= 1.001) {
-    return "All of this can be turned into useful work.";
-  }
-  if (factor > 1) {
-    // LHV fuel bases legitimately exceed 1. Saying "106% can be turned into work"
-    // would be nonsense; the excess is an artefact of what LHV leaves out.
-    return `This fuel carries about ${percent - 100}% more work potential than its LHV energy figure suggests, which is why LHV bases can exceed 1.`;
-  }
-  if (preset.typedUnit && preset.typedUnit.includes("_th")) {
-    return `About ${percent}% of this heat can be turned into useful work. The rest cannot, whatever equipment you use.`;
-  }
-  return `About ${percent}% of this is available as useful work.`;
+function tierDescription(tier) {
+  const tiers = window.EXERGY_FACTOR_REFERENCE_DATA && window.EXERGY_FACTOR_REFERENCE_DATA.fidelity_tiers;
+  const match = Array.isArray(tiers) ? tiers.find((item) => item.tier === tier) : null;
+  if (!match) return tier || "F1";
+  return `${match.tier} ${match.name}`;
 }
 
 function hasAdvancedSourceOverride() {
@@ -538,6 +549,8 @@ function updateCalculator() {
     return;
   }
 
+  applyFixedValuesForUnit();
+
   const energy = Number(fields["energy-value"].value);
   const energyUnit = normalizeUnit(fields["energy-unit"].value);
   const preset = comparePresets[fields["energy-form"]?.value] || comparePresets.custom;
@@ -546,22 +559,30 @@ function updateCalculator() {
 
   if (!Number.isFinite(energy) || energy < 0 || !Number.isFinite(energyJ) || !Number.isFinite(factor)) {
     fields["notation-output"].textContent = "Check the inputs";
-    // `method` already says what is missing in plain words, so it is the most
-    // useful thing to show where the meaning normally goes.
-    if (hasField("meaning-output")) fields["meaning-output"].textContent = method;
     if (hasField("work-output")) fields["work-output"].textContent = "No result";
-    // No number yet means no claim about how solid it is. Leaving the previous
-    // carrier's confidence line up implies one.
-    if (hasField("tier-output")) fields["tier-output"].textContent = "—";
     if (hasField("exergy-output")) fields["exergy-output"].textContent = "No result";
     if (hasField("method-output")) fields["method-output"].textContent = method;
+    if (hasField("tier-output")) fields["tier-output"].textContent = tierDescription(tier);
     if (hasField("basis-output")) fields["basis-output"].textContent = preset.basis || "No basis";
     if (hasField("conversion-grid")) fields["conversion-grid"].innerHTML = "";
     if (hasField("calculator-result")) fields["calculator-result"].hidden = false;
     return;
   }
 
-  const typedEnergyUnit = displayUnit(energyUnit, preset);
+  // An Exergy Factor is work potential per unit ENERGY, so it cannot be applied to
+  // a volume. Reporting `1 bbl(oil), fx = 1.060` and `1.06 bbl_ex` produced
+  // "barrels of exergy", which is not a quantity. For a fuel-volume unit the
+  // notation states the energy the volume represents — via the heating value shown
+  // and locked above — and the exergy comes out in energy units too.
+  const fixedForUnit = FUEL_VOLUME_UNITS[fields["energy-unit"].value];
+  const reportInJ = fixedForUnit ? ENERGY_TO_J[fixedForUnit.reportIn] : 0;
+  // The carrier suffix rides on whichever energy unit we report in. Taking
+  // preset.typedUnit wholesale pinned an "MWh" prefix onto a quantity that was
+  // actually in kWh, so an scf read `0.2931 MWh_HHV_NG` beside `0.273 kWh_ex`.
+  const typedEnergyUnit = fixedForUnit
+    ? `${fixedForUnit.reportIn}${typedSuffix(preset.typedUnit)}`
+    : displayUnit(energyUnit, preset);
+  const notationQuantity = fixedForUnit ? energyJ / reportInJ : energy;
 
   // THE FULL OPERATIONAL NOTATION.
   //
@@ -581,28 +602,15 @@ function updateCalculator() {
     : isHeat
       ? ` [Th = ${formatBracketTemp(sourceC)}, T0 = ${formatBracketTemp(sinkC)}]`
       : "";
-  const notation = `${format(energy, 4)} ${typedEnergyUnit}, fx = ${formatFactor(factor)}${bracket}`;
+  const notation = `${format(notationQuantity, 4)} ${typedEnergyUnit}, fx = ${formatFactor(factor)}${bracket}`;
   const exergyJ = energyJ * factor;
-  const exergyInInputUnit = exergyJ / ENERGY_TO_J[fields["energy-unit"].value];
-  const exergyUnit = displayExergyUnit(energyUnit);
+  const exergyInInputUnit = fixedForUnit
+    ? exergyJ / reportInJ
+    : exergyJ / ENERGY_TO_J[fields["energy-unit"].value];
+  const exergyUnit = fixedForUnit ? `${fixedForUnit.reportIn}_ex` : displayExergyUnit(energyUnit);
 
   fields["notation-output"].textContent = notation;
-  if (hasField("meaning-output")) {
-    fields["meaning-output"].textContent = plainMeaning(factor, preset, isCooling);
-  }
-  // The headline figure drops the `_ex` suffix. "0.17 MWh_ex" makes a reader stop
-  // and wonder what MWh_ex is; the units they entered in are the ones they can
-  // reason about. The typed unit is still there in the report line below.
-  if (hasField("work-output")) {
-    fields["work-output"].textContent =
-      `${formatDisplayEnergy(exergyInInputUnit)} ${fields["energy-unit"].value}`;
-  }
-  // For cooling this figure is work you must PUT IN, not work you can take out,
-  // so the label has to change with it or it contradicts the sentence above.
-  const workLabel = byId("work-label");
-  if (workLabel) {
-    workLabel.textContent = isCooling ? "Work needed to deliver it" : "Useful work potential";
-  }
+  if (hasField("work-output")) fields["work-output"].textContent = `${formatDisplayEnergy(exergyInInputUnit)} ${exergyUnit}`;
   if (hasField("exergy-output")) fields["exergy-output"].textContent = `${formatDisplayEnergy(exergyInInputUnit)} ${exergyUnit}`;
   if (hasField("method-output")) fields["method-output"].textContent = method;
   if (hasField("tier-output")) fields["tier-output"].textContent = tierDescription(tier);

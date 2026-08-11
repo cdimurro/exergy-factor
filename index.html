@@ -96,6 +96,18 @@
                 </select>
               </div>
 
+              <!-- Only for the fuel-volume units. A barrel or an scf is a volume,
+                   so turning it into energy needs a heating value; the calculator
+                   was applying one silently. Shown and locked, so it is visible
+                   which numbers the visitor owns and which the unit already fixed. -->
+              <div class="field-row" id="fixed-values-row" hidden>
+                <div class="field-label">
+                  <label for="heating-value">Heating value</label>
+                  <button class="info-button" type="button" aria-label="Heating value help" data-tooltip="The energy content this calculator uses to turn your fuel volume into energy. It is fixed by the unit you picked, so it cannot be edited here. To use your own gas quality or crude assay, convert the volume to energy yourself and report that instead.">ⓘ</button>
+                </div>
+                <input id="heating-value" type="text" readonly tabindex="-1" />
+              </div>
+
               <div class="field-row">
                 <div class="field-label">
                   <label for="energy-value">Quantity</label>
@@ -150,20 +162,20 @@
 
           <section class="calculator-result compare-answers" id="calculator-result" aria-live="polite">
             <div class="answer-item result-wide">
-              <span class="result-label">What this means</span>
-              <strong id="meaning-output">All of this can be turned into useful work.</strong>
+              <span class="result-label">Exergy Factor Notation</span>
+              <strong id="notation-output">1 MWh_e, fx = 1.0</strong>
             </div>
             <div class="answer-item">
-              <span class="result-label" id="work-label">Useful work potential</span>
-              <strong id="work-output">1 MWh</strong>
+              <span class="result-label">Accessible Exergy</span>
+              <strong id="work-output">1 MWh_ex</strong>
             </div>
             <div class="answer-item">
-              <span class="result-label">How solid is this number</span>
-              <strong id="tier-output">Standard reference value. Fine for a first look; measure your own before deciding on it.</strong>
+              <span class="result-label">Fidelity Tier</span>
+              <strong id="tier-output">F1 presumptive lookup</strong>
             </div>
             <div class="answer-item result-wide">
-              <span class="result-label">For your report</span>
-              <strong id="notation-output">1 MWh_e, fx = 1.0</strong>
+              <span class="result-label">Basis</span>
+              <strong id="basis-output">electrical work at delivery boundary</strong>
             </div>
           </section>
         </section>
