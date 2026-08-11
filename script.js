@@ -556,10 +556,10 @@ function renderCompare() {
             <strong>${row.label}</strong>
             <em>${format(row.quantity, 3)} ${row.displayUnit}, fx = ${formatFactor(row.factor)}${row.bracket}</em>
           </div>
-          <div class="bar-track" aria-label="${format(row.exergyInUnit, 4)} out of 1 ${row.exergyUnit} accessible exergy">
+          <div class="bar-track" aria-label="${formatDisplayEnergy(row.exergyInUnit)} out of 1 ${row.exergyUnit} accessible exergy">
             <span class="bar-fill" style="width:${width}%"></span>
           </div>
-          <div class="bar-value">${format(row.exergyInUnit, 4)} ${row.exergyUnit}</div>
+          <div class="bar-value">${formatDisplayEnergy(row.exergyInUnit)} ${row.exergyUnit}</div>
         </div>
       `;
     })
@@ -613,6 +613,24 @@ function applyCalculatorForm() {
   // sensible default differs from heat's.
   if (hasField("sink-temp")) fields["sink-temp"].value = preset.needsTemperature === "cooling" ? "30" : "20";
   if (hasField("sink-unit")) fields["sink-unit"].value = "C";
+
+  // Show the temperatures only for the carriers whose factor depends on them,
+  // the way the comparison page does. A fuel's factor is a property of the fuel;
+  // leaving two temperature boxes sitting there implied they did something.
+  const wantsTemps = Boolean(preset.needsTemperature);
+  const sourceRow = byId("source-temp-row");
+  const sinkRow = byId("sink-temp-row");
+  if (sourceRow) sourceRow.hidden = !wantsTemps;
+  if (sinkRow) sinkRow.hidden = !wantsTemps;
+
+  // "Source" and "Sink" are the wrong words for a chiller: nothing is sourced
+  // from the cold side, and the ambient is what heat is rejected TO.
+  const cooling = preset.needsTemperature === "cooling";
+  const sourceLabel = sourceRow?.querySelector("label");
+  const sinkLabel = sinkRow?.querySelector("label");
+  if (sourceLabel) sourceLabel.textContent = cooling ? "Cooling Temperature" : "Source Temperature";
+  if (sinkLabel) sinkLabel.textContent = cooling ? "Ambient Temperature" : "Sink Temperature";
+  if (hasField("source-temp")) fields["source-temp"].placeholder = cooling ? "7" : "80";
 }
 
 function updateCalculator() {
@@ -813,7 +831,7 @@ function exportModel() {
         unit: row.unit,
         factor: row.factor,
         notation: `${format(row.quantity, 3)} ${row.displayUnit}, fx = ${formatFactor(row.factor)}${row.bracket}`,
-        exergy: `${format(row.exergyInUnit, 4)} ${row.exergyUnit}`,
+        exergy: `${formatDisplayEnergy(row.exergyInUnit)} ${row.exergyUnit}`,
       })),
       results: [
         ["Accessible Exergy Ratio", fields["compare-summary"].textContent.trim()],

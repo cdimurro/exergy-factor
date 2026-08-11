@@ -113,7 +113,7 @@
                    grid, which traded the two things a reader needs — which box is
                    which — for tidiness. The grid is evened out above instead, by
                    letting Energy Form span the row. -->
-              <div class="field-row">
+              <div class="field-row" id="source-temp-row" hidden>
                 <div class="field-label">
                   <label for="source-temp">Source Temperature</label>
                   <button class="info-button" type="button" aria-label="Source temperature help" data-tooltip="The temperature your heat is delivered at: hot water supply, steam, flue gas, or process stream. Enter it for Heat or Cooling; it is what sets the Exergy Factor. Example: 80 for 80 °C hot water.">ⓘ</button>
@@ -128,7 +128,7 @@
                 </div>
               </div>
 
-              <div class="field-row">
+              <div class="field-row" id="sink-temp-row" hidden>
                 <div class="field-label">
                   <label for="sink-temp">Sink Temperature</label>
                   <button class="info-button" type="button" aria-label="Sink temperature help" data-tooltip="The reference environment the heat is rejected to, usually ambient air or cooling water. For cooling, this is the ambient. If you do not know your local reference, 20 °C is a common default.">ⓘ</button>
