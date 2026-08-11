@@ -405,20 +405,6 @@ button:focus-visible {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-/* The temperature block is no longer "optional extras" — for heat and cooling it
-   is where the answer comes from, so it reads as a required part of the form. */
-.temperature-section {
-  border-left: 3px solid var(--teal);
-  padding-left: 14px;
-}
-
-.section-note {
-  color: var(--muted);
-  font-size: 0.9rem;
-  margin: -2px 0 10px;
-  max-width: 52ch;
-}
-
 .advanced-options {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   border-color: var(--line);
@@ -626,16 +612,6 @@ button,
   grid-column: 1 / -1;
 }
 
-/* The re-derivation line is arithmetic, so it is set in a monospace face and
-   allowed to wrap rather than overflow on a phone. It reads lighter than the
-   notation above it because it is the working, not the result. */
-.verify-line {
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-  font-size: clamp(0.82rem, 1.6vw, 0.95rem) !important;
-  font-weight: 500 !important;
-  overflow-wrap: anywhere;
-  opacity: 0.85;
-}
 
 .compare-bars {
   display: grid;

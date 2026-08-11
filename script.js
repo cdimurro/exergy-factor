@@ -130,7 +130,6 @@ function cacheFields() {
     "sink-unit",
     "calculator-result",
     "notation-output",
-    "verify-output",
     "work-output",
     "exergy-output",
     "method-output",
@@ -477,51 +476,20 @@ function renderEquivalence(rows) {
   fields["compare-equivalence"].textContent = `${format(a.quantity, 3)} ${a.displayUnit} of ${sentenceLabel(a)} is equivalent to ${format(equivalentQuantity, 3)} ${b.displayUnit} of ${sentenceLabel(b)}.`;
 }
 
-// Show the inputs the selected carrier actually needs, and nothing else. Heat and
-// cooling need two temperatures; a fuel needs neither; "a factor I already know"
-// needs only the factor. Presenting all of them at once, with the ones that matter
-// buried under a heading called "Optional Inputs", is why the temperature fields
-// went unused and people reached for a fixed preset instead.
 function applyCalculatorForm() {
   if (!hasCalculator() || !hasField("energy-form")) return;
 
   const preset = comparePresets[fields["energy-form"].value] || comparePresets.custom;
-  const mode = preset.needsTemperature || "";
-
   if (hasField("energy-unit") && preset.unit && ENERGY_TO_J[preset.unit]) fields["energy-unit"].value = preset.unit;
   if (hasField("factor-unit")) fields["factor-unit"].value = "decimal";
   if (hasField("exergy-factor")) fields["exergy-factor"].value = preset.fx;
   if (hasField("custom-factor")) fields["custom-factor"].value = "";
   if (hasField("source-temp")) fields["source-temp"].value = "";
   if (hasField("source-unit")) fields["source-unit"].value = "C";
-  if (hasField("sink-temp")) fields["sink-temp"].value = "20";
+  // Cooling is rejected to ambient, which is warmer than the service, so its
+  // sensible default differs from heat's.
+  if (hasField("sink-temp")) fields["sink-temp"].value = preset.needsTemperature === "cooling" ? "30" : "20";
   if (hasField("sink-unit")) fields["sink-unit"].value = "C";
-
-  const temperatureSection = byId("temperature-section");
-  if (temperatureSection) temperatureSection.hidden = !mode;
-  const advanced = byId("advanced-options");
-  if (advanced) advanced.hidden = !preset.needsCustomFactor;
-
-  // Cooling asks a different question from heat, so it should not reuse heat's
-  // wording. "Source temperature" is meaningless for a chiller.
-  const heading = byId("temperature-heading");
-  const note = byId("temperature-note");
-  const sourceLabel = byId("source-temp-label");
-  const sinkLabel = byId("sink-temp-label");
-  if (mode === "cooling") {
-    if (heading) heading.textContent = "Your cooling temperatures";
-    if (note) note.textContent = "Holding something below ambient takes work, and how much depends on these two numbers.";
-    if (sourceLabel) sourceLabel.textContent = "Temperature you are cooling to";
-    if (sinkLabel) sinkLabel.textContent = "Ambient temperature you reject heat to";
-    if (hasField("source-temp")) fields["source-temp"].placeholder = "e.g. 7";
-    if (hasField("sink-temp")) fields["sink-temp"].value = "30";
-  } else if (mode === "heat") {
-    if (heading) heading.textContent = "Your stream temperatures";
-    if (note) note.textContent = "The Exergy Factor of heat depends entirely on these two numbers. Enter the ones you measured.";
-    if (sourceLabel) sourceLabel.textContent = "Temperature of your heat";
-    if (sinkLabel) sinkLabel.textContent = "Reference temperature (your environment)";
-    if (hasField("source-temp")) fields["source-temp"].placeholder = "e.g. 80";
-  }
 }
 
 function updateCalculator() {
@@ -538,10 +506,6 @@ function updateCalculator() {
 
   if (!Number.isFinite(energy) || energy < 0 || !Number.isFinite(energyJ) || !Number.isFinite(factor)) {
     fields["notation-output"].textContent = "Check the inputs";
-    // Clear the derivation too. Leaving the previous stream's arithmetic on
-    // screen next to "Check the inputs" showed a confident-looking check of a
-    // record that is no longer the one being edited.
-    if (hasField("verify-output")) fields["verify-output"].textContent = method;
     if (hasField("work-output")) fields["work-output"].textContent = "No result";
     if (hasField("exergy-output")) fields["exergy-output"].textContent = "No result";
     if (hasField("method-output")) fields["method-output"].textContent = method;
@@ -578,25 +542,6 @@ function updateCalculator() {
   const exergyUnit = displayExergyUnit(energyUnit);
 
   fields["notation-output"].textContent = notation;
-  if (hasField("verify-output")) {
-    if (isCooling) {
-      const coldK = coldC + 273.15;
-      const ambientK = sinkC + 273.15;
-      fields["verify-output"].textContent =
-        `fx = T0/Tcold - 1 = ${Number(ambientK.toFixed(2))}/${Number(coldK.toFixed(2))} - 1 = ${(ambientK / coldK - 1).toFixed(3)}`;
-    } else if (isHeat) {
-      const sourceK = sourceC + 273.15;
-      const sinkK = sinkC + 273.15;
-      fields["verify-output"].textContent =
-        `fx = 1 - T0/Th = 1 - ${Number(sinkK.toFixed(2))}/${Number(sourceK.toFixed(2))} = ${(1 - sinkK / sourceK).toFixed(3)}`;
-    } else {
-      // Not a failure. A short-form record contradicts nothing; there is simply
-      // nothing declared to check it against, and saying so is more honest than
-      // showing a blank or implying the number is unverified because it is wrong.
-      fields["verify-output"].textContent =
-        "Short form: no source and reference temperatures declared, so this record cannot be re-derived by a reader.";
-    }
-  }
   if (hasField("work-output")) fields["work-output"].textContent = `${formatDisplayEnergy(exergyInInputUnit)} ${exergyUnit}`;
   if (hasField("exergy-output")) fields["exergy-output"].textContent = `${formatDisplayEnergy(exergyInInputUnit)} ${exergyUnit}`;
   if (hasField("method-output")) fields["method-output"].textContent = method;
