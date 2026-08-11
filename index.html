@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Compare Energy Forms | Exergy Factor</title>
+    <title>Energy Quality Calculator | Exergy Factor</title>
     <meta
       name="description"
-      content="Compare typed energy quantities using Exergy Factor so different energy forms can be evaluated by accessible exergy."
+      content="A simple calculator for converting energy quantities into typed Exergy Factor notation and accessible exergy."
     />
     <link rel="canonical" href="https://exergyfactor.com/" />
     <link rel="stylesheet" href="styles.css?v=20260519a" />
@@ -18,8 +18,8 @@
         <span>Exergy Factor</span>
       </a>
       <nav aria-label="Page navigation">
-        <a href="index.html" aria-current="page">Compare</a>
-        <a href="calculate.html">Calculate</a>
+        <a href="index.html" aria-current="page">Calculate</a>
+        <a href="compare.html">Compare</a>
         <a href="methodology.html">Methodology</a>
         <a href="api-key.html">API Key</a>
         <a href="paper/quantity-and-quality-standard-reporting-framework.pdf">Paper</a>
@@ -27,32 +27,32 @@
     </header>
 
     <main>
-      <section id="compare" class="hero">
+      <section id="calculator" class="hero">
         <div class="intro">
-          <p class="eyebrow">Comparison tool</p>
-          <h1>Compare different forms of energy to each other.</h1>
+          <p class="eyebrow">A Framework for Energy Quantity and Energy Quality</p>
+          <h1>Work out the Exergy Factor of your energy.</h1>
           <p>
-            Two forms of energy can have the same quantity but very different abilities to do useful work. This tool compares their energy quantity and Exergy Factor to show how much accessible exergy each record carries.
+            Enter what you already have — the carrier, the quantity, and the temperatures if it is heat or cooling. The calculator works out the Exergy Factor and the accessible exergy for you.
           </p>
         </div>
 
-        <section class="compare-panel tool-card" aria-label="Compare energy forms">
-          <div class="compare-head">
+        <section class="calculator-panel tool-card" aria-label="Exergy Factor calculator">
+          <div class="panel-head">
             <div>
-              <h2>Energy Quality Comparison Tool</h2>
+              <h2>Energy Quality Calculator</h2>
             </div>
           </div>
 
-          <div class="compare-rows">
-            <div class="compare-row" data-compare-row="a">
-              <div class="compare-side-label" aria-hidden="true">A</div>
+          <form id="calculator-form">
+            <section class="input-section required-inputs">
+              <h3>Required Inputs</h3>
               <div class="field-row">
                 <div class="field-label">
-                  <label for="compare-a-preset">Energy Form</label>
-                  <button class="info-button" type="button" aria-label="Comparison A energy form help" data-tooltip="Choose the first energy form you want to compare. Example: Electricity, 150 °C steam, Natural gas HHV, or Custom. This sets the reference Exergy Factor and typed carrier suffix unless you edit it.">ⓘ</button>
+                  <label for="energy-form">Energy Form</label>
+                  <button class="info-button" type="button" aria-label="Energy form help" data-tooltip="What kind of energy is being reported. Choose the closest match from the list, such as Electricity, 150 °C steam, Natural gas HHV, or Crude oil. This selects the reference Exergy Factor and typed carrier suffix unless you provide an optional override.">ⓘ</button>
                 </div>
-                <select id="compare-a-preset" aria-label="Comparison A energy form">
-                  <option value="electricity">Electricity</option>
+                <select id="energy-form" aria-label="Energy form or reporting basis">
+                  <option value="electricity" selected>Electricity</option>
                   <option value="heat">Heat</option>
                   <option value="cooling">Cooling</option>
                   <option value="naturalGasHhv">Natural gas HHV</option>
@@ -64,22 +64,15 @@
                   <option value="coalLhv">Coal LHV</option>
                   <option value="crudeOil">Crude oil</option>
                   <option value="solar">Solar radiation</option>
-                  <option value="custom">Custom</option>
                 </select>
               </div>
+
               <div class="field-row">
                 <div class="field-label">
-                  <label for="compare-a-quantity">Quantity</label>
-                  <button class="info-button" type="button" aria-label="Comparison A quantity help" data-tooltip="Enter the amount of energy for side A. Use the number from your meter, invoice, model, or dataset. Example: 1 for 1 MWh, 500 for 500 kWh, or 2.738 for 2.738 GJ.">ⓘ</button>
+                  <label for="energy-unit">Unit</label>
+                  <button class="info-button" type="button" aria-label="Unit help" data-tooltip="The base unit used by your meter, invoice, model, or dataset. The calculator adds the typed suffix in the result, such as MWh_e, MWh_th, MWh_solar, or MWh_HHV_NG.">ⓘ</button>
                 </div>
-                <input id="compare-a-quantity" type="number" min="0" step="any" value="1" aria-label="Comparison A quantity" />
-              </div>
-              <div class="field-row">
-                <div class="field-label">
-                  <label for="compare-a-unit">Unit</label>
-                  <button class="info-button" type="button" aria-label="Comparison A unit help" data-tooltip="Select the base unit for side A. The result adds the typed suffix, such as MWh_e, MWh_th, or MWh_HHV_NG.">ⓘ</button>
-                </div>
-                <select id="compare-a-unit" aria-label="Comparison A unit">
+                <select id="energy-unit" aria-label="Energy quantity unit">
                   <option value="J">J</option>
                   <option value="kJ">kJ</option>
                   <option value="MJ">MJ</option>
@@ -100,125 +93,87 @@
                   <option value="Mcf(natural gas)">Mcf(natural gas)</option>
                   <option value="MMcf(natural gas)">MMcf(natural gas)</option>
                 </select>
+                <!-- Only for the fuel-volume units, which need a heating value to
+                     become energy at all. A line of text rather than a locked
+                     input: the value is not something to fill in, so presenting it
+                     as an empty-looking field asks a question it does not have. -->
+                <p class="input-note" id="fixed-note" hidden></p>
               </div>
+
               <div class="field-row">
                 <div class="field-label">
-                  <label for="compare-a-factor">Exergy Factor</label>
-                  <button class="info-button" type="button" aria-label="Comparison A Exergy Factor help" data-tooltip="The quality multiplier for side A. Presets fill this automatically, but you can edit it for a custom basis. Example: 1 for electricity, 0.17 for 80 °C hot water, or 0.73 for a custom record.">ⓘ</button>
+                  <label for="energy-value">Quantity</label>
+                  <button class="info-button" type="button" aria-label="Quantity help" data-tooltip="The numerical amount of energy you want to report. Use the value you already have before converting it into Exergy Factor notation. Example: enter 1 for 1 MWh, 45 for 45 Btu, or 2.738 for 2.738 kWh.">ⓘ</button>
                 </div>
-                <input id="compare-a-factor" type="number" min="0" step="any" value="1" aria-label="Comparison A Exergy Factor" />
+                <input id="energy-value" type="number" min="0" step="any" value="1" inputmode="decimal" />
               </div>
-            </div>
 
-            <div class="compare-row" data-compare-row="b">
-              <div class="compare-side-label" aria-hidden="true">B</div>
+              <!-- The two temperatures sit together, and there is no longer an
+                   Exergy Factor input above them. The factor is what this tool
+                   works out; asking for it made the calculator pointless for the
+                   person it is for, and the "Optional Inputs" section it lived in
+                   is gone with it. -->
               <div class="field-row">
-                <div class="field-label visually-hidden">
-                  <label for="compare-b-preset">Energy Form</label>
-                  <button class="info-button" type="button" aria-label="Comparison B energy form help" data-tooltip="Choose the second energy form you want to compare. Example: Electricity, 80 °C hot water, hydrogen HHV, or Custom. This sets the reference Exergy Factor and typed carrier suffix unless you edit it.">ⓘ</button>
+                <div class="field-label">
+                  <label for="source-temp">Source Temperature</label>
+                  <button class="info-button" type="button" aria-label="Source temperature help" data-tooltip="The temperature your heat is delivered at: hot water supply, steam, flue gas, or process stream. Enter it for Heat or Cooling; it is what sets the Exergy Factor. Example: 80 for 80 °C hot water.">ⓘ</button>
                 </div>
-                <select id="compare-b-preset" aria-label="Comparison B energy form">
-                  <option value="electricity">Electricity</option>
-                  <option value="heat">Heat</option>
-                  <option value="cooling">Cooling</option>
-                  <option value="naturalGasHhv">Natural gas HHV</option>
-                  <option value="naturalGasLhv">Natural gas LHV</option>
-                  <option value="hydrogen">Hydrogen HHV</option>
-                  <option value="hydrogenLhv">Hydrogen LHV</option>
-                  <option value="dieselLhv">Diesel LHV</option>
-                  <option value="gasolineLhv">Gasoline LHV</option>
-                  <option value="coalLhv">Coal LHV</option>
-                  <option value="crudeOil">Crude oil</option>
-                  <option value="solar">Solar radiation</option>
-                  <option value="custom">Custom</option>
-                </select>
-              </div>
-              <div class="field-row">
-                <div class="field-label visually-hidden">
-                  <label for="compare-b-quantity">Quantity</label>
-                  <button class="info-button" type="button" aria-label="Comparison B quantity help" data-tooltip="Enter the amount of energy for side B. Use the number from your meter, invoice, model, or dataset. Example: 1 for 1 MWh, 45 for 45 Btu, or 2.738 for 2.738 kWh.">ⓘ</button>
+                <div class="input-pair">
+                  <input id="source-temp" type="number" step="any" inputmode="decimal" placeholder="80" />
+                  <select id="source-unit" aria-label="Temperature source unit">
+                    <option value="C" selected>°C</option>
+                    <option value="F">°F</option>
+                    <option value="K">K</option>
+                  </select>
                 </div>
-                <input id="compare-b-quantity" type="number" min="0" step="any" value="1" aria-label="Comparison B quantity" />
               </div>
-              <div class="field-row">
-                <div class="field-label visually-hidden">
-                  <label for="compare-b-unit">Unit</label>
-                  <button class="info-button" type="button" aria-label="Comparison B unit help" data-tooltip="Select the base unit for side B. The result adds the typed suffix, such as MWh_e, MWh_th, or MWh_HHV_NG.">ⓘ</button>
-                </div>
-                <select id="compare-b-unit" aria-label="Comparison B unit">
-                  <option value="J">J</option>
-                  <option value="kJ">kJ</option>
-                  <option value="MJ">MJ</option>
-                  <option value="GJ">GJ</option>
-                  <option value="TJ">TJ</option>
-                  <option value="EJ">EJ</option>
-                  <option value="Wh">Wh</option>
-                  <option value="kWh">kWh</option>
-                  <option value="MWh" selected>MWh</option>
-                  <option value="GWh">GWh</option>
-                  <option value="Btu">Btu</option>
-                  <option value="MMBtu">MMBtu</option>
-                  <option value="Quad">Quad</option>
-                  <option value="therm">therm</option>
-                  <option value="boe">boe</option>
-                  <option value="bbl(oil)">bbl(oil)</option>
-                  <option value="scf(natural gas)">scf(natural gas)</option>
-                  <option value="Mcf(natural gas)">Mcf(natural gas)</option>
-                  <option value="MMcf(natural gas)">MMcf(natural gas)</option>
-                </select>
-              </div>
-              <div class="field-row">
-                <div class="field-label visually-hidden">
-                  <label for="compare-b-factor">Exergy Factor</label>
-                  <button class="info-button" type="button" aria-label="Comparison B Exergy Factor help" data-tooltip="The quality multiplier for side B. Presets fill this automatically, but you can edit it for a custom basis. Example: 1 for electricity, 0.17 for 80 °C hot water, or 0.73 for a custom record.">ⓘ</button>
-                </div>
-                <input id="compare-b-factor" type="number" min="0" step="any" value="0.17" aria-label="Comparison B Exergy Factor" />
-              </div>
-            </div>
-          </div>
 
-          <div class="compare-result" aria-live="polite">
-            <div class="compare-bars" id="compare-bars"></div>
-          </div>
+              <div class="field-row">
+                <div class="field-label">
+                  <label for="sink-temp">Sink Temperature</label>
+                  <button class="info-button" type="button" aria-label="Sink temperature help" data-tooltip="The reference environment or receiving temperature used for thermal quality. If you do not know the local reference environment, leave the default at 20 °C. Example: ambient air at 20 °C or a known return/condenser temperature.">ⓘ</button>
+                </div>
+                <div class="input-pair">
+                  <input id="sink-temp" type="number" step="any" value="20" inputmode="decimal" />
+                  <select id="sink-unit" aria-label="Temperature sink unit">
+                    <option value="C" selected>°C</option>
+                    <option value="F">°F</option>
+                    <option value="K">K</option>
+                  </select>
+                </div>
+              </div>
 
-          <div class="compare-answers" aria-live="polite">
-            <div class="answer-item">
-              <span class="result-label">Accessible Exergy Ratio</span>
-              <strong id="compare-summary">Electricity carries 5.88x the accessible exergy of 80 °C hot water for these quantities.</strong>
+            </section>
+          </form>
+
+          <section class="calculator-result compare-answers" id="calculator-result" aria-live="polite">
+            <div class="answer-item result-wide">
+              <span class="result-label">Exergy Factor Notation</span>
+              <strong id="notation-output">1 MWh_e, fx = 1.0</strong>
             </div>
-            <div class="answer-item">
-              <span class="result-label">Equivalent Quantity</span>
-              <strong id="compare-equivalence">1 MWh_e of electricity is equivalent to 5.882 MWh_th of 80 °C hot water.</strong>
+            <div class="answer-item result-wide">
+              <span class="result-label">Accessible Exergy</span>
+              <strong id="work-output">1 MWh_ex</strong>
             </div>
-          </div>
+          </section>
         </section>
       </section>
 
-      <section class="section-band">
-        <div class="content-grid">
-          <article>
-            <p class="eyebrow">Why it matters</p>
-            <h2>Equal energy quantities are not always equal in value.</h2>
-            <p>
-              Electricity, high-temperature steam, warm water, hydrogen, and low-grade waste heat can all be written with the same base quantity, but they do not have the same ability to convert that energy into useful work.
-            </p>
-            <p>
-              Exergy Factor adds an additional quality dimension that allows us to determine exactly how much useful work each form of energy can potentially provide.
-            </p>
-          </article>
-          <article>
-            <p class="eyebrow">How to read it</p>
-            <h2>The comparison is not just bigger versus smaller.</h2>
-            <p>
-              The result shows accessible exergy. A smaller quantity with a high Exergy Factor can be more useful than a larger quantity with a low Exergy Factor.
-            </p>
-            <pre><code>Accessible Exergy = Energy Quantity x Exergy Factor</code></pre>
-            <p>
-              This provides an additional layer so that different forms of energy can be analyzed on equivalent thermodynamic terms.
-            </p>
-          </article>
+      <section id="examples" class="section examples-section">
+        <div class="section-heading">
+          <p class="eyebrow">Flexible standard for any use case</p>
+          <h2>Real World Examples:</h2>
+        </div>
+        <div class="example-grid">
+          <button type="button" data-example="electric">1 MWh_e, fx = 1.0</button>
+          <button type="button" data-example="cooling7">1 MWh_cooling, fx = 0.082</button>
+          <button type="button" data-example="heat80">4 MWh_th, fx = 0.170</button>
+          <button type="button" data-example="steam150">0.5 Btu_th, fx = 0.307</button>
+          <button type="button" data-example="methane">1.3 MWh_HHV_NG, fx = 0.930</button>
+          <button type="button" data-example="hydrogen">2.47 MWh_HHV_H2, fx = 0.830</button>
         </div>
       </section>
+
     </main>
 
     <footer class="paper-strip">
