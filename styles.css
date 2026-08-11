@@ -355,11 +355,11 @@ label:hover + .info-button,
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
-/* Two temperatures and the one unit that applies to both. */
-.input-trio {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(76px, 0.5fr);
-  gap: 8px;
+/* Five fields in a two-column grid leave one cell empty wherever they fall. The
+   carrier takes the whole row — it is the widest control and the first decision —
+   so the remaining four pair up evenly: quantity with unit, source with sink. */
+.field-row-wide {
+  grid-column: 1 / -1;
 }
 
 /* A row entering temperatures needs more room in its last column than a single
