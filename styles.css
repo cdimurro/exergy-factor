@@ -433,6 +433,13 @@ select:disabled {
   margin-top: 4px;
 }
 
+/* On the comparison page the two answers are full sentences, so the buttons take
+   their own row and sit at the end of it rather than being squeezed alongside. */
+.export-actions.result-wide {
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
 .export-actions button {
   background: transparent;
   border: 1px solid var(--line);
@@ -637,8 +644,30 @@ button,
   background: #eef8f5;
 }
 
+/* Three across: the notation, the exergy, and the export buttons. The notation
+   gets the extra room because it is much the longest string — a full declaration
+   runs to `100 MWh_th, fx = 0.170 [Th = 80 C, T0 = 20 C]` — and the buttons take
+   only what they need. */
 .calculator-result {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 8px 20px;
+}
+
+/* The notation is the long one and it is the answer, so it keeps the panel's
+   type size while the neighbouring figure gives up a little to make room. */
+.calculator-result .answer-item:nth-child(2) strong {
+  font-size: clamp(0.92rem, 1.7vw, 1.1rem);
+}
+
+/* A long declaration wraps inside its column rather than pushing the row wider. */
+.calculator-result .answer-item strong {
+  overflow-wrap: anywhere;
+}
+
+/* Sit on the text baseline of the other two rather than floating at the top. */
+.calculator-result .export-actions {
+  margin-top: 22px;
 }
 
 .answer-item {
