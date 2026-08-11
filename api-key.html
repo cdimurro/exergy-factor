@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Free API Key | Exergy Factor</title>
+    <meta
+      name="description"
+      content="Request a free Exergy Factor API key for deterministic Quantity and Quality calculations."
+    />
+    <link rel="canonical" href="https://exergyfactor.com/api-key.html" />
+    <link rel="stylesheet" href="styles.css?v=20260519a" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="Exergy Factor calculator">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>Exergy Factor</span>
+      </a>
+      <nav aria-label="Page navigation">
+        <a href="index.html">Calculate</a>
+        <a href="compare.html">Compare</a>
+        <a href="methodology.html">Methodology</a>
+        <a href="api-key.html">API Key</a>
+        <a href="paper/quantity-and-quality-standard-reporting-framework.pdf">Paper</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="page-hero">
+        <p class="eyebrow">Developer API</p>
+        <h1>Get a free Exergy Factor API key.</h1>
+        <p>
+          The API exposes the deterministic Quantity and Quality Python library through HTTPS endpoints for calculators, dashboards, validation tools, and energy reporting workflows.
+        </p>
+      </section>
+
+      <section class="section api-key-section">
+        <div class="api-key-layout">
+          <form id="api-key-form" class="tool-card api-key-form">
+            <div class="panel-head">
+              <div>
+                <h2>Request API Key</h2>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field-label">
+                <label for="api-email">Email</label>
+                <button class="info-button" type="button" aria-label="Email help" data-tooltip="Your free API key will be emailed to this address.">ⓘ</button>
+              </div>
+              <input id="api-email" type="email" autocomplete="email" required placeholder="you@example.com" />
+            </div>
+
+            <div class="field-row">
+              <div class="field-label">
+                <label for="api-name">Name</label>
+              </div>
+              <input id="api-name" type="text" autocomplete="name" placeholder="Optional" />
+            </div>
+
+            <div class="field-row">
+              <div class="field-label">
+                <label for="api-organization">Organization</label>
+              </div>
+              <input id="api-organization" type="text" autocomplete="organization" placeholder="Optional" />
+            </div>
+
+            <div class="field-row">
+              <div class="field-label">
+                <label for="api-intended-use">Use Case</label>
+              </div>
+              <textarea id="api-intended-use" rows="4" placeholder="Optional"></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button class="primary-button" type="submit">Email My Free Key</button>
+            </div>
+
+            <div class="api-status" id="api-key-status" aria-live="polite">
+              Enter your email address to request a key.
+            </div>
+            <code class="api-dev-key" id="api-key-dev-output" hidden></code>
+          </form>
+
+          <aside class="api-info">
+            <p class="eyebrow">What the API Provides</p>
+            <h2>Deterministic endpoints for the standard.</h2>
+            <p>
+              API calls return the same fields produced by the Python package: typed notation, Exergy Factor, accessible exergy, Fidelity Tier, basis, boundary, and conformance information.
+            </p>
+            <pre><code>POST /v1/calc/thermal
+GET  /v1/registry
+GET  /v1/tiers
+POST /v1/validate
+POST /v1/compare</code></pre>
+            <p>
+              The free key is intended for testing, prototypes, research, and early integrations. Commercial or high-volume use can move to a supported plan later.
+            </p>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <footer class="paper-strip">
+      <div>
+        <h2>Read the full paper</h2>
+        <p>
+          The full paper provides the formal reporting framework, reference examples, and thermodynamic basis behind the calculator.
+        </p>
+      </div>
+      <a class="primary-link" href="paper/quantity-and-quality-standard-reporting-framework.pdf">Download the paper</a>
+    </footer>
+
+    <script src="data/reference_examples.js?v=20260519a"></script>
+    <script src="script.js?v=20260519a"></script>
+  </body>
+</html>

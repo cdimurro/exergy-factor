@@ -6,10 +6,10 @@
     <title>Compare Energy Forms | Exergy Factor</title>
     <meta
       name="description"
-      content="Compare energy quantities using Exergy Factor so different energy forms can be evaluated by work potential."
+      content="Compare typed energy quantities using Exergy Factor so different energy forms can be evaluated by accessible exergy."
     />
     <link rel="canonical" href="https://exergyfactor.com/compare.html" />
-    <link rel="stylesheet" href="styles.css?v=20260517ay" />
+    <link rel="stylesheet" href="styles.css?v=20260519a" />
   </head>
   <body>
     <header class="site-header">
@@ -21,6 +21,7 @@
         <a href="index.html">Calculate</a>
         <a href="compare.html">Compare</a>
         <a href="methodology.html">Methodology</a>
+        <a href="api-key.html">API Key</a>
         <a href="paper/quantity-and-quality-standard-reporting-framework.pdf">Paper</a>
       </nav>
     </header>
@@ -31,7 +32,7 @@
           <p class="eyebrow">Comparison tool</p>
           <h1>Compare different forms of energy to each other.</h1>
           <p>
-            Two forms of energy can have the same quantity but very different abilities to do useful work. This tool allows you to compare the quality and quantity of different forms of energy in order to see how much useful work potential they each have.
+            Two forms of energy can have the same quantity but very different abilities to do useful work. This tool compares their energy quantity and Exergy Factor to show how much accessible exergy each record carries.
           </p>
         </div>
 
@@ -48,20 +49,31 @@
               <div class="field-row">
                 <div class="field-label">
                   <label for="compare-a-preset">Energy Form</label>
-                  <button class="info-button" type="button" aria-label="Comparison A energy form help" data-tooltip="Choose the first energy form you want to compare. Example: Electricity, 150 °C steam, Natural gas HHV, or Custom. This sets the reference Exergy Factor unless you edit it.">ⓘ</button>
+                  <button class="info-button" type="button" aria-label="Comparison A energy form help" data-tooltip="Choose the first energy form you want to compare. Example: Electricity, 150 °C steam, Natural gas HHV, or Custom. This sets the reference Exergy Factor and typed carrier suffix unless you edit it.">ⓘ</button>
                 </div>
                 <select id="compare-a-preset" aria-label="Comparison A energy form">
                   <option value="electricity">Electricity</option>
+                  <option value="mechanical">Mechanical shaft work</option>
+                  <option value="pvDc">PV DC output</option>
                   <option value="battery">Battery discharge</option>
+                  <option value="pumpedHydro">Pumped hydro output</option>
                   <option value="solar">Solar radiation</option>
+                  <option value="heat35">35 °C heat</option>
+                  <option value="heat40">40 °C low-grade heat</option>
+                  <option value="heat50">50 °C heat</option>
                   <option value="heat60">60 °C low-grade heat</option>
+                  <option value="heat70">70 °C district heat</option>
                   <option value="heat80">80 °C hot water</option>
+                  <option value="district80to50">80/50 °C district heat</option>
+                  <option value="heat90">90 °C district heat</option>
                   <option value="heat120">120 °C process heat</option>
                   <option value="steam150">150 °C steam</option>
+                  <option value="heat180">180 °C process heat</option>
                   <option value="heat250">250 °C process heat</option>
                   <option value="heat500">500 °C industrial heat</option>
                   <option value="cooling5">5 °C cooling</option>
                   <option value="methane">Methane LHV</option>
+                  <option value="methaneHhv">Methane HHV</option>
                   <option value="naturalGasLhv">Natural gas LHV</option>
                   <option value="naturalGasHhv">Natural gas HHV</option>
                   <option value="dieselLhv">Diesel LHV</option>
@@ -83,7 +95,7 @@
               <div class="field-row">
                 <div class="field-label">
                   <label for="compare-a-unit">Unit</label>
-                  <button class="info-button" type="button" aria-label="Comparison A unit help" data-tooltip="Select the unit for side A. Example: MWh for electricity, Btu for heat, bbl(oil) for crude oil, or scf(natural gas) for natural gas volume.">ⓘ</button>
+                  <button class="info-button" type="button" aria-label="Comparison A unit help" data-tooltip="Select the base unit for side A. The result adds the typed suffix, such as MWh_e, MWh_th, or MWh_HHV_NG.">ⓘ</button>
                 </div>
                 <select id="compare-a-unit" aria-label="Comparison A unit">
                   <option value="J">J</option>
@@ -121,20 +133,31 @@
               <div class="field-row">
                 <div class="field-label visually-hidden">
                   <label for="compare-b-preset">Energy Form</label>
-                  <button class="info-button" type="button" aria-label="Comparison B energy form help" data-tooltip="Choose the second energy form you want to compare. Example: Electricity, 80 °C hot water, hydrogen HHV, or Custom. This sets the reference Exergy Factor unless you edit it.">ⓘ</button>
+                  <button class="info-button" type="button" aria-label="Comparison B energy form help" data-tooltip="Choose the second energy form you want to compare. Example: Electricity, 80 °C hot water, hydrogen HHV, or Custom. This sets the reference Exergy Factor and typed carrier suffix unless you edit it.">ⓘ</button>
                 </div>
                 <select id="compare-b-preset" aria-label="Comparison B energy form">
                   <option value="electricity">Electricity</option>
+                  <option value="mechanical">Mechanical shaft work</option>
+                  <option value="pvDc">PV DC output</option>
                   <option value="battery">Battery discharge</option>
+                  <option value="pumpedHydro">Pumped hydro output</option>
                   <option value="solar">Solar radiation</option>
+                  <option value="heat35">35 °C heat</option>
+                  <option value="heat40">40 °C low-grade heat</option>
+                  <option value="heat50">50 °C heat</option>
                   <option value="heat60">60 °C low-grade heat</option>
+                  <option value="heat70">70 °C district heat</option>
                   <option value="heat80" selected>80 °C hot water</option>
+                  <option value="district80to50">80/50 °C district heat</option>
+                  <option value="heat90">90 °C district heat</option>
                   <option value="heat120">120 °C process heat</option>
                   <option value="steam150">150 °C steam</option>
+                  <option value="heat180">180 °C process heat</option>
                   <option value="heat250">250 °C process heat</option>
                   <option value="heat500">500 °C industrial heat</option>
                   <option value="cooling5">5 °C cooling</option>
                   <option value="methane">Methane LHV</option>
+                  <option value="methaneHhv">Methane HHV</option>
                   <option value="naturalGasLhv">Natural gas LHV</option>
                   <option value="naturalGasHhv">Natural gas HHV</option>
                   <option value="dieselLhv">Diesel LHV</option>
@@ -156,7 +179,7 @@
               <div class="field-row">
                 <div class="field-label visually-hidden">
                   <label for="compare-b-unit">Unit</label>
-                  <button class="info-button" type="button" aria-label="Comparison B unit help" data-tooltip="Select the unit for side B. Example: MWh for electricity, Btu for heat, bbl(oil) for crude oil, or scf(natural gas) for natural gas volume.">ⓘ</button>
+                  <button class="info-button" type="button" aria-label="Comparison B unit help" data-tooltip="Select the base unit for side B. The result adds the typed suffix, such as MWh_e, MWh_th, or MWh_HHV_NG.">ⓘ</button>
                 </div>
                 <select id="compare-b-unit" aria-label="Comparison B unit">
                   <option value="J">J</option>
@@ -196,12 +219,12 @@
 
           <div class="compare-answers" aria-live="polite">
             <div class="answer-item">
-              <span class="result-label">Work Potential Ratio</span>
-              <strong id="compare-summary">Electricity carries 5.88x the work potential of 80 °C hot water for these quantities.</strong>
+              <span class="result-label">Accessible Exergy Ratio</span>
+              <strong id="compare-summary">Electricity carries 5.88x the accessible exergy of 80 °C hot water for these quantities.</strong>
             </div>
             <div class="answer-item">
               <span class="result-label">Equivalent Quantity</span>
-              <strong id="compare-equivalence">1 MWh of electricity is equivalent to 5.882 MWh of 80 °C hot water.</strong>
+              <strong id="compare-equivalence">1 MWh_e of electricity is equivalent to 5.882 MWh_th of 80 °C hot water.</strong>
             </div>
           </div>
         </section>
@@ -213,7 +236,7 @@
             <p class="eyebrow">Why it matters</p>
             <h2>Equal energy quantities are not always equal in value.</h2>
             <p>
-              Eectricity, high-temperature steam, warm water, hydrogen, and low-grade waste heat can all be written as 1 MWh, but they do not have the same ability to convert that MWh into useful work.
+              Electricity, high-temperature steam, warm water, hydrogen, and low-grade waste heat can all be written with the same base quantity, but they do not have the same ability to convert that energy into useful work.
             </p>
             <p>
               Exergy Factor adds an additional quality dimension that allows us to determine exactly how much useful work each form of energy can potentially provide.
@@ -223,11 +246,11 @@
             <p class="eyebrow">How to read it</p>
             <h2>The comparison is not just bigger versus smaller.</h2>
             <p>
-              The result shows work potential. A smaller quantity with a high Exergy Factor can be more useful than a larger quantity with a low Exergy Factor.
+              The result shows accessible exergy. A smaller quantity with a high Exergy Factor can be more useful than a larger quantity with a low Exergy Factor.
             </p>
-            <pre><code>Work Potential = Energy Quantity x Exergy Factor</code></pre>
+            <pre><code>Accessible Exergy = Energy Quantity x Exergy Factor</code></pre>
             <p>
-              This provides an additional layer so that different forms of energy can be analyzed on equivalent thermodynamicterms.
+              This provides an additional layer so that different forms of energy can be analyzed on equivalent thermodynamic terms.
             </p>
           </article>
         </div>
@@ -244,7 +267,7 @@
       <a class="primary-link" href="paper/quantity-and-quality-standard-reporting-framework.pdf">Download the paper</a>
     </footer>
 
-    <script src="data/reference_examples.js?v=20260517ay"></script>
-    <script src="script.js?v=20260517ay"></script>
+    <script src="data/reference_examples.js?v=20260519a"></script>
+    <script src="script.js?v=20260519a"></script>
   </body>
 </html>
