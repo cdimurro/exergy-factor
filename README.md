@@ -24,9 +24,10 @@ Report one extra field alongside the quantity:
 1 MWh_th, fx = 0.170 [Th = 80 C, T0 = 20 C]
 ```
 
-`fx` is the **Exergy Factor**: the fraction of that energy available as useful
-work, against a stated reference environment. It is a number between 0 and 1,
-it is computed from stated conditions rather than assumed, and it makes
+`fx` is the **Exergy Factor**: accessible work potential per unit of energy,
+against a stated reference environment and energy basis. It is nonnegative and
+is often at most 1; chemical exergy divided by an LHV basis can legitimately
+exceed 1. It is computed from stated conditions rather than assumed, making
 electricity, fuels, heat, cooling, and storage comparable on the axis that
 actually determines what they can do.
 
@@ -45,18 +46,27 @@ served directly by GitHub Pages.
 | `compare.html` | Compares two energy forms by accessible exergy in `MWh_ex` |
 | `methodology.html` | The thermodynamic basis, and the limits of the method |
 | `api-key.html` | Request a free API key |
+| `terms.html` | Hosted API terms linked by the key-request contract |
 
 Supported: typed carrier notation (`MWh_e`, `MWh_th`, `MWh_solar`,
 `MWh_HHV_NG`), temperature-based thermal Exergy Factors, cooling services below
 ambient, unit conversion for energy and accessible exergy, and the Carrier
 Registry / Fidelity Tier summaries.
 
-## Related projects
+## One product stack
 
-| | |
+The shared path is: **discover the missing quality field, standardize the
+record, then turn it into an auditable decision.**
+
+| Product | Use it when |
 |---|---|
-| **[quantity-and-quality](https://github.com/cdimurro/quantity-and-quality)** | The Python library and CLI. This site is a thin front end over the same reference data; the library is what you want for batch work, existing datasets, and scripting. |
-| **Paper** | [`paper/quantity-and-quality-standard-reporting-framework.pdf`](paper/quantity-and-quality-standard-reporting-framework.pdf) — the reporting framework this implements. |
+| **[Exergy Factor](https://exergyfactor.com)** | You need a free, no-install calculator for one or a few energy records. |
+| **[Quantity and Quality](https://github.com/cdimurro/quantity-and-quality)** | You need the canonical calculation kernel, CLI, schemas, API, or batch reporting standard. |
+| **[The Exergy Imperative](https://github.com/cdimurro/the-exergy-imperative)** | You need to turn utility or telemetry data into prioritized losses, emissions, health screens, economics, and reports. |
+
+The canonical framework paper lives in
+[Quantity and Quality](https://github.com/cdimurro/quantity-and-quality/blob/main/paper/quantity-and-quality-standard-reporting-framework.pdf);
+this site does not carry a second copy that can become stale.
 
 ## Local preview
 
@@ -76,11 +86,13 @@ this repo checked out alongside it:
 ```bash
 python -m quantity_quality export-web-data \
   --output ../exergy-factor/data/reference_examples.json \
-  --js-output ../exergy-factor/data/reference_examples.js
+  --js-output ../exergy-factor/data/reference_examples.js \
+  --contract-output ../exergy-factor/data/conformance_contract_v1.json
 ```
 
-Commit the regenerated `data/` files together with whatever library change
-caused them to move.
+CI regenerates and compares all three files against the canonical package. It
+also runs the shared valid-input, invalid-input, notation, and numerical
+tolerance cases against the browser kernel.
 
 ## API endpoint
 

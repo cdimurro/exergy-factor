@@ -1,6 +1,12 @@
 {
   "schema_version": "exergy_factor_web_data_v1",
   "source": "quantity-quality bundled reference_examples.json",
+  "source_version": "quantity-and-quality@0.13.0",
+  "source_sha256": "1516296fb21ead8800099b3d87d0f12ca290b6c4e9766d490936f81f1459b7da",
+  "conformance_contract": {
+    "schema_version": "exergy_conformance_contract_v1",
+    "sha256": "e91ed6d212d8cda20b7ef91610bf865b083b7cc695ff9f555a61293cdc13e241"
+  },
   "presets": {
     "electricity": {
       "key": "electricity",
@@ -627,6 +633,22 @@
       "core": true
     },
     {
+      "suffix": "_em",
+      "meaning": "stored or transmitted electromagnetic field energy",
+      "family": "electromagnetic",
+      "reporting_implication": "Use for field energy or Poynting flux at a declared boundary; incoherent photon radiation is reported as _rad.",
+      "required_metadata": [
+        "field or flux model",
+        "boundary",
+        "material model when applicable"
+      ],
+      "examples": [
+        "kWh_em",
+        "J_em"
+      ],
+      "core": true
+    },
+    {
       "suffix": "_th",
       "meaning": "thermal energy",
       "family": "thermal",
@@ -654,6 +676,37 @@
       "examples": [
         "MWh_solar",
         "W_solar"
+      ],
+      "core": true
+    },
+    {
+      "suffix": "_rad",
+      "meaning": "non-solar radiation",
+      "family": "radiative",
+      "reporting_implication": "Use for a declared blackbody, coherent, or spectral radiation model; source state and receiving boundary are required.",
+      "required_metadata": [
+        "radiation model",
+        "source state",
+        "receiving boundary"
+      ],
+      "examples": [
+        "MWh_rad",
+        "W_rad"
+      ],
+      "core": true
+    },
+    {
+      "suffix": "_cooling",
+      "meaning": "cooling-service heat removal",
+      "family": "thermal service",
+      "reporting_implication": "A service-demand quantity rather than stored cold; quality depends on cold and heat-rejection temperatures.",
+      "required_metadata": [
+        "cold-service temperature",
+        "heat-rejection temperature"
+      ],
+      "examples": [
+        "MWh_cooling",
+        "ton_hour_cooling"
       ],
       "core": true
     },
@@ -888,6 +941,141 @@
       "core": true
     },
     {
+      "suffix": "_LHV_biomass",
+      "meaning": "biomass on LHV basis",
+      "family": "chemical",
+      "reporting_implication": "Moisture, ash, feedstock class, and as-received versus dry basis must be explicit.",
+      "required_metadata": [
+        "LHV basis",
+        "moisture content",
+        "feedstock class"
+      ],
+      "examples": [
+        "MWh_LHV_biomass"
+      ],
+      "core": true
+    },
+    {
+      "suffix": "_HHV_biogas",
+      "meaning": "biogas mixture on HHV basis",
+      "family": "chemical",
+      "reporting_implication": "Methane, carbon-dioxide, moisture, and contaminant composition determine both quantity and quality.",
+      "required_metadata": [
+        "HHV basis",
+        "composition",
+        "chemical-exergy table"
+      ],
+      "examples": [
+        "MWh_HHV_biogas"
+      ],
+      "core": true
+    },
+    {
+      "suffix": "_LHV_biogas",
+      "meaning": "biogas mixture on LHV basis",
+      "family": "chemical",
+      "reporting_implication": "Use only with declared composition and LHV denominator.",
+      "required_metadata": [
+        "LHV basis",
+        "composition",
+        "chemical-exergy table"
+      ],
+      "examples": [
+        "MWh_LHV_biogas"
+      ],
+      "core": true
+    },
+    {
+      "suffix": "_HHV_syngas",
+      "meaning": "synthesis-gas mixture on HHV basis",
+      "family": "chemical",
+      "reporting_implication": "Composition and water content are required because syngas is not a fixed substance.",
+      "required_metadata": [
+        "HHV basis",
+        "composition",
+        "chemical-exergy table"
+      ],
+      "examples": [
+        "MWh_HHV_syngas"
+      ],
+      "core": true
+    },
+    {
+      "suffix": "_LHV_syngas",
+      "meaning": "synthesis-gas mixture on LHV basis",
+      "family": "chemical",
+      "reporting_implication": "Composition and LHV basis must travel with the quantity.",
+      "required_metadata": [
+        "LHV basis",
+        "composition",
+        "chemical-exergy table"
+      ],
+      "examples": [
+        "MWh_LHV_syngas"
+      ],
+      "core": true
+    },
+    {
+      "suffix": "_HHV_C2H5OH",
+      "meaning": "ethanol on HHV basis",
+      "family": "chemical",
+      "reporting_implication": "Purity, water content, and blend fraction remain metadata.",
+      "required_metadata": [
+        "HHV basis",
+        "purity",
+        "chemical-exergy table"
+      ],
+      "examples": [
+        "MWh_HHV_C2H5OH"
+      ],
+      "core": true
+    },
+    {
+      "suffix": "_LHV_C2H5OH",
+      "meaning": "ethanol on LHV basis",
+      "family": "chemical",
+      "reporting_implication": "Purity, water content, and blend fraction remain metadata.",
+      "required_metadata": [
+        "LHV basis",
+        "purity",
+        "chemical-exergy table"
+      ],
+      "examples": [
+        "MWh_LHV_C2H5OH"
+      ],
+      "core": true
+    },
+    {
+      "suffix": "_LHV_CH3OH",
+      "meaning": "methanol on LHV basis",
+      "family": "chemical",
+      "reporting_implication": "Purity and water content should be declared when material.",
+      "required_metadata": [
+        "LHV basis",
+        "purity",
+        "chemical-exergy table"
+      ],
+      "examples": [
+        "MWh_LHV_CH3OH"
+      ],
+      "core": true
+    },
+    {
+      "suffix": "_LHV_NH3",
+      "meaning": "ammonia on LHV basis",
+      "family": "chemical",
+      "reporting_implication": "Purity, cracking pathway, and nitrogen reference environment remain metadata.",
+      "required_metadata": [
+        "LHV basis",
+        "purity",
+        "chemical-exergy table"
+      ],
+      "examples": [
+        "MWh_LHV_NH3"
+      ],
+      "core": true
+    },
+    {
       "suffix": "_fission",
       "meaning": "nuclear fission energy potential",
       "family": "nuclear",
@@ -900,6 +1088,84 @@
       ],
       "examples": [
         "MWh_fission"
+      ],
+      "core": true
+    },
+    {
+      "suffix": "_nuclear",
+      "meaning": "total released nuclear-reaction product energy",
+      "family": "nuclear",
+      "reporting_implication": "Use only at a reaction-product boundary with a declared Q-value and product-channel accounting.",
+      "required_metadata": [
+        "reaction",
+        "Q-value",
+        "reaction count or extent",
+        "product channels"
+      ],
+      "examples": [
+        "MWh_nuclear"
+      ],
+      "core": true
+    },
+    {
+      "suffix": "_neutron",
+      "meaning": "neutron kinetic-energy stream",
+      "family": "nuclear particle",
+      "reporting_implication": "Neutrons are particles, not electromagnetic radiation; transport and deposition belong in downstream process records.",
+      "required_metadata": [
+        "energy spectrum or reaction channel",
+        "boundary"
+      ],
+      "examples": [
+        "MWh_neutron"
+      ],
+      "core": true
+    },
+    {
+      "suffix": "_charged_particle",
+      "meaning": "charged-particle kinetic-energy stream",
+      "family": "nuclear particle",
+      "reporting_implication": "Use for alpha, proton, ion, or other charged-particle kinetic energy at its physical boundary.",
+      "required_metadata": [
+        "particle species",
+        "energy spectrum or reaction channel",
+        "boundary"
+      ],
+      "examples": [
+        "MWh_charged_particle"
+      ],
+      "core": true
+    },
+    {
+      "suffix": "_neutrino",
+      "meaning": "neutrino energy stream",
+      "family": "nuclear particle",
+      "reporting_implication": "Physical energy may leave the boundary while practical capture is negligible; the declared factor must match that boundary.",
+      "required_metadata": [
+        "reaction channel",
+        "boundary",
+        "declared accessibility convention"
+      ],
+      "examples": [
+        "MWh_neutrino"
+      ],
+      "core": true
+    },
+    {
+      "suffix": "_plasma",
+      "meaning": "plasma state energy inventory",
+      "family": "plasma",
+      "reporting_implication": "A composite inventory of declared species, distributions, motion, internal state, and optional field energy.",
+      "required_metadata": [
+        "species",
+        "distribution model",
+        "reference state",
+        "volume",
+        "boundary"
+      ],
+      "examples": [
+        "kWh_plasma",
+        "MJ_plasma"
       ],
       "core": true
     }

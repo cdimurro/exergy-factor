@@ -800,7 +800,7 @@ pre {
 
 .link-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
   max-width: 1120px;
   margin: 0 auto;
@@ -861,6 +861,27 @@ pre {
 
 .api-key-form {
   align-self: start;
+}
+
+.terms-consent {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.terms-consent input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--teal-deep);
+}
+
+.terms-consent a {
+  color: var(--teal-deep);
 }
 
 .api-status {
