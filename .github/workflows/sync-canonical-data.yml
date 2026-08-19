@@ -1,0 +1,58 @@
+name: Sync canonical data
+
+on:
+  schedule:
+    - cron: "23 8 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out website
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Check out canonical Quantity and Quality source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: cdimurro/quantity-and-quality
+          path: canonical
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: Regenerate browser data and contract
+        run: |
+          python -m pip install ./canonical
+          python -m quantity_quality export-web-data \
+            --output data/reference_examples.json \
+            --js-output data/reference_examples.js \
+            --contract-output data/conformance_contract_v1.json
+      - name: Test regenerated browser contract
+        run: node --test tests/*.test.mjs
+      - name: Open or update synchronization pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if git diff --quiet -- data; then
+            echo "Canonical browser data is already current."
+            exit 0
+          fi
+          branch="automation/quantity-quality-sync"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -C "$branch"
+          git add data/reference_examples.json data/reference_examples.js data/conformance_contract_v1.json
+          git commit -m "Sync canonical Quantity and Quality data"
+          git push --force-with-lease origin "HEAD:$branch"
+          if gh pr view "$branch" --json url >/dev/null 2>&1; then
+            gh pr edit "$branch" --title "Sync canonical Quantity and Quality data" --body "Automated refresh of browser reference data, source hashes, and the shared conformance contract."
+          else
+            gh pr create --base main --head "$branch" --title "Sync canonical Quantity and Quality data" --body "Automated refresh of browser reference data, source hashes, and the shared conformance contract."
+          fi

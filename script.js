@@ -20,6 +20,100 @@ const ENERGY_TO_J = {
   "MMcf(natural gas)": 1.05505585262e12,
 };
 
+// This small pure kernel is exercised against the versioned conformance
+// contract published by quantity-and-quality. UI code calls the same functions,
+// so a browser result cannot quietly diverge from the Python implementations.
+function finiteNumber(value, name) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) throw new RangeError(`${name} must be finite`);
+  return number;
+}
+
+function thermalExergyFactorC(sourceC, referenceC) {
+  const sourceK = finiteNumber(sourceC, "source_c") + 273.15;
+  const referenceK = finiteNumber(referenceC, "reference_c") + 273.15;
+  if (sourceK <= 0 || referenceK <= 0) throw new RangeError("temperatures must be above absolute zero");
+  if (sourceK < referenceK) throw new RangeError("source temperature must not be below reference temperature");
+  return 1 - referenceK / sourceK;
+}
+
+function coolingExergyFactorC(coldC, ambientC) {
+  const coldK = finiteNumber(coldC, "cold_c") + 273.15;
+  const ambientK = finiteNumber(ambientC, "ambient_c") + 273.15;
+  if (coldK <= 0 || ambientK <= 0) throw new RangeError("temperatures must be above absolute zero");
+  if (coldK > ambientK) throw new RangeError("cold service temperature must not exceed ambient temperature");
+  return ambientK / coldK - 1;
+}
+
+function sensibleHeatExergyFactorC(supplyC, returnC, referenceC) {
+  const supplyK = finiteNumber(supplyC, "supply_c") + 273.15;
+  const returnK = finiteNumber(returnC, "return_c") + 273.15;
+  const referenceK = finiteNumber(referenceC, "reference_c") + 273.15;
+  if (Math.min(supplyK, returnK, referenceK) <= 0) throw new RangeError("temperatures must be above absolute zero");
+  if (supplyK <= returnK) throw new RangeError("supply temperature must exceed return temperature");
+  const relativeLift = (supplyK - returnK) / returnK;
+  let correction;
+  if (relativeLift < 1e-4) {
+    correction = relativeLift * (0.5 + relativeLift * (-1 / 3 + relativeLift * (0.25 - relativeLift / 5)));
+  } else {
+    correction = 1 - Math.log1p(relativeLift) / relativeLift;
+  }
+  const factor = (returnK - referenceK) / returnK + (referenceK / returnK) * correction;
+  if (factor < -1e-12) throw new RangeError("reference state produces negative sensible-heat exergy");
+  return Math.max(0, factor);
+}
+
+function petelaExergyFactor(referenceK = 293.15, radiationTemperatureK = 5778) {
+  const reference = finiteNumber(referenceK, "reference_k");
+  const radiation = finiteNumber(radiationTemperatureK, "radiation_temperature_k");
+  if (reference <= 0 || radiation <= 0) throw new RangeError("temperatures must be positive");
+  if (reference > radiation) throw new RangeError("reference temperature must not exceed radiation temperature");
+  const ratio = reference / radiation;
+  return 1 - (4 / 3) * ratio + (1 / 3) * ratio ** 4;
+}
+
+function accessibleExergy(energy, exergyFactor) {
+  const quantity = finiteNumber(energy, "energy");
+  const factor = finiteNumber(exergyFactor, "exergy_factor");
+  if (quantity < 0 || factor < 0) throw new RangeError("energy and exergy factor must be nonnegative");
+  return quantity * factor;
+}
+
+function weightedExergyFactor(records) {
+  if (!Array.isArray(records)) throw new TypeError("records must be an array");
+  let energy = 0;
+  let exergy = 0;
+  records.forEach(([weightValue, factorValue]) => {
+    const weight = finiteNumber(weightValue, "weight");
+    const factor = finiteNumber(factorValue, "exergy_factor");
+    if (weight < 0 || factor < 0) throw new RangeError("weights and factors must be nonnegative");
+    energy += weight;
+    exergy += weight * factor;
+  });
+  if (energy <= 0) throw new RangeError("at least one positive weight is required");
+  return exergy / energy;
+}
+
+function formatEnergyNotation(quantityValue, unit, exergyFactor, precision = 3) {
+  const quantity = finiteNumber(quantityValue, "quantity");
+  const factor = finiteNumber(exergyFactor, "exergy_factor");
+  if (quantity < 0 || factor < 0) throw new RangeError("quantity and exergy factor must be nonnegative");
+  if (!unit) throw new TypeError("unit is required");
+  const quantityText = quantity.toFixed(precision).replace(/\.?0+$/, "") || "0";
+  const factorText = Number.isInteger(factor) ? factor.toFixed(1) : factor.toFixed(precision);
+  return `${quantityText} ${unit}, fx = ${factorText}`;
+}
+
+window.EXERGY_FACTOR_KERNEL = Object.freeze({
+  thermal_exergy_factor_c: thermalExergyFactorC,
+  cooling_exergy_factor_c: coolingExergyFactorC,
+  sensible_heat_exergy_factor_c: sensibleHeatExergyFactorC,
+  petela_exergy_factor: petelaExergyFactor,
+  accessible_exergy: accessibleExergy,
+  weighted_exergy_factor: weightedExergyFactor,
+  format_energy_notation: formatEnergyNotation,
+});
+
 function apiBaseUrl() {
   if (window.EXERGY_FACTOR_API_BASE_URL) return String(window.EXERGY_FACTOR_API_BASE_URL).replace(/\/$/, "");
   if (window.location && ["localhost", "127.0.0.1"].includes(window.location.hostname)) {
@@ -164,6 +258,7 @@ function cacheFields() {
     "api-name",
     "api-organization",
     "api-intended-use",
+    "api-accept-terms",
     "api-key-status",
     "api-key-dev-output",
     "export-csv",
@@ -245,7 +340,7 @@ function declarationBracket({ preset, sourceC, sinkC, coldC }) {
   if (Number.isFinite(coldC) && Number.isFinite(sinkC)) {
     return ` [Tcold = ${formatBracketTemp(coldC)}, T0 = ${formatBracketTemp(sinkC)}]`;
   }
-  if (Number.isFinite(sourceC) && Number.isFinite(sinkC) && sourceC > sinkC) {
+  if (Number.isFinite(sourceC) && Number.isFinite(sinkC) && sourceC >= sinkC) {
     return ` [Th = ${formatBracketTemp(sourceC)}, T0 = ${formatBracketTemp(sinkC)}]`;
   }
   const basis = /_(HHV|LHV)_/.exec(preset?.typedUnit || "");
@@ -349,10 +444,14 @@ function thermalFactorFromTemperatures(sourceValue, sourceUnit, sinkValue, sinkU
   const hasSinkTemp = String(sinkValue).trim() !== "";
   const sourceK = tempToK(sourceValue, sourceUnit);
   const sinkK = tempToK(sinkValue, sinkUnit);
-  if (!hasSinkTemp || !Number.isFinite(sourceK) || !Number.isFinite(sinkK) || sourceK <= 0 || sinkK <= 0 || sourceK <= sinkK) {
+  if (!hasSinkTemp || !Number.isFinite(sourceK) || !Number.isFinite(sinkK)) {
     return NaN;
   }
-  return 1 - sinkK / sourceK;
+  try {
+    return thermalExergyFactorC(sourceK - 273.15, sinkK - 273.15);
+  } catch (_error) {
+    return NaN;
+  }
 }
 
 function calculateFactor() {
@@ -369,11 +468,11 @@ function calculateFactor() {
       if (!Number.isFinite(coldC) || !Number.isFinite(ambientC)) {
         return { factor: NaN, method: "Enter the temperature you are cooling to, and the ambient you reject heat to.", tier: "F2" };
       }
-      if (coldC >= ambientC) {
-        return { factor: NaN, method: "A cooling service has to be colder than the ambient it is rejected to.", tier: "F2" };
+      if (coldC > ambientC) {
+        return { factor: NaN, method: "A cooling service cannot be warmer than the ambient it is rejected to.", tier: "F2" };
       }
       return {
-        factor: (ambientC + 273.15) / (coldC + 273.15) - 1,
+        factor: coolingExergyFactorC(coldC, ambientC),
         method: "F2 cooling factor from your service and ambient temperatures.",
         tier: "F2",
         coldC,
@@ -389,7 +488,7 @@ function calculateFactor() {
         sinkUnit(),
       );
       if (!Number.isFinite(factor)) {
-        return { factor: NaN, method: "Enter source and sink temperatures with source greater than sink.", tier: "F2" };
+        return { factor: NaN, method: "Enter source and sink temperatures with source at least as warm as sink.", tier: "F2" };
       }
       // Carry the temperatures out with the factor. Without them the caller can
       // only print the short form, which is why this calculator published records
@@ -435,7 +534,7 @@ function calculateFactor() {
       sinkUnit(),
     );
     if (!hasSinkTemp || !Number.isFinite(factor)) {
-      return { factor: NaN, method: "Enter source and sink temperatures with source greater than sink.", tier: "F2" };
+      return { factor: NaN, method: "Enter source and sink temperatures with source at least as warm as sink.", tier: "F2" };
     }
     fields["exergy-factor"].value = formatFactor(
       fields["factor-unit"].value === "percent" ? factor * 100 : factor,
@@ -492,14 +591,14 @@ function compareRowTemperatures(side, preset) {
   const sourceC = Number(fields[`compare-${side}-source`]?.value);
   const sinkC = Number(fields[`compare-${side}-sink`]?.value);
   if (!Number.isFinite(sourceC) || !Number.isFinite(sinkC)) return { factor: NaN };
-  const sourceK = sourceC + 273.15;
-  const sinkK = sinkC + 273.15;
-  if (preset.needsTemperature === "cooling") {
-    if (sourceC >= sinkC) return { factor: NaN };
-    return { factor: sinkK / sourceK - 1, coldC: sourceC, sinkC };
+  try {
+    if (preset.needsTemperature === "cooling") {
+      return { factor: coolingExergyFactorC(sourceC, sinkC), coldC: sourceC, sinkC };
+    }
+    return { factor: thermalExergyFactorC(sourceC, sinkC), sourceC, sinkC };
+  } catch (_error) {
+    return { factor: NaN };
   }
-  if (sourceC <= sinkC) return { factor: NaN };
-  return { factor: 1 - sinkK / sourceK, sourceC, sinkC };
 }
 
 function compareRow(side) {
@@ -992,6 +1091,7 @@ async function requestApiKey(event) {
     name: fields["api-name"]?.value.trim() || "",
     organization: fields["api-organization"]?.value.trim() || "",
     intended_use: fields["api-intended-use"]?.value.trim() || "",
+    accept_terms: Boolean(fields["api-accept-terms"]?.checked),
   };
 
   try {
