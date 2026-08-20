@@ -2,14 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; connect-src 'self' http://127.0.0.1:8000 https://api.exergyfactor.com; base-uri 'none'; form-action 'self'" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Free API Key | Exergy Factor</title>
+    <title>API Preview | Exergy Factor</title>
     <meta
       name="description"
-      content="Request a free Exergy Factor API key for deterministic Quantity and Quality calculations."
+      content="Preview the deterministic Exergy Factor API and run it locally with the Quantity and Quality package."
     />
     <link rel="canonical" href="https://exergyfactor.com/api-key.html" />
-    <link rel="stylesheet" href="styles.css?v=20260818b" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css?v=20260818c" />
   </head>
   <body>
     <header class="site-header">
@@ -21,17 +24,17 @@
         <a href="index.html">Calculate</a>
         <a href="compare.html">Compare</a>
         <a href="methodology.html">Methodology</a>
-        <a href="api-key.html" aria-current="page">API Key</a>
-        <a href="https://github.com/cdimurro/quantity-and-quality/blob/main/paper/quantity-and-quality-standard-reporting-framework.pdf">Paper</a>
+        <a href="api-key.html" aria-current="page">API Preview</a>
+        <a href="paper/quantity-and-quality-standard-reporting-framework.pdf">Paper</a>
       </nav>
     </header>
 
     <main>
       <section class="page-hero">
-        <p class="eyebrow">Developer API</p>
-        <h1>Get a free Exergy Factor API key.</h1>
+        <p class="eyebrow">Developer API Preview</p>
+        <h1>The hosted Exergy Factor API is coming soon.</h1>
         <p>
-          The API exposes the deterministic Quantity and Quality Python library through HTTPS endpoints for calculators, dashboards, validation tools, and energy reporting workflows.
+          The deterministic API is implemented and available for local deployment through the Quantity and Quality Python package. Public hosted access will open after production monitoring and delivery infrastructure are in place.
         </p>
       </section>
 
@@ -40,7 +43,7 @@
           <form id="api-key-form" class="tool-card api-key-form">
             <div class="panel-head">
               <div>
-                <h2>Request API Key</h2>
+                <h2>Hosted Access Preview</h2>
               </div>
             </div>
 
@@ -49,60 +52,62 @@
                 <label for="api-email">Email</label>
                 <button class="info-button" type="button" aria-label="Email help" data-tooltip="Your free API key will be emailed to this address.">ⓘ</button>
               </div>
-              <input id="api-email" type="email" autocomplete="email" required placeholder="you@example.com" />
+              <input id="api-email" type="email" autocomplete="email" maxlength="320" required placeholder="you@example.com" />
             </div>
 
             <div class="field-row">
               <div class="field-label">
                 <label for="api-name">Name</label>
               </div>
-              <input id="api-name" type="text" autocomplete="name" placeholder="Optional" />
+              <input id="api-name" type="text" autocomplete="name" maxlength="200" placeholder="Optional" />
             </div>
 
             <div class="field-row">
               <div class="field-label">
                 <label for="api-organization">Organization</label>
               </div>
-              <input id="api-organization" type="text" autocomplete="organization" placeholder="Optional" />
+              <input id="api-organization" type="text" autocomplete="organization" maxlength="200" placeholder="Optional" />
             </div>
 
             <div class="field-row">
               <div class="field-label">
                 <label for="api-intended-use">Use Case</label>
               </div>
-              <textarea id="api-intended-use" rows="4" placeholder="Optional"></textarea>
+              <textarea id="api-intended-use" rows="4" maxlength="1000" placeholder="Optional"></textarea>
             </div>
 
             <div class="terms-consent">
               <input id="api-accept-terms" type="checkbox" required />
               <label for="api-accept-terms">
-                I agree to the <a href="terms.html" target="_blank" rel="noopener">API Terms of Use</a>.
+                I agree to the <a href="terms.html">Terms</a> and acknowledge the <a href="privacy.html">Privacy Notice</a>.
               </label>
             </div>
 
             <div class="form-actions">
-              <button class="primary-button" type="submit">Email My Free Key</button>
+              <button class="primary-button" type="submit">Request a Free Key</button>
             </div>
 
             <div class="api-status" id="api-key-status" aria-live="polite">
-              Enter your email address to request a key.
+              Hosted API access is coming soon. The Python package and local API are available today.
             </div>
             <code class="api-dev-key" id="api-key-dev-output" hidden></code>
           </form>
 
           <aside class="api-info">
             <p class="eyebrow">What the API Provides</p>
-            <h2>Deterministic endpoints for the standard.</h2>
+            <h2>One stream-calculation contract.</h2>
             <p>
-              API calls return the same fields produced by the Python package: typed notation, Exergy Factor, accessible exergy, Fidelity Tier, basis, boundary, and conformance information.
+              Discover the accepted inputs, then calculate energy quantity, Exergy Factor, and accessible exergy. The same JSON request works through Python, the CLI, and HTTP.
             </p>
-            <pre><code>POST /v1/calc/thermal
-GET  /v1/registry
-GET  /v1/tiers
-POST /v1/validate
-POST /v1/compare</code></pre>
+            <pre><code>GET  /v1/capabilities
+GET  /v1/calculate/schema
+POST /v1/calculate
+GET  /v1/accounting/schema
+POST /v1/account
+GET  /v1/schema
+POST /v1/validate</code></pre>
             <p>
-              The free key is intended for testing, prototypes, research, and early integrations. Commercial or high-volume use can move to a supported plan later.
+              Install <code>quantity-and-quality[api]</code> and run <code>quantity-quality serve-api</code> to evaluate these endpoints locally today. Public key requests remain disabled until the production service is live.
             </p>
           </aside>
         </div>
@@ -115,11 +120,12 @@ POST /v1/compare</code></pre>
         <p>
           The full paper provides the formal reporting framework, reference examples, and thermodynamic basis behind the calculator.
         </p>
+        <p class="legal-links"><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p>
       </div>
-      <a class="primary-link" href="https://github.com/cdimurro/quantity-and-quality/blob/main/paper/quantity-and-quality-standard-reporting-framework.pdf">Read the canonical paper</a>
+      <a class="primary-link" href="paper/quantity-and-quality-standard-reporting-framework.pdf">Download the paper</a>
     </footer>
 
-    <script src="data/reference_examples.js?v=20260818b"></script>
-    <script src="script.js?v=20260818b"></script>
+    <script src="data/reference_examples.js?v=20260818c"></script>
+    <script src="script.js?v=20260818c"></script>
   </body>
 </html>

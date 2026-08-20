@@ -12,12 +12,16 @@ const ENERGY_TO_J = {
   Btu: 1055.05585262,
   MMBtu: 1.05505585262e9,
   Quad: 1.05505585262e18,
-  therm: 105505585.262,
-  boe: 6.1178632e9,
-  "bbl(oil)": 6.1178632e9,
-  "scf(natural gas)": 1.05505585262e6,
-  "Mcf(natural gas)": 1.05505585262e9,
-  "MMcf(natural gas)": 1.05505585262e12,
+  // NIST U.S. legal therm. It intentionally differs slightly from 100,000
+  // International Table Btu.
+  therm: 105480400,
+  // Nominal BOE and pinned EIA 2026 U.S.-average fuel estimates. A measured
+  // heating value is required for a composition-specific result.
+  boe: 5.8 * 1.05505585262e9,
+  "bbl(oil)": 5.689 * 1.05505585262e9,
+  "scf(natural gas)": 1036 * 1055.05585262,
+  "Mcf(natural gas)": 1.036 * 1.05505585262e9,
+  "MMcf(natural gas)": 1036 * 1.05505585262e9,
 };
 
 // This small pure kernel is exercised against the versioned conformance
@@ -119,7 +123,10 @@ function apiBaseUrl() {
   if (window.location && ["localhost", "127.0.0.1"].includes(window.location.hostname)) {
     return "http://127.0.0.1:8000/v1";
   }
-  return "https://api.exergyfactor.com/v1";
+  // The public API is a preview until a production base URL is deliberately
+  // configured. Failing closed avoids collecting form data through a dead or
+  // accidentally claimed hostname.
+  return "";
 }
 
 // These name carriers, so they had to follow the carrier list when it was
@@ -232,6 +239,7 @@ function cacheFields() {
     "sink-unit",
     "calculator-result",
     "notation-output",
+    "fx-output",
     "work-output",
     "exergy-output",
     "method-output",
@@ -340,7 +348,7 @@ function declarationBracket({ preset, sourceC, sinkC, coldC }) {
   if (Number.isFinite(coldC) && Number.isFinite(sinkC)) {
     return ` [Tcold = ${formatBracketTemp(coldC)}, T0 = ${formatBracketTemp(sinkC)}]`;
   }
-  if (Number.isFinite(sourceC) && Number.isFinite(sinkC) && sourceC >= sinkC) {
+  if (Number.isFinite(sourceC) && Number.isFinite(sinkC) && sourceC > sinkC) {
     return ` [Th = ${formatBracketTemp(sourceC)}, T0 = ${formatBracketTemp(sinkC)}]`;
   }
   const basis = /_(HHV|LHV)_/.exec(preset?.typedUnit || "");
@@ -375,7 +383,8 @@ function displayExergyUnit(unit) {
 // Fuel-volume units carry a heating value the calculator applies for you.
 //
 // A barrel and an scf measure VOLUME, so `ENERGY_TO_J` is already assuming an
-// energy content to convert them — 1,000 Btu per scf, 6.118 GJ per barrel. That
+// energy content to convert them — here, pinned EIA 2026 U.S.-average estimates.
+// A volume and fuel name still cannot determine a meter-specific heating value. That
 // assumption was invisible: a visitor picking `bbl(oil)` had no way to see which
 // heating value they had just accepted, and the carrier they picked in the form
 // above could contradict the one the unit implies.
@@ -387,12 +396,20 @@ function displayExergyUnit(unit) {
 // 0.0003, and its exergy rounds to a bare "0" on screen — a number that looks like
 // an error rather than a small quantity.
 const FUEL_VOLUME_UNITS = {
-  "boe": { form: "crudeOil", reportIn: "MWh", display: "6.118 GJ (5.80 MMBtu) per barrel of oil equivalent" },
-  "bbl(oil)": { form: "crudeOil", reportIn: "MWh", display: "6.118 GJ (5.80 MMBtu) per barrel" },
-  "scf(natural gas)": { form: "naturalGasHhv", reportIn: "kWh", display: "1,000 Btu (1.055 MJ) per scf, HHV" },
-  "Mcf(natural gas)": { form: "naturalGasHhv", reportIn: "MWh", display: "1.000 MMBtu (1.055 GJ) per Mcf, HHV" },
-  "MMcf(natural gas)": { form: "naturalGasHhv", reportIn: "MWh", display: "1,000 MMBtu (1.055 TJ) per MMcf, HHV" },
+  "boe": { form: "crudeOil", reportIn: "MWh", display: "5.800 MMBtu per barrel of oil equivalent (nominal U.S. DOE convention)" },
+  "bbl(oil)": { form: "crudeOil", reportIn: "MWh", display: "5.689 MMBtu per barrel (EIA 2026 estimated U.S. crude-oil average)" },
+  "scf(natural gas)": { form: "naturalGasHhv", reportIn: "kWh", display: "1,036 Btu per scf (EIA 2026 estimated U.S. natural-gas average), HHV" },
+  "Mcf(natural gas)": { form: "naturalGasHhv", reportIn: "MWh", display: "1.036 MMBtu per Mcf (EIA 2026 estimated U.S. natural-gas average), HHV" },
+  "MMcf(natural gas)": { form: "naturalGasHhv", reportIn: "MWh", display: "1,036 MMBtu per MMcf (EIA 2026 estimated U.S. natural-gas average), HHV" },
 };
+
+// Exposed for the repository's headless numerical conformance check. The public
+// UI still uses the same objects and functions directly.
+window.EXERGY_FACTOR_CALCULATION_INTERNALS = Object.freeze({
+  ENERGY_TO_J,
+  FUEL_VOLUME_UNITS,
+  thermalFactorFromTemperatures,
+});
 
 function applyFixedValuesForUnit() {
   if (!hasField("energy-unit") || !hasField("energy-form")) return;
@@ -420,7 +437,7 @@ function applyFixedValuesForUnit() {
   }
   form.disabled = true;
   if (note) {
-    note.textContent = `Uses ${fixed.display}. This unit fixes the fuel and its heating value, so both are set for you.`;
+    note.textContent = `Uses ${fixed.display}. This is an estimated reference conversion, not a meter-specific heating value; use the Python library with your measured HHV or LHV when accuracy matters.`;
     note.hidden = false;
   }
 }
@@ -444,14 +461,10 @@ function thermalFactorFromTemperatures(sourceValue, sourceUnit, sinkValue, sinkU
   const hasSinkTemp = String(sinkValue).trim() !== "";
   const sourceK = tempToK(sourceValue, sourceUnit);
   const sinkK = tempToK(sinkValue, sinkUnit);
-  if (!hasSinkTemp || !Number.isFinite(sourceK) || !Number.isFinite(sinkK)) {
+  if (!hasSinkTemp || !Number.isFinite(sourceK) || !Number.isFinite(sinkK) || sourceK <= 0 || sinkK <= 0 || sourceK < sinkK) {
     return NaN;
   }
-  try {
-    return thermalExergyFactorC(sourceK - 273.15, sinkK - 273.15);
-  } catch (_error) {
-    return NaN;
-  }
+  return 1 - sinkK / sourceK;
 }
 
 function calculateFactor() {
@@ -472,7 +485,7 @@ function calculateFactor() {
         return { factor: NaN, method: "A cooling service cannot be warmer than the ambient it is rejected to.", tier: "F2" };
       }
       return {
-        factor: coolingExergyFactorC(coldC, ambientC),
+        factor: (ambientC + 273.15) / (coldC + 273.15) - 1,
         method: "F2 cooling factor from your service and ambient temperatures.",
         tier: "F2",
         coldC,
@@ -488,7 +501,7 @@ function calculateFactor() {
         sinkUnit(),
       );
       if (!Number.isFinite(factor)) {
-        return { factor: NaN, method: "Enter source and sink temperatures with source at least as warm as sink.", tier: "F2" };
+        return { factor: NaN, method: "Enter source and sink temperatures with source greater than or equal to sink.", tier: "F2" };
       }
       // Carry the temperatures out with the factor. Without them the caller can
       // only print the short form, which is why this calculator published records
@@ -534,7 +547,7 @@ function calculateFactor() {
       sinkUnit(),
     );
     if (!hasSinkTemp || !Number.isFinite(factor)) {
-      return { factor: NaN, method: "Enter source and sink temperatures with source at least as warm as sink.", tier: "F2" };
+      return { factor: NaN, method: "Enter source and sink temperatures with source greater than or equal to sink.", tier: "F2" };
     }
     fields["exergy-factor"].value = formatFactor(
       fields["factor-unit"].value === "percent" ? factor * 100 : factor,
@@ -591,14 +604,14 @@ function compareRowTemperatures(side, preset) {
   const sourceC = Number(fields[`compare-${side}-source`]?.value);
   const sinkC = Number(fields[`compare-${side}-sink`]?.value);
   if (!Number.isFinite(sourceC) || !Number.isFinite(sinkC)) return { factor: NaN };
-  try {
-    if (preset.needsTemperature === "cooling") {
-      return { factor: coolingExergyFactorC(sourceC, sinkC), coldC: sourceC, sinkC };
-    }
-    return { factor: thermalExergyFactorC(sourceC, sinkC), sourceC, sinkC };
-  } catch (_error) {
-    return { factor: NaN };
+  const sourceK = sourceC + 273.15;
+  const sinkK = sinkC + 273.15;
+  if (preset.needsTemperature === "cooling") {
+    if (sourceC >= sinkC || sourceK <= 0 || sinkK <= 0) return { factor: NaN };
+    return { factor: sinkK / sourceK - 1, coldC: sourceC, sinkC };
   }
+  if (sourceC <= sinkC || sourceK <= 0 || sinkK <= 0) return { factor: NaN };
+  return { factor: 1 - sinkK / sourceK, sourceC, sinkC };
 }
 
 function compareRow(side) {
@@ -748,6 +761,7 @@ function updateCalculator() {
 
   if (!Number.isFinite(energy) || energy < 0 || !Number.isFinite(energyJ) || !Number.isFinite(factor)) {
     fields["notation-output"].textContent = "Check the inputs";
+    if (hasField("fx-output")) fields["fx-output"].textContent = "No result";
     if (hasField("work-output")) fields["work-output"].textContent = "No result";
     if (hasField("exergy-output")) fields["exergy-output"].textContent = "No result";
     if (hasField("method-output")) fields["method-output"].textContent = method;
@@ -793,6 +807,7 @@ function updateCalculator() {
   const exergyUnit = fixedForUnit ? `${fixedForUnit.reportIn}_ex` : displayExergyUnit(energyUnit);
 
   fields["notation-output"].textContent = notation;
+  if (hasField("fx-output")) fields["fx-output"].textContent = formatFactor(factor);
   if (hasField("work-output")) fields["work-output"].textContent = `${formatDisplayEnergy(exergyInInputUnit)} ${exergyUnit}`;
   if (hasField("exergy-output")) fields["exergy-output"].textContent = `${formatDisplayEnergy(exergyInInputUnit)} ${exergyUnit}`;
   if (hasField("method-output")) fields["method-output"].textContent = method;
@@ -911,6 +926,7 @@ function exportModel() {
       title: "Exergy Factor",
       inputs,
       results: [
+        ["Exergy Factor", fields["fx-output"]?.textContent.trim() || ""],
         ["Exergy Factor Notation", fields["notation-output"].textContent.trim()],
         ["Accessible Exergy", fields["work-output"].textContent.trim()],
       ],
@@ -1079,6 +1095,12 @@ async function requestApiKey(event) {
 
   const status = fields["api-key-status"];
   const output = fields["api-key-dev-output"];
+  const baseUrl = apiBaseUrl();
+  if (!baseUrl) {
+    status.dataset.state = "error";
+    status.textContent = "The hosted API is still in preview. Use the Python package or run the API locally for now.";
+    return;
+  }
   if (output) {
     output.hidden = true;
     output.textContent = "";
@@ -1095,7 +1117,7 @@ async function requestApiKey(event) {
   };
 
   try {
-    const response = await fetch(`${apiBaseUrl()}/api-keys/request`, {
+    const response = await fetch(`${baseUrl}/api-keys/request`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -1121,6 +1143,14 @@ async function requestApiKey(event) {
 
 document.addEventListener("DOMContentLoaded", () => {
   cacheFields();
+
+  if (hasApiKeyForm() && !apiBaseUrl()) {
+    const submit = document.querySelector("#api-key-form button[type='submit']");
+    if (submit) submit.disabled = true;
+    fields["api-key-status"].dataset.state = "pending";
+    fields["api-key-status"].textContent =
+      "Hosted API access is coming soon. The Python package and local API are available today.";
+  }
 
   if (hasCalculator()) {
     byId("calculator-form").addEventListener("submit", (event) => event.preventDefault());
