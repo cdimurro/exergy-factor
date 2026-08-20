@@ -24,16 +24,20 @@ Report one extra field alongside the quantity:
 1 MWh_th, fx = 0.170 [Th = 80 C, T0 = 20 C]
 ```
 
-`fx` is the **Exergy Factor**: accessible work potential per unit of energy,
-against a stated reference environment and energy basis. It is nonnegative and
-is often at most 1; chemical exergy divided by an LHV basis can legitimately
-exceed 1. It is computed from stated conditions rather than assumed, making
+`fx` is the **Exergy Factor**: accessible work potential per unit of reported
+energy, against a stated reference environment. It is nonnegative and can exceed
+1 when the denominator is an accounting basis such as LHV. It is computed from
+stated conditions rather than assumed, and it makes
 electricity, fuels, heat, cooling, and storage comparable on the axis that
 actually determines what they can do.
 
 The reference environment is part of the report, not a hidden default — the
 same 80 °C stream is worth more in winter than in summer, and the notation says
 so.
+
+The distinction from that environment is what makes work possible. The
+calculator reports it through `fx`; it does not apply a separate
+"distinguishability factor." At the same state as the reference, `fx = 0`.
 
 ## What this repo is
 
@@ -45,18 +49,24 @@ served directly by GitHub Pages.
 | `index.html` | Single-record calculator producing `quantity, fx = value` |
 | `compare.html` | Compares two energy forms by accessible exergy in `MWh_ex` |
 | `methodology.html` | The thermodynamic basis, and the limits of the method |
-| `api-key.html` | Request a free API key |
-| `terms.html` | Hosted API terms linked by the key-request contract |
+| `api-key.html` | Preview the API and local deployment path |
 
 Supported: typed carrier notation (`MWh_e`, `MWh_th`, `MWh_solar`,
 `MWh_HHV_NG`), temperature-based thermal Exergy Factors, cooling services below
 ambient, unit conversion for energy and accessible exergy, and the Carrier
 Registry / Fidelity Tier summaries.
 
-## One product stack
+Fuel volumes cannot determine an exact energy quantity without a measured
+heating value. The calculator labels its `scf(natural gas)` and `bbl(oil)`
+shortcuts as pinned EIA 2026 U.S.-average estimates; use the companion library
+with a measured HHV or LHV for a composition-specific result.
 
-The shared path is: **discover the missing quality field, standardize the
-record, then turn it into an auditable decision.**
+The companion library also accepts primary, secondary, final, and useful energy
+boundaries. It preserves historical substitution-method data as a statistical
+equivalent without treating it as physical exergy. This additional accounting
+does not add complexity to the browser calculator.
+
+## Related projects
 
 | Product | Use it when |
 |---|---|
@@ -64,9 +74,8 @@ record, then turn it into an auditable decision.**
 | **[Quantity and Quality](https://github.com/cdimurro/quantity-and-quality)** | You need the canonical calculation kernel, CLI, schemas, API, or batch reporting standard. |
 | **[The Exergy Imperative](https://github.com/cdimurro/the-exergy-imperative)** | You need to turn utility or telemetry data into prioritized losses, emissions, health screens, economics, and reports. |
 
-The canonical framework paper lives in
-[Quantity and Quality](https://github.com/cdimurro/quantity-and-quality/blob/main/paper/quantity-and-quality-standard-reporting-framework.pdf);
-this site does not carry a second copy that can become stale.
+The canonical framework paper is available at
+[`paper/quantity-and-quality-standard-reporting-framework.pdf`](paper/quantity-and-quality-standard-reporting-framework.pdf).
 
 ## Local preview
 
@@ -75,6 +84,14 @@ python -m http.server 8765
 ```
 
 Then open <http://127.0.0.1:8765/>.
+
+Before publishing changes:
+
+```bash
+python scripts/check_site.py
+node --check script.js
+node scripts/check_calculations.js
+```
 
 ## Syncing the reference data
 
@@ -86,34 +103,39 @@ this repo checked out alongside it:
 ```bash
 python -m quantity_quality export-web-data \
   --output ../exergy-factor/data/reference_examples.json \
-  --js-output ../exergy-factor/data/reference_examples.js \
-  --contract-output ../exergy-factor/data/conformance_contract_v1.json
+  --js-output ../exergy-factor/data/reference_examples.js
 ```
 
-CI regenerates and compares all three files against the canonical package. It
-also runs the shared valid-input, invalid-input, notation, and numerical
-tolerance cases against the browser kernel.
+Commit the regenerated `data/` files together with whatever library change
+caused them to move.
 
-## API endpoint
+## API preview
 
-The key-request form posts to:
+The production key-request form is intentionally disabled until the hosted API is
+deployed and monitored. Local previews use:
 
 ```text
-https://api.exergyfactor.com/v1/api-keys/request
+http://127.0.0.1:8000/v1/api-keys/request
 ```
 
-When previewing from `localhost` or `127.0.0.1` it uses
-`http://127.0.0.1:8000/v1/api-keys/request` instead. Override with:
+Once a production endpoint is ready, configure it explicitly before publishing:
 
 ```js
 window.EXERGY_FACTOR_API_BASE_URL = "https://api.exergyfactor.com/v1";
 ```
 
+Do not enable public key collection without TLS, monitoring, rate limiting,
+backups, working email delivery, and the published privacy and terms pages.
+
 ## Scope
 
-This is a screening tool. It gives existing records one additional quality
-field. It is not a process simulator and does not replace detailed exergy
-analysis, ISO 50001, IPMVP, LCA, or engineering judgement.
+This is a calculator for individual energy streams. It returns the quantity,
+Exergy Factor, and accessible exergy. It does not perform process, technology,
+emissions, health, or economic analysis; The Exergy Imperative handles that
+downstream work. The companion Python library offers an optional accounting
+record for primary, secondary, final, and useful energy, Applied Exergy at the
+task, and a separate non-energy service outcome; this website does not add that
+complexity to the calculator.
 
 ## Citing
 
@@ -123,4 +145,4 @@ above. Citation metadata is in
 
 ## License
 
-[MIT](LICENSE) © 2026 Christopher DiMurro
+[MIT](LICENSE)

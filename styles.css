@@ -668,22 +668,30 @@ button,
   background: #eef8f5;
 }
 
-/* Three across: the notation, the exergy, and the export buttons. The notation
-   gets the extra room because it is much the longest string — a full declaration
-   runs to `100 MWh_th, fx = 0.170 [Th = 80 C, T0 = 20 C]` — and the buttons take
-   only what they need. */
-/* Two across now that the buttons have moved out of the panel. The notation gets
-   the wider column: a full declaration runs to
-   `100 MWh_th, fx = 0.170 [Th = 80 C, T0 = 20 C]`. */
+/* Put the number visitors came for first, then the complete notation and the
+   accessible-exergy quantity. */
 .calculator-result {
-  grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr);
+  grid-template-columns: minmax(110px, 0.65fr) minmax(0, 1.9fr) minmax(0, 1fr);
   align-items: start;
   gap: 8px 20px;
+}
+
+.result-explainer {
+  max-width: 58rem;
+  margin: 0.85rem auto 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  text-align: center;
 }
 
 /* A long declaration wraps inside its column rather than pushing the row wider. */
 .calculator-result .answer-item strong {
   overflow-wrap: anywhere;
+}
+
+#fx-output {
+  font-size: clamp(1.35rem, 3vw, 1.8rem);
+  font-weight: 750;
 }
 
 .answer-item {
@@ -863,7 +871,8 @@ pre {
   align-self: start;
 }
 
-.terms-consent {
+.terms-consent,
+.consent-row {
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: start;
@@ -873,15 +882,22 @@ pre {
   line-height: 1.45;
 }
 
-.terms-consent input {
+.terms-consent input,
+.consent-row input {
   width: 18px;
   height: 18px;
   margin-top: 2px;
   accent-color: var(--teal-deep);
 }
 
-.terms-consent a {
+.terms-consent a,
+.consent-row a {
   color: var(--teal-deep);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
 }
 
 .api-status {
@@ -989,6 +1005,11 @@ pre {
 
 .paper-strip > div {
   max-width: 780px;
+}
+
+.legal-links {
+  margin-top: 10px;
+  font-size: 0.86rem;
 }
 
 .primary-link {

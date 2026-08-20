@@ -2,6 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; connect-src 'self' http://127.0.0.1:8000 https://api.exergyfactor.com; base-uri 'none'; form-action 'self'" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Methodology | Exergy Factor</title>
     <meta
@@ -9,7 +11,8 @@
       content="Learn how Exergy Factor adds thermodynamic quality to ordinary energy quantity reporting."
     />
     <link rel="canonical" href="https://exergyfactor.com/methodology.html" />
-    <link rel="stylesheet" href="styles.css?v=20260818b" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css?v=20260818c" />
   </head>
   <body>
     <header class="site-header">
@@ -21,8 +24,8 @@
         <a href="index.html">Calculate</a>
         <a href="compare.html">Compare</a>
         <a href="methodology.html" aria-current="page">Methodology</a>
-        <a href="api-key.html">API Key</a>
-        <a href="https://github.com/cdimurro/quantity-and-quality/blob/main/paper/quantity-and-quality-standard-reporting-framework.pdf">Paper</a>
+        <a href="api-key.html">API Preview</a>
+        <a href="paper/quantity-and-quality-standard-reporting-framework.pdf">Paper</a>
       </nav>
     </header>
 
@@ -55,7 +58,7 @@
             </p>
             <pre><code>1 MWh_th, f_X = 0.73</code></pre>
             <p>
-              This keeps the familiar energy quantity units but attaches the quality factor needed to allow universal comparisons between different forms of energy. This method provides the full thermodynamic context needed for decision-making and can provide insights that would otherwise be imperceptible.
+              This keeps the familiar energy quantity units and adds the quality factor needed to state the stream's accessible work potential.
             </p>
           </article>
         </div>
@@ -85,6 +88,17 @@
           </article>
 
           <article>
+            <p class="eyebrow">Distinguishability</p>
+            <h2>Work potential requires a difference.</h2>
+            <p>
+              Exergy exists when a stream is thermodynamically distinguishable from a declared environment or task boundary. The difference may be thermal, chemical, electrical, mechanical, pressure-based, or radiative. When the relevant states are the same, the Exergy Factor is zero and no work can be obtained from that difference.
+            </p>
+            <p>
+              Distinguishability is the physical basis of <code>f_X</code>, not a second factor multiplied into it.
+            </p>
+          </article>
+
+          <article>
             <p class="eyebrow">Reporting</p>
             <h2>The simple notation can be short or self-verifying.</h2>
             <p>
@@ -96,6 +110,22 @@ source = 80 °C
 sink = 20 °C</code></pre>
             <p>
               This keeps ordinary reporting simple while giving engineers, institutions, and standards bodies enough information to reproduce or challenge the result.
+            </p>
+          </article>
+
+          <article>
+            <p class="eyebrow">End-use accounting</p>
+            <h2>Applied Exergy is what reaches the task.</h2>
+            <pre><code>primary energy → secondary energy → final energy → useful energy → energy service
+primary exergy → secondary exergy → final exergy → Applied Exergy</code></pre>
+            <p>
+              Useful energy is the output of the end-use device and can still contain both exergy and anergy. Applied Exergy is only the exergy crossing the last device-to-task boundary—for example shaft work reaching a machine or the exergy of heat entering a liquid.
+            </p>
+            <p>
+              Secondary energy is an optional intermediate boundary for a transformed, transportable carrier such as generated electricity or refined fuel. Statistical substitution-method values can be retained for historical comparison, but they are hypothetical fossil-input equivalents—not physical streams to which an Exergy Factor should be applied.
+            </p>
+            <p>
+              The energy service is kept separate because it is the outcome society wants: cold beers, a comfortable occupied home, passenger-miles, or illuminated space. Those outcomes use service units, not joules or watt-hours.
             </p>
           </article>
         </div>
@@ -132,7 +162,7 @@ sink = 20 °C</code></pre>
             <p class="eyebrow">Carrier Registry</p>
             <h2>Typed suffixes identify the carrier without replacing existing units.</h2>
             <p>
-              The third draft uses underscore-delimited suffixes so records remain readable in spreadsheets, databases, historians, and APIs.
+              The framework uses underscore-delimited suffixes so records remain readable in spreadsheets, databases, historians, and APIs.
             </p>
             <div class="registry-grid" aria-label="Core carrier registry examples">
               <span><code>MWh_e</code><small>electricity</small></span>
@@ -161,7 +191,7 @@ F4 = full vector audit</code></pre>
 
           <article>
             <p class="eyebrow">Empirical F3 check</p>
-            <h2>The third draft includes a public district-heating empirical demonstration.</h2>
+            <h2>The paper includes a public district-heating empirical demonstration.</h2>
             <p>
               Using the public XAI4HEAT data, the framework was applied to 51,592 synchronized 15-minute intervals from substations L4, L12, L17, and L22. The dynamic ambient-sink portfolio value was <code>f_X = 0.2164</code>, compared with <code>f_X = 0.1727</code> under a fixed 20 °C sink and <code>f_X = 0.1720</code> under a primary supply-return integrated model. Those differences show why reference conditions and method metadata need to be declared instead of hidden.
             </p>
@@ -177,8 +207,9 @@ F4 = full vector audit</code></pre>
         <p>
           The full paper provides the formal reporting framework, reference examples, and thermodynamic basis behind the calculator.
         </p>
+        <p class="legal-links"><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p>
       </div>
-      <a class="primary-link" href="https://github.com/cdimurro/quantity-and-quality/blob/main/paper/quantity-and-quality-standard-reporting-framework.pdf">Read the canonical paper</a>
+      <a class="primary-link" href="paper/quantity-and-quality-standard-reporting-framework.pdf">Download the paper</a>
     </footer>
   </body>
 </html>

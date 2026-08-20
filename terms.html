@@ -2,11 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; connect-src 'self' http://127.0.0.1:8000 https://api.exergyfactor.com; base-uri 'none'; form-action 'self'" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>API Terms of Use | Exergy Factor</title>
     <meta name="description" content="Terms governing use of the Exergy Factor developer API." />
     <link rel="canonical" href="https://exergyfactor.com/terms.html" />
-    <link rel="stylesheet" href="styles.css?v=20260818b" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css?v=20260818c" />
   </head>
   <body>
     <header class="site-header">
@@ -18,8 +21,8 @@
         <a href="index.html">Calculate</a>
         <a href="compare.html">Compare</a>
         <a href="methodology.html">Methodology</a>
-        <a href="api-key.html">API Key</a>
-        <a href="terms.html" aria-current="page">Terms</a>
+        <a href="api-key.html">API Preview</a>
+        <a href="paper/quantity-and-quality-standard-reporting-framework.pdf">Paper</a>
       </nav>
     </header>
 
@@ -63,5 +66,13 @@
         </div>
       </section>
     </main>
+    <footer class="paper-strip">
+      <div>
+        <h2>Quantity and Quality</h2>
+        <p>Read the proposed Exergy-Factor reporting framework.</p>
+        <p class="legal-links"><a href="privacy.html">Privacy</a> · <a href="terms.html" aria-current="page">Terms</a></p>
+      </div>
+      <a class="primary-link" href="paper/quantity-and-quality-standard-reporting-framework.pdf">Download the paper</a>
+    </footer>
   </body>
 </html>
