@@ -123,10 +123,7 @@ function apiBaseUrl() {
   if (window.location && ["localhost", "127.0.0.1"].includes(window.location.hostname)) {
     return "http://127.0.0.1:8000/v1";
   }
-  // The public API is a preview until a production base URL is deliberately
-  // configured. Failing closed avoids collecting form data through a dead or
-  // accidentally claimed hostname.
-  return "";
+  return "https://exergy-factor-api.onrender.com/v1";
 }
 
 // These name carriers, so they had to follow the carrier list when it was
@@ -220,8 +217,8 @@ function hasCompare() {
   return hasField("compare-a-preset") && hasField("compare-b-preset") && hasField("compare-bars");
 }
 
-function hasApiKeyForm() {
-  return hasField("api-key-form") && hasField("api-email") && hasField("api-key-status");
+function hasApiHealthCheck() {
+  return hasField("api-health-check") && hasField("api-health-status");
 }
 
 function cacheFields() {
@@ -261,14 +258,8 @@ function cacheFields() {
     "compare-bars",
     "compare-summary",
     "compare-equivalence",
-    "api-key-form",
-    "api-email",
-    "api-name",
-    "api-organization",
-    "api-intended-use",
-    "api-accept-terms",
-    "api-key-status",
-    "api-key-dev-output",
+    "api-health-check",
+    "api-health-status",
     "export-csv",
     "export-png",
   ].forEach((id) => {
@@ -1089,68 +1080,36 @@ function exportPng() {
   }, "image/png");
 }
 
-async function requestApiKey(event) {
-  event.preventDefault();
-  if (!hasApiKeyForm()) return;
+async function checkApiHealth() {
+  if (!hasApiHealthCheck()) return;
 
-  const status = fields["api-key-status"];
-  const output = fields["api-key-dev-output"];
+  const status = fields["api-health-status"];
+  const button = fields["api-health-check"];
   const baseUrl = apiBaseUrl();
-  if (!baseUrl) {
-    status.dataset.state = "error";
-    status.textContent = "The hosted API is still in preview. Use the Python package or run the API locally for now.";
-    return;
-  }
-  if (output) {
-    output.hidden = true;
-    output.textContent = "";
-  }
-  status.textContent = "Requesting API key...";
   status.dataset.state = "pending";
-
-  const payload = {
-    email: fields["api-email"].value.trim(),
-    name: fields["api-name"]?.value.trim() || "",
-    organization: fields["api-organization"]?.value.trim() || "",
-    intended_use: fields["api-intended-use"]?.value.trim() || "",
-    accept_terms: Boolean(fields["api-accept-terms"]?.checked),
-  };
+  status.textContent = "Checking the live API...";
+  button.disabled = true;
 
   try {
-    const response = await fetch(`${baseUrl}/api-keys/request`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+    const response = await fetch(`${baseUrl}/health`, {
+      headers: { Accept: "application/json" },
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok || !data.ok) {
-      throw new Error(data.detail || "API key request failed.");
+      throw new Error(data.detail || `Health check returned HTTP ${response.status}.`);
     }
     status.dataset.state = "success";
-    status.textContent = "API key generated. Check your email for the key and a curl example.";
-    if (data.delivery_method === "console") {
-      status.textContent = "API key generated in development mode. Check the API server console for the key.";
-    }
-    if (data.api_key && output) {
-      output.hidden = false;
-      output.textContent = data.api_key;
-    }
+    status.textContent = `Live API is healthy (${data.schema_version}).`;
   } catch (error) {
     status.dataset.state = "error";
-    status.textContent = error && error.message ? error.message : "Unable to request an API key.";
+    status.textContent = error && error.message ? error.message : "Unable to reach the live API.";
+  } finally {
+    button.disabled = false;
   }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   cacheFields();
-
-  if (hasApiKeyForm() && !apiBaseUrl()) {
-    const submit = document.querySelector("#api-key-form button[type='submit']");
-    if (submit) submit.disabled = true;
-    fields["api-key-status"].dataset.state = "pending";
-    fields["api-key-status"].textContent =
-      "Hosted API access is coming soon. The Python package and local API are available today.";
-  }
 
   if (hasCalculator()) {
     byId("calculator-form").addEventListener("submit", (event) => event.preventDefault());
@@ -1193,8 +1152,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if (hasField("export-csv")) fields["export-csv"].addEventListener("click", exportCsv);
   if (hasField("export-png")) fields["export-png"].addEventListener("click", exportPng);
 
-  if (hasApiKeyForm()) {
-    fields["api-key-form"].addEventListener("submit", requestApiKey);
+  if (hasApiHealthCheck()) {
+    fields["api-health-check"].addEventListener("click", checkApiHealth);
   }
 
   if (hasCompare()) renderCompare();
