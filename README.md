@@ -49,7 +49,7 @@ served directly by GitHub Pages.
 | `index.html` | Single-record calculator producing `quantity, fx = value` |
 | `compare.html` | Compares two energy forms by accessible exergy in `MWh_ex` |
 | `methodology.html` | The thermodynamic basis, and the limits of the method |
-| `api-key.html` | Preview the API and local deployment path |
+| `api-key.html` | Use the public API and open its interactive documentation |
 
 Supported: typed carrier notation (`MWh_e`, `MWh_th`, `MWh_solar`,
 `MWh_HHV_NG`), temperature-based thermal Exergy Factors, cooling services below
@@ -109,23 +109,21 @@ python -m quantity_quality export-web-data \
 Commit the regenerated `data/` files together with whatever library change
 caused them to move.
 
-## API preview
+## Hosted API
 
-The production key-request form is intentionally disabled until the hosted API is
-deployed and monitored. Local previews use:
+The public beta API is keyless and available at:
 
 ```text
-http://127.0.0.1:8000/v1/api-keys/request
+https://exergy-factor-api.onrender.com/v1
 ```
 
-Once a production endpoint is ready, configure it explicitly before publishing:
-
-```js
-window.EXERGY_FACTOR_API_BASE_URL = "https://api.exergyfactor.com/v1";
-```
-
-Do not enable public key collection without TLS, monitoring, rate limiting,
-backups, working email delivery, and the published privacy and terms pages.
+Interactive documentation is at
+<https://exergy-factor-api.onrender.com/docs>. A health check and sample
+calculation are available from the `API` page on the website. The service
+retains the same units, reference conditions, bases, boundaries, Fidelity Tiers,
+assumptions, and warnings as the Python package. Free hosting may sleep after
+inactivity; use the local package or deploy the container under your control for
+production workloads.
 
 ## Scope
 
