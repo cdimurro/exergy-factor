@@ -62,11 +62,13 @@ for (const caseDefinition of contract.invalid_cases.filter((item) => item.implem
   });
 }
 
-test("API key form satisfies the backend acceptance contract", () => {
+test("public API page matches the keyless beta contract", () => {
   const html = fs.readFileSync(path.join(root, "api-key.html"), "utf8");
-  assert.match(html, /id="api-accept-terms"[^>]*type="checkbox"[^>]*required|id="api-accept-terms"[^>]*required[^>]*type="checkbox"/);
+  assert.doesNotMatch(html, /id="api-accept-terms"|id="api-email"|id="api-key-form"/);
+  assert.match(html, /No account or API key is required/);
+  assert.match(html, /exergy-factor-api\.onrender\.com\/v1/);
   assert.match(html, /href="terms\.html"/);
-  assert.match(source, /accept_terms:\s*Boolean\(fields\["api-accept-terms"\]\?\.checked\)/);
+  assert.doesNotMatch(source, /api-keys\/request|accept_terms/);
 });
 
 test("every local HTML link resolves", () => {

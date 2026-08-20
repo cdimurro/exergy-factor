@@ -45,8 +45,8 @@ served directly by GitHub Pages.
 | `index.html` | Single-record calculator producing `quantity, fx = value` |
 | `compare.html` | Compares two energy forms by accessible exergy in `MWh_ex` |
 | `methodology.html` | The thermodynamic basis, and the limits of the method |
-| `api-key.html` | Request a free API key |
-| `terms.html` | Hosted API terms linked by the key-request contract |
+| `api-key.html` | Free keyless developer API quick start |
+| `terms.html` | Hosted API terms and availability limits |
 
 Supported: typed carrier notation (`MWh_e`, `MWh_th`, `MWh_solar`,
 `MWh_HHV_NG`), temperature-based thermal Exergy Factors, cooling services below
@@ -96,18 +96,16 @@ tolerance cases against the browser kernel.
 
 ## API endpoint
 
-The key-request form posts to:
+The free public beta is keyless. Its base URL is:
 
 ```text
-https://api.exergyfactor.com/v1/api-keys/request
+https://exergy-factor-api.onrender.com/v1
 ```
 
-When previewing from `localhost` or `127.0.0.1` it uses
-`http://127.0.0.1:8000/v1/api-keys/request` instead. Override with:
-
-```js
-window.EXERGY_FACTOR_API_BASE_URL = "https://api.exergyfactor.com/v1";
-```
+The quick-start page at [`api-key.html`](api-key.html) includes a working
+`curl` request and a link to the interactive OpenAPI documentation. The
+Render free instance may sleep after inactivity; run the optional Python API
+locally or deploy the same container for private or high-volume use.
 
 ## Scope
 

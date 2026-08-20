@@ -114,14 +114,6 @@ window.EXERGY_FACTOR_KERNEL = Object.freeze({
   format_energy_notation: formatEnergyNotation,
 });
 
-function apiBaseUrl() {
-  if (window.EXERGY_FACTOR_API_BASE_URL) return String(window.EXERGY_FACTOR_API_BASE_URL).replace(/\/$/, "");
-  if (window.location && ["localhost", "127.0.0.1"].includes(window.location.hostname)) {
-    return "http://127.0.0.1:8000/v1";
-  }
-  return "https://api.exergyfactor.com/v1";
-}
-
 // These name carriers, so they had to follow the carrier list when it was
 // deduplicated: `heat80`, `steam150` and `methaneHhv` no longer exist, and
 // setting a <select> to a value that is not in it leaves the control on whatever
@@ -213,10 +205,6 @@ function hasCompare() {
   return hasField("compare-a-preset") && hasField("compare-b-preset") && hasField("compare-bars");
 }
 
-function hasApiKeyForm() {
-  return hasField("api-key-form") && hasField("api-email") && hasField("api-key-status");
-}
-
 function cacheFields() {
   [
     "energy-value",
@@ -253,14 +241,6 @@ function cacheFields() {
     "compare-bars",
     "compare-summary",
     "compare-equivalence",
-    "api-key-form",
-    "api-email",
-    "api-name",
-    "api-organization",
-    "api-intended-use",
-    "api-accept-terms",
-    "api-key-status",
-    "api-key-dev-output",
     "export-csv",
     "export-png",
   ].forEach((id) => {
@@ -1073,51 +1053,7 @@ function exportPng() {
   }, "image/png");
 }
 
-async function requestApiKey(event) {
-  event.preventDefault();
-  if (!hasApiKeyForm()) return;
-
-  const status = fields["api-key-status"];
-  const output = fields["api-key-dev-output"];
-  if (output) {
-    output.hidden = true;
-    output.textContent = "";
-  }
-  status.textContent = "Requesting API key...";
-  status.dataset.state = "pending";
-
-  const payload = {
-    email: fields["api-email"].value.trim(),
-    name: fields["api-name"]?.value.trim() || "",
-    organization: fields["api-organization"]?.value.trim() || "",
-    intended_use: fields["api-intended-use"]?.value.trim() || "",
-    accept_terms: Boolean(fields["api-accept-terms"]?.checked),
-  };
-
-  try {
-    const response = await fetch(`${apiBaseUrl()}/api-keys/request`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || !data.ok) {
-      throw new Error(data.detail || "API key request failed.");
-    }
-    status.dataset.state = "success";
-    status.textContent = "API key generated. Check your email for the key and a curl example.";
-    if (data.delivery_method === "console") {
-      status.textContent = "API key generated in development mode. Check the API server console for the key.";
-    }
-    if (data.api_key && output) {
-      output.hidden = false;
-      output.textContent = data.api_key;
-    }
-  } catch (error) {
-    status.dataset.state = "error";
-    status.textContent = error && error.message ? error.message : "Unable to request an API key.";
-  }
-}
+// The public beta is keyless; API usage is documented on api-key.html.
 
 document.addEventListener("DOMContentLoaded", () => {
   cacheFields();
@@ -1162,10 +1098,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (hasField("export-csv")) fields["export-csv"].addEventListener("click", exportCsv);
   if (hasField("export-png")) fields["export-png"].addEventListener("click", exportPng);
-
-  if (hasApiKeyForm()) {
-    fields["api-key-form"].addEventListener("submit", requestApiKey);
-  }
 
   if (hasCompare()) renderCompare();
 });
