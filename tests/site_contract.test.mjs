@@ -121,6 +121,9 @@ test("calculator form catalog defaults to heat and keeps fuel basis explicit", (
   assert.equal(internals.comparePresets.naturalGasLhv.fx, 1.04);
   assert.equal(internals.comparePresets.hydrogen.fx, 0.83);
   assert.equal(internals.comparePresets.hydrogenLhv.fx, 0.98);
+  assert.equal(internals.displayUnit("Btu", internals.comparePresets.heat), "BTU_th");
+  assert.equal(internals.displayUnit("MMBtu", internals.comparePresets.heat), "MMBTU_th");
+  assert.equal(internals.displayUnit("kWh", internals.comparePresets.naturalGasHhv), "kWh_HHV_NG");
   assert.equal(internals.ENERGY_TO_J.PJ, 1e15);
   assert.equal(internals.ENERGY_TO_J.TWh, 3.6e15);
   assert.equal(internals.ENERGY_TO_J["ton-hour"], 12000 * 1055.05585262);
@@ -169,7 +172,7 @@ test("comparison defaults are internally consistent", () => {
   assert.match(html, /id="compare-b-sink-label"[^>]*>Sink Temperature<\/label>/);
   assert.match(html, /id="compare-b-source-unit"[\s\S]*<option value="C" selected>°C<\/option>/);
   assert.match(html, /id="compare-b-sink-unit"[\s\S]*<option value="C" selected>°C<\/option>/);
-  assert.match(html, /<h3 class="compare-chart-title">Exergy Notation<\/h3>/);
+  assert.match(html, /<h3 class="compare-chart-title">Exergy Factor Notation<\/h3>/);
   assert.match(html, /<h3 class="compare-chart-title">Exergy Factor<\/h3>/);
   assert.match(html, /<h3 class="compare-chart-title">Accessible Exergy<\/h3>/);
   assert.match(html, /<h3 class="compare-chart-title">Inaccessible Anergy<\/h3>/);

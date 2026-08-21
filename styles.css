@@ -761,15 +761,15 @@ button,
 
 .accessible-answer {
   grid-area: accessible;
-  justify-items: end;
-  text-align: right;
+  justify-items: center;
+  text-align: center;
 }
 
 .inaccessible-answer {
   grid-area: inaccessible;
-  justify-items: end;
+  justify-items: center;
   padding-top: 12px;
-  text-align: right;
+  text-align: center;
 }
 
 .result-explainer {

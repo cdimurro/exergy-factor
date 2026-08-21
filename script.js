@@ -423,7 +423,7 @@ function formatDisplayEnergy(value) {
 }
 
 function displayEnergyUnit(unit) {
-  return String(unit).replaceAll("Btu", "BTU");
+  return String(unit).replaceAll("MMBtu", "MMBTU").replaceAll("Btu", "BTU");
 }
 
 function normalizeUnit(unit) {
@@ -486,6 +486,8 @@ window.EXERGY_FACTOR_CALCULATION_INTERNALS = Object.freeze({
   thermalFactorFromTemperatures,
   formatComparisonRatio,
   formatComparisonQuantity,
+  displayEnergyUnit,
+  displayUnit,
 });
 
 function unitCompatibleWithForm(formKey, unit) {
