@@ -5,14 +5,14 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; connect-src 'self' http://127.0.0.1:8000 https://api.exergyfactor.com; base-uri 'none'; form-action 'self'" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>API Preview | Exergy Factor</title>
+    <title>API | Exergy Factor</title>
     <meta
       name="description"
-      content="Preview the deterministic Exergy Factor API and run it locally with the Quantity and Quality package."
+      content="Use the public Exergy Factor API to calculate energy quantity, Exergy Factor, and accessible exergy."
     />
     <link rel="canonical" href="https://exergyfactor.com/api-key.html" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="styles.css?v=20260818c" />
+    <link rel="stylesheet" href="styles.css?v=20260820at" />
   </head>
   <body>
     <header class="site-header">
@@ -24,91 +24,49 @@
         <a href="index.html">Calculate</a>
         <a href="compare.html">Compare</a>
         <a href="methodology.html">Methodology</a>
-        <a href="api-key.html" aria-current="page">API Preview</a>
+        <a href="api-key.html" aria-current="page">API</a>
         <a href="paper/quantity-and-quality-standard-reporting-framework.pdf">Paper</a>
       </nav>
     </header>
 
     <main>
-      <section class="page-hero">
-        <p class="eyebrow">Developer API Preview</p>
-        <h1>The hosted Exergy Factor API is coming soon.</h1>
+      <section class="page-hero api-hero">
+        <p class="eyebrow">Free public API</p>
+        <h1>Exergy Factor API.</h1>
         <p>
-          The deterministic API is implemented and available for local deployment through the Quantity and Quality Python package. Public hosted access will open after production monitoring and delivery infrastructure are in place.
+          Send one JSON request and get the quantity, Exergy Factor, accessible exergy, and the context needed to interpret the result. No account or API key is required.
         </p>
       </section>
 
       <section class="section api-key-section">
         <div class="api-key-layout">
-          <form id="api-key-form" class="tool-card api-key-form">
-            <div class="panel-head">
+          <div class="tool-card api-access-card">
+            <div class="api-card-heading">
               <div>
-                <h2>Hosted Access Preview</h2>
+                <p class="eyebrow">Get started</p>
+                <h2>Access the Exergy Factor API for Free</h2>
               </div>
+              <span class="api-badge">No API key required</span>
             </div>
-
-            <div class="field-row">
-              <div class="field-label">
-                <label for="api-email">Email</label>
-                <button class="info-button" type="button" aria-label="Email help" data-tooltip="Your free API key will be emailed to this address.">ⓘ</button>
-              </div>
-              <input id="api-email" type="email" autocomplete="email" maxlength="320" required placeholder="you@example.com" />
+            <p class="api-label">Base URL</p>
+            <code class="api-base-url">https://api.exergyfactor.com/v1</code>
+            <div class="api-actions">
+              <a class="primary-link" href="https://api.exergyfactor.com/v1/health" target="_blank" rel="noopener">Check Status</a>
+              <a class="secondary-link" href="https://api.exergyfactor.com/docs" target="_blank" rel="noopener">Open API docs</a>
             </div>
-
-            <div class="field-row">
-              <div class="field-label">
-                <label for="api-name">Name</label>
-              </div>
-              <input id="api-name" type="text" autocomplete="name" maxlength="200" placeholder="Optional" />
-            </div>
-
-            <div class="field-row">
-              <div class="field-label">
-                <label for="api-organization">Organization</label>
-              </div>
-              <input id="api-organization" type="text" autocomplete="organization" maxlength="200" placeholder="Optional" />
-            </div>
-
-            <div class="field-row">
-              <div class="field-label">
-                <label for="api-intended-use">Use Case</label>
-              </div>
-              <textarea id="api-intended-use" rows="4" maxlength="1000" placeholder="Optional"></textarea>
-            </div>
-
-            <div class="terms-consent">
-              <input id="api-accept-terms" type="checkbox" required />
-              <label for="api-accept-terms">
-                I agree to the <a href="terms.html">Terms</a> and acknowledge the <a href="privacy.html">Privacy Notice</a>.
-              </label>
-            </div>
-
-            <div class="form-actions">
-              <button class="primary-button" type="submit">Request a Free Key</button>
-            </div>
-
-            <div class="api-status" id="api-key-status" aria-live="polite">
-              Hosted API access is coming soon. The Python package and local API are available today.
-            </div>
-            <code class="api-dev-key" id="api-key-dev-output" hidden></code>
-          </form>
+            <p class="api-note">The service may take a few seconds to wake after being idle.</p>
+          </div>
 
           <aside class="api-info">
-            <p class="eyebrow">What the API Provides</p>
-            <h2>One stream-calculation contract.</h2>
+            <p class="eyebrow">One simple contract</p>
+            <h2>Send JSON. Get a typed result.</h2>
             <p>
-              Discover the accepted inputs, then calculate energy quantity, Exergy Factor, and accessible exergy. The same JSON request works through Python, the CLI, and HTTP.
+              Discover the fields, calculate one quantity, and get its Exergy Factor and accessible exergy with the context needed to interpret the result.
             </p>
-            <pre><code>GET  /v1/capabilities
-GET  /v1/calculate/schema
-POST /v1/calculate
-GET  /v1/accounting/schema
-POST /v1/account
-GET  /v1/schema
-POST /v1/validate</code></pre>
-            <p>
-              Install <code>quantity-and-quality[api]</code> and run <code>quantity-quality serve-api</code> to evaluate these endpoints locally today. Public key requests remain disabled until the production service is live.
-            </p>
+            <pre><code>GET  /health
+GET  /calculate/schema
+POST /calculate</code></pre>
+            <p class="api-note">Open the docs for capabilities, accounting, and complete request and response fields.</p>
           </aside>
         </div>
       </section>
@@ -122,10 +80,10 @@ POST /v1/validate</code></pre>
         </p>
         <p class="legal-links"><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p>
       </div>
-      <a class="primary-link" href="paper/quantity-and-quality-standard-reporting-framework.pdf">Download the paper</a>
+      <a class="primary-link" href="paper/quantity-and-quality-standard-reporting-framework.pdf" download="quantity-and-quality-standard-reporting-framework.pdf" type="application/pdf">Download the paper</a>
     </footer>
 
-    <script src="data/reference_examples.js?v=20260818c"></script>
-    <script src="script.js?v=20260818c"></script>
+    <script src="data/reference_examples.js?v=20260819a"></script>
+    <script src="script.js?v=20260820v"></script>
   </body>
 </html>

@@ -12,7 +12,7 @@
     />
     <link rel="canonical" href="https://exergyfactor.com/methodology.html" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="styles.css?v=20260818c" />
+    <link rel="stylesheet" href="styles.css?v=20260820at" />
   </head>
   <body>
     <header class="site-header">
@@ -24,7 +24,7 @@
         <a href="index.html">Calculate</a>
         <a href="compare.html">Compare</a>
         <a href="methodology.html" aria-current="page">Methodology</a>
-        <a href="api-key.html">API Preview</a>
+        <a href="api-key.html">API</a>
         <a href="paper/quantity-and-quality-standard-reporting-framework.pdf">Paper</a>
       </nav>
     </header>
@@ -34,7 +34,7 @@
         <p class="eyebrow">Methodology</p>
         <h1>The energy industry needs a new reporting framework</h1>
         <p>
-          Standard energy reporting usually measures energy quantities in kWh, EJ, Btu, or MMcf. Those scalar units are useful, but they do not show how much of the reported energy is available to do useful work under declared conditions.
+              Standard energy reporting usually measures energy quantities in kWh, EJ, BTU, or MMcf. Those scalar units are useful, but they do not show how much of the reported energy is available to do useful work under declared conditions.
         </p>
       </section>
 
@@ -54,11 +54,11 @@
             <p class="eyebrow">The Solution</p>
             <h2>Add a second number for Exergy Factor.</h2>
             <p>
-              Exergy Factor, written as <code>f_X</code>, is the fraction of an energy quantity that is available as useful work potential under the stated reference conditions.
+              Exergy Factor, written as <code>fx</code>, is the fraction of an energy quantity that is available as useful work potential under the stated reference conditions.
             </p>
-            <pre><code>1 MWh_th, f_X = 0.73</code></pre>
+            <pre><code>1 MWh_th, fx = 0.170 [Th = 80 °C, T0 = 20 °C]</code></pre>
             <p>
-              This keeps the familiar energy quantity units and adds the quality factor needed to state the stream's accessible work potential.
+              This keeps the familiar energy quantity units and adds the quality factor and declared temperatures needed to state and verify the quantity's accessible work potential.
             </p>
           </article>
         </div>
@@ -69,9 +69,9 @@
           <article>
             <p class="eyebrow">Core calculation</p>
             <h2>Accessible exergy is energy quantity multiplied by Exergy Factor.</h2>
-            <pre><code>accessible exergy = energy quantity x f_X</code></pre>
+            <pre><code>accessible exergy = energy quantity x fx</code></pre>
             <p>
-              If a notation says <code>1 MWh_th, f_X = 0.73</code>, it means that one megawatt-hour of thermal energy carries <code>0.73 MWh_ex</code> of accessible exergy at a declared boundary.
+              If a notation says <code>1 MWh_th, fx = 0.170 [Th = 80 °C, T0 = 20 °C]</code>, it means that one megawatt-hour of thermal energy carries <code>0.170 MWh_ex</code> of accessible exergy at the stated source and reference temperatures. The remaining <code>0.830 MWh</code> is Inaccessible Anergy—the portion of the energy quantity that is not available as work under those conditions.
             </p>
           </article>
 
@@ -81,7 +81,7 @@
             <p>
               For heat, this calculator estimates ideal thermal availability with the Carnot factor. Temperatures are converted to kelvin before the calculation.
             </p>
-            <pre><code>f_X = 1 - sink temperature / source temperature</code></pre>
+            <pre><code>fx = 1 - sink temperature / source temperature</code></pre>
             <p>
               The same heat quantity can have a different Exergy Factor if the source temperature or reference sink temperature changes. That is why thermal records should declare the source and sink temperatures when the record needs to be verified.
             </p>
@@ -94,38 +94,108 @@
               Exergy exists when a stream is thermodynamically distinguishable from a declared environment or task boundary. The difference may be thermal, chemical, electrical, mechanical, pressure-based, or radiative. When the relevant states are the same, the Exergy Factor is zero and no work can be obtained from that difference.
             </p>
             <p>
-              Distinguishability is the physical basis of <code>f_X</code>, not a second factor multiplied into it.
+              Distinguishability is the physical basis of <code>fx</code>, not a second factor multiplied into it.
             </p>
           </article>
 
           <article>
             <p class="eyebrow">Reporting</p>
-            <h2>The simple notation can be short or self-verifying.</h2>
+            <h2>Full notation is the standard when quality context is known.</h2>
             <p>
-              For broad adoption, the short form should stay easy to read: <code>1 MWh_th, f_X = 0.73</code>. When the record needs auditability, add context such as source temperature, sink temperature, fuel basis, boundary, or reference environment.
+              The canonical record is <code>quantity typed_unit, fx = factor [declared context]</code>. Use the square-bracket declaration whenever the source and reference conditions, fuel basis, or other context are known so another reader can reproduce the factor. If that context is unavailable, the short two-number form remains valid, but it is a supplied or presumptive factor rather than a self-verifying calculation.
             </p>
-            <pre><code>1 MWh_th, f_X = 0.17
-form = 80 °C hot water
-source = 80 °C
-sink = 20 °C</code></pre>
+            <pre><code>1 MWh, fx = 0.170</code></pre>
             <p>
-              This keeps ordinary reporting simple while giving engineers, institutions, and standards bodies enough information to reproduce or challenge the result.
+              Use the short two-number form when the source or reference conditions are unknown or were not recorded. It still reports the quantity and its Exergy Factor; it simply does not claim that another reader can reconstruct the factor from the line alone.
+            </p>
+            <pre><code>5 BTU_th, fx = 0.214 [Th = 100 °C, T0 = 20 °C]</code></pre>
+            <p>
+              The quantity, factor, source temperature, and reference temperature are all visible in one line. Add boundary, fuel basis, or other metadata when those details affect interpretation. For example, a natural-gas record can state <code>1.3 MWh_HHV_NG, fx = 0.930 [basis = HHV]</code> so the denominator is not left implicit.
             </p>
           </article>
 
           <article>
             <p class="eyebrow">End-use accounting</p>
-            <h2>Applied Exergy is what reaches the task.</h2>
-            <pre><code>primary energy → secondary energy → final energy → useful energy → energy service
-primary exergy → secondary exergy → final exergy → Applied Exergy</code></pre>
+            <h2>Applied Exergy is the last physical transfer before the service.</h2>
+            <div class="accounting-chain" aria-label="Energy and exergy accounting chain">
+              <div class="accounting-stage" aria-label="Primary Energy = Primary Exergy + Primary Anergy">
+                <span class="accounting-token accounting-energy">Primary Energy</span>
+                <span class="accounting-operator" aria-hidden="true">=</span>
+                <span class="accounting-token accounting-exergy">Primary Exergy</span>
+                <span class="accounting-operator" aria-hidden="true">+</span>
+                <span class="accounting-token accounting-anergy">Primary Anergy</span>
+              </div>
+              <div class="accounting-arrow" aria-hidden="true"><span>↓</span></div>
+              <div class="accounting-stage" aria-label="Secondary Energy = Secondary Exergy + Secondary Anergy">
+                <span class="accounting-token accounting-energy">Secondary Energy</span>
+                <span class="accounting-operator" aria-hidden="true">=</span>
+                <span class="accounting-token accounting-exergy">Secondary Exergy</span>
+                <span class="accounting-operator" aria-hidden="true">+</span>
+                <span class="accounting-token accounting-anergy">Secondary Anergy</span>
+              </div>
+              <div class="accounting-arrow" aria-hidden="true"><span>↓</span></div>
+              <div class="accounting-stage" aria-label="Final Energy = Final Exergy + Final Anergy">
+                <span class="accounting-token accounting-energy">Final Energy</span>
+                <span class="accounting-operator" aria-hidden="true">=</span>
+                <span class="accounting-token accounting-exergy">Final Exergy</span>
+                <span class="accounting-operator" aria-hidden="true">+</span>
+                <span class="accounting-token accounting-anergy">Final Anergy</span>
+              </div>
+              <div class="accounting-arrow" aria-hidden="true"><span>↓</span></div>
+              <div class="accounting-stage" aria-label="Useful Energy = Useful Exergy + Useful Anergy">
+                <span class="accounting-token accounting-energy">Useful Energy</span>
+                <span class="accounting-operator" aria-hidden="true">=</span>
+                <span class="accounting-token accounting-exergy">Useful Exergy</span>
+                <span class="accounting-operator" aria-hidden="true">+</span>
+                <span class="accounting-token accounting-anergy">Useful Anergy</span>
+              </div>
+              <div class="accounting-arrow" aria-hidden="true"><span>↓</span></div>
+              <div class="accounting-stage" aria-label="Applied Energy = Applied Exergy + Applied Anergy">
+                <span class="accounting-token accounting-energy">Applied Energy</span>
+                <span class="accounting-operator" aria-hidden="true">=</span>
+                <span class="accounting-token accounting-exergy accounting-applied-exergy">Applied Exergy</span>
+                <span class="accounting-operator" aria-hidden="true">+</span>
+                <span class="accounting-token accounting-anergy">Applied Anergy</span>
+              </div>
+              <div class="accounting-arrow" aria-hidden="true"><span>↓</span></div>
+              <div class="accounting-stage accounting-service-stage" aria-label="Energy Services">
+                <span class="accounting-token accounting-service">Energy Services</span>
+              </div>
+            </div>
             <p>
-              Useful energy is the output of the end-use device and can still contain both exergy and anergy. Applied Exergy is only the exergy crossing the last device-to-task boundary—for example shaft work reaching a machine or the exergy of heat entering a liquid.
+              At each energy-carrier boundary, the reported energy quantity is the sum of its accessible exergy and inaccessible anergy. If the total transfer at the task boundary is also measured, it can be reported as Applied Energy = Applied Exergy + Applied Anergy. Applied Exergy is the portion that can do work; Applied Anergy is the residual under the same declared reference conditions.
             </p>
             <p>
-              Secondary energy is an optional intermediate boundary for a transformed, transportable carrier such as generated electricity or refined fuel. Statistical substitution-method values can be retained for historical comparison, but they are hypothetical fossil-input equivalents—not physical streams to which an Exergy Factor should be applied.
+              <strong>Primary Exergy</strong> is the raw resource as it exists in nature: the chemical exergy of crude oil in the ground, solar radiation, nuclear material, and similar sources. It is the theoretical maximum work potential at the source.
             </p>
             <p>
-              The energy service is kept separate because it is the outcome society wants: cold beers, a comfortable occupied home, passenger-miles, or illuminated space. Those outcomes use service units, not joules or watt-hours.
+              <strong>Secondary Exergy</strong> is measured after the first major conversion step—for example electricity at the power-plant busbar, refined fuels, or district heat leaving the plant. It is still the theoretical maximum work potential at that stage.
+            </p>
+            <p>
+              <strong>Final Exergy</strong> is what arrives at the end-user's meter, tank, or delivery point: electricity at the building, gasoline in the car, or heat at the factory gate. The quantity remains a theoretical maximum work potential.
+            </p>
+            <p>
+              <strong>Useful Exergy</strong> is the theoretical maximum work potential after the end-use conversion device—the highest amount that could be extracted from the form that now exists, such as shaft-ready mechanical energy potential, process-heat potential at the required temperature, or luminous potential. Useful Energy is the total first-law output of the end-use device and can contain both Useful Exergy and Useful Anergy.
+            </p>
+            <p>
+              <strong>Applied Exergy</strong> is the work-capable portion of Applied Energy that actually crosses the final device-to-task boundary and does real work or produces the intended effect. Applied Energy is the total energy that actually crosses the final device-to-task boundary; Applied Anergy is its residual under the same declared reference conditions. Applied Exergy is the first quantity in the chain that is no longer only a potential attached to an energy carrier or device output.
+            </p>
+            <ul>
+              <li>Torque multiplied by angular displacement delivered through a shaft into the driven machine.</li>
+              <li>Heat that actually crosses a heat-transfer surface into process fluid or room air at the required temperature.</li>
+              <li>Photons that actually leave a lamp and reach the task surface.</li>
+            </ul>
+            <p>
+              <strong>Energy Services</strong> are the final benefits people or processes care about: passenger-kilometres, tonnes of steel, illuminated area at the required lux, a comfortable indoor temperature, or another outcome measured in service units rather than joules of exergy.
+            </p>
+            <p>
+              Everything before Applied Exergy—Primary, Secondary, Final, and Useful Exergy—is a theoretical maximum work potential associated with an energy form. At Applied Exergy, that potential has become a real interaction across the final system boundary. Downstream, track the service that interaction enables rather than exergy of a carrier.
+            </p>
+            <p>
+              For example, heat leaving a boiler is Useful Energy with a corresponding Useful Exergy potential. The heat that actually crosses the exchanger into the process fluid or room is Applied Energy; its temperature-dependent portion is Applied Exergy and the remainder is Applied Anergy. For shaft or electrical work, the Useful and Applied quantities may coincide when the device-to-task boundary is the work-transfer point.
+            </p>
+            <p>
+              Secondary energy is still an optional parallel accounting boundary for transformed, transportable carriers. Statistical substitution-method values can be retained for historical comparison, but they are hypothetical fossil-input equivalents—not physical streams to which an Exergy Factor should be applied.
             </p>
           </article>
         </div>
@@ -137,7 +207,7 @@ primary exergy → secondary exergy → final exergy → Applied Exergy</code></
             <p class="eyebrow">Flexible use cases</p>
             <h2>The framework is not limited to one form of energy.</h2>
             <p>
-              Electricity is commonly treated near <code>f_X = 1</code> at the point of use because it is already high-grade work potential. Fuels can be reported with HHV or LHV basis. Solar radiation, stored energy, cooling, and recovered heat can each be reported with the same quantity-plus-quality structure.
+              Electricity is commonly treated near <code>fx = 1</code> at the point of use because it is already high-grade work potential. Fuels can be reported with HHV or LHV basis. Solar radiation, stored energy, cooling, and recovered heat can each be reported with the same quantity-plus-quality structure.
             </p>
             <p>
               The important rule is consistency: declare the boundary, basis, and reference conditions when those details affect interpretation.
@@ -147,10 +217,10 @@ primary exergy → secondary exergy → final exergy → Applied Exergy</code></
             <p class="eyebrow">Why it bridges the gap</p>
             <h2>It works with existing units instead of replacing them.</h2>
             <p>
-              Organizations do not need to abandon MWh, kWh, GJ, MMBtu, or other familiar units. They can keep their existing meters, datasets, invoices, and models, then add Exergy Factor (<code>f_X</code>) as a second number after the quantity.
+              Organizations do not need to abandon MWh, kWh, GJ, MMBTU, or other familiar units. They can keep their existing meters, datasets, invoices, and models, then add Exergy Factor (<code>fx</code>) as a second number after the quantity.
             </p>
             <p>
-              The standard reporting object becomes <code>(E_carrier, f_X)</code>. This makes the framework practical for industry to adopt while filling in the information needed for honest energy analysis.
+              The standard reporting object becomes <code>(E_carrier, fx)</code>. This makes the framework practical for industry to adopt while filling in the information needed for honest energy analysis.
             </p>
           </article>
         </div>
@@ -193,7 +263,7 @@ F4 = full vector audit</code></pre>
             <p class="eyebrow">Empirical F3 check</p>
             <h2>The paper includes a public district-heating empirical demonstration.</h2>
             <p>
-              Using the public XAI4HEAT data, the framework was applied to 51,592 synchronized 15-minute intervals from substations L4, L12, L17, and L22. The dynamic ambient-sink portfolio value was <code>f_X = 0.2164</code>, compared with <code>f_X = 0.1727</code> under a fixed 20 °C sink and <code>f_X = 0.1720</code> under a primary supply-return integrated model. Those differences show why reference conditions and method metadata need to be declared instead of hidden.
+              Using the public XAI4HEAT data, the framework was applied to 51,592 synchronized 15-minute intervals from substations L4, L12, L17, and L22. The dynamic ambient-sink portfolio value was <code>fx = 0.2164</code>, compared with <code>fx = 0.1727</code> under a fixed 20 °C sink and <code>fx = 0.1720</code> under a primary supply-return integrated model. Those differences show why reference conditions and method metadata need to be declared instead of hidden.
             </p>
           </article>
         </div>
@@ -209,7 +279,7 @@ F4 = full vector audit</code></pre>
         </p>
         <p class="legal-links"><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p>
       </div>
-      <a class="primary-link" href="paper/quantity-and-quality-standard-reporting-framework.pdf">Download the paper</a>
+      <a class="primary-link" href="paper/quantity-and-quality-standard-reporting-framework.pdf" download="quantity-and-quality-standard-reporting-framework.pdf" type="application/pdf">Download the paper</a>
     </footer>
   </body>
 </html>
