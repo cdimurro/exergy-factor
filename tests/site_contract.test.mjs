@@ -176,7 +176,7 @@ test("comparison defaults are internally consistent", () => {
   assert.doesNotMatch(html, />Temperatures \(°C\)</);
   assert.doesNotMatch(html, /compare-row-head/);
   assert.doesNotMatch(html, /compare-field-wide/);
-  assert.match(html, /5 MWh of electricity carries 4\.66x the accessible exergy of 5 MWh of heat at 100 °C in a 20 °C environment/);
+  assert.match(html, /5 MWh of electricity carries 4\.66 times the accessible exergy of 5 MWh of heat at 100 °C in a 20 °C environment/);
   assert.match(html, /5 MWh of electricity carries the same accessible exergy as 23\.322 MWh of heat at 100 °C in a 20 °C environment/);
   assert.doesNotMatch(html, /value="bbl\(oil\)"/);
   assert.doesNotMatch(html, /value="scf\(natural gas\)"/);
@@ -207,6 +207,15 @@ test("comparison defaults are internally consistent", () => {
   assert.match(source, /accessible_exergy_color/);
   assert.match(source, /inaccessible_anergy_color/);
   assert.match(source, /formatTemperatureDisplay\(fields\["source-temp"\]\.value/);
+});
+
+test("comparison text spells out large ratios and quantities", () => {
+  const internals = sandbox.window.EXERGY_FACTOR_CALCULATION_INTERNALS;
+  assert.equal(internals.formatComparisonRatio(4.66), "4.66 times");
+  assert.equal(internals.formatComparisonRatio(1.88e7), "18.8 million times");
+  assert.equal(internals.formatComparisonQuantity(23.322), "23.322");
+  assert.equal(internals.formatComparisonQuantity(9.4e7), "94 million");
+  assert.doesNotMatch(internals.formatComparisonRatio(1.88e7), /e\+/);
 });
 
 test("methodology documents full self-verifying notation", () => {

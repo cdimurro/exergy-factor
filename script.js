@@ -337,6 +337,39 @@ function format(value, precision = 4) {
   return Number(value.toFixed(precision)).toString();
 }
 
+// Comparison text is meant to be read by people, not copied from a calculator
+// log. Keep scientific notation in the general formatter for technical exports,
+// but spell out large comparison values so `1.880e+7x` becomes `18.8 million
+// times` and an equivalent quantity becomes `94 million BTU`.
+const COMPARISON_SCALES = Object.freeze([
+  { divisor: 1e18, label: "quintillion" },
+  { divisor: 1e15, label: "quadrillion" },
+  { divisor: 1e12, label: "trillion" },
+  { divisor: 1e9, label: "billion" },
+  { divisor: 1e6, label: "million" },
+  { divisor: 1e3, label: "thousand" },
+]);
+
+function formatComparisonMagnitude(value, precision = 2) {
+  const scale = COMPARISON_SCALES.find(({ divisor }) => Math.abs(value) >= divisor);
+  if (!scale) return Number(value.toFixed(precision)).toString();
+  return `${Number((value / scale.divisor).toFixed(precision))} ${scale.label}`;
+}
+
+function formatComparisonRatio(value) {
+  if (!Number.isFinite(value)) return "invalid";
+  if (value === 0) return "0 times";
+  return `${formatComparisonMagnitude(value, 2)} times`;
+}
+
+function formatComparisonQuantity(value) {
+  if (!Number.isFinite(value)) return "invalid";
+  if (value === 0) return "0";
+  if (Math.abs(value) >= 1000) return formatComparisonMagnitude(value, 2);
+  if (Math.abs(value) < 0.001) return Number(value.toPrecision(3)).toString();
+  return Number(value.toFixed(3)).toString();
+}
+
 // A COMPUTED Exergy Factor keeps its trailing zeros: 0.170, not 0.17, and 0.730,
 // not 0.73. Those digits show the precision being claimed, and dropping them made
 // the published figure look different from the value a reader recomputes
@@ -451,6 +484,8 @@ window.EXERGY_FACTOR_CALCULATION_INTERNALS = Object.freeze({
   formPresetKey,
   unitCompatibleWithForm,
   thermalFactorFromTemperatures,
+  formatComparisonRatio,
+  formatComparisonQuantity,
 });
 
 function unitCompatibleWithForm(formKey, unit) {
@@ -740,7 +775,7 @@ function renderCompare() {
         <div class="bar-row">
           <div class="compare-side-label" aria-hidden="true">${row.side}</div>
           <div class="bar-notation">
-            <strong>${format(row.quantity, 3)} ${row.displayUnit}, fx = ${formatFactor(row.factor)}${row.bracket}</strong>
+            <strong>${formatComparisonQuantity(row.quantity)} ${row.displayUnit}, fx = ${formatFactor(row.factor)}${row.bracket}</strong>
           </div>
           <div class="bar-factor" data-tooltip="Exergy Factor: ${factorLabel}">
             <svg class="bar-track" viewBox="0 0 100 1" preserveAspectRatio="none" role="meter" aria-label="${row.label} Exergy Factor on a 0 to 1 scale" aria-valuemin="0" aria-valuemax="1" aria-valuenow="${factorOnScale}" aria-valuetext="${factorLabel}" title="Exergy Factor: ${factorLabel}" xmlns="http://www.w3.org/2000/svg">
@@ -779,7 +814,12 @@ function renderCompare() {
     renderEquivalence(rows);
     return;
   }
-  fields["compare-summary"].textContent = `${compareQuantityLabel(higher)} carries ${format(higher.mwhEx / lower.mwhEx, 2)}x the accessible exergy of ${compareQuantityLabel(lower)}.`;
+  const ratio = higher.mwhEx / lower.mwhEx;
+  if (Math.abs(ratio - 1) < 1e-12) {
+    fields["compare-summary"].textContent = `${compareQuantityLabel(higher)} carries the same accessible exergy as ${compareQuantityLabel(lower)}.`;
+  } else {
+    fields["compare-summary"].textContent = `${compareQuantityLabel(higher)} carries ${formatComparisonRatio(ratio)} the accessible exergy of ${compareQuantityLabel(lower)}.`;
+  }
   renderEquivalence(rows);
 }
 
@@ -808,7 +848,7 @@ function compareContext(row) {
 }
 
 function compareQuantityLabel(row) {
-  return `${format(row.quantity, 3)} ${narrativeUnit(row)} of ${sentenceLabel(row)}${compareContext(row)}`;
+  return `${formatComparisonQuantity(row.quantity)} ${narrativeUnit(row)} of ${sentenceLabel(row)}${compareContext(row)}`;
 }
 
 function renderEquivalence(rows) {
@@ -817,7 +857,7 @@ function renderEquivalence(rows) {
   const [reference, ...comparisons] = rows;
   const equivalents = comparisons
     .filter((row) => Number.isFinite(row.factor) && row.factor > 0 && ENERGY_TO_J[row.unit])
-    .map((row) => `${compareQuantityLabel(reference)} carries the same accessible exergy as ${format(reference.exergyJ / (row.factor * ENERGY_TO_J[row.unit]), 3)} ${narrativeUnit(row)} of ${sentenceLabel(row)}${compareContext(row)}`);
+    .map((row) => `${compareQuantityLabel(reference)} carries the same accessible exergy as ${formatComparisonQuantity(reference.exergyJ / (row.factor * ENERGY_TO_J[row.unit]))} ${narrativeUnit(row)} of ${sentenceLabel(row)}${compareContext(row)}`);
 
   if (!equivalents.length) {
     fields["compare-equivalence"].textContent = "Equivalence requires another row to have a positive Exergy Factor.";
@@ -1132,7 +1172,7 @@ function exportModel() {
         quantity: row.quantity,
         unit: row.unit,
         factor: row.factor,
-        notation: `${format(row.quantity, 3)} ${row.displayUnit}, fx = ${formatFactor(row.factor)}${row.bracket}`,
+        notation: `${formatComparisonQuantity(row.quantity)} ${row.displayUnit}, fx = ${formatFactor(row.factor)}${row.bracket}`,
         exergy: `${formatDisplayEnergy(row.exergyInUnit)} ${row.exergyUnit}`,
         anergy: `${formatDisplayEnergy(row.anergyInUnit)} ${row.exergyUnit}`,
       })),
