@@ -306,8 +306,9 @@ function tempToK(value, unit) {
   return NaN;
 }
 
-// The declaration bracket is published in Celsius whatever the user typed, so two
-// records from two people are comparable without unit archaeology.
+// The calculation always converts temperatures to Kelvin internally, but the
+// declaration bracket preserves the units the user selected. That keeps a copied
+// record faithful to the source data: `Th = 212 °F` stays visibly Fahrenheit.
 function toCelsius(value, unit) {
   const kelvin = tempToK(value, unit);
   return Number.isFinite(kelvin) ? kelvin - 273.15 : NaN;
@@ -386,9 +387,16 @@ function formatFactor(value) {
 // A temperature as it appears inside the declaration bracket. Include the degree
 // symbol so the self-verifying notation is readable when copied from the site.
 function formatBracketTemp(celsius) {
-  // One decimal. A stream entered as 340 F is 171.1111... C, and printing
-  // `Th = 171.111 °C` claims a precision the reading never had.
-  return `${Number(celsius.toFixed(1))} °C`;
+  return `${Math.round((celsius + 1e-9) * 10) / 10} °C`;
+}
+
+function formatBracketTemperature(value, unit, fallbackCelsius) {
+  const number = Number(value);
+  const symbols = { C: "°C", F: "°F", K: "K" };
+  if (Number.isFinite(number) && symbols[unit]) {
+    return `${Math.round((number + 1e-9) * 10) / 10} ${symbols[unit]}`;
+  }
+  return Number.isFinite(fallbackCelsius) ? formatBracketTemp(fallbackCelsius) : "invalid";
 }
 
 // The declaration bracket, wherever there is one to declare.
@@ -403,12 +411,26 @@ function formatBracketTemp(celsius) {
 // gas), so the full record is `1 MWh_HHV_NG, fx = 0.930 [basis = HHV]` rather
 // than leaving the basis to be inferred from the unit suffix. The library states
 // it the same way; so does this.
-function declarationBracket({ preset, sourceC, sinkC, coldC }) {
+function declarationBracket({
+  preset,
+  sourceC,
+  sinkC,
+  coldC,
+  sourceValue,
+  sourceUnit,
+  sinkValue,
+  sinkUnit,
+  coldValue,
+  coldUnit,
+}) {
+  const displayedSink = formatBracketTemperature(sinkValue, sinkUnit, sinkC);
   if (Number.isFinite(coldC) && Number.isFinite(sinkC)) {
-    return ` [Tcold = ${formatBracketTemp(coldC)}, T0 = ${formatBracketTemp(sinkC)}]`;
+    const displayedCold = formatBracketTemperature(coldValue ?? sourceValue, coldUnit ?? sourceUnit, coldC);
+    return ` [Tcold = ${displayedCold}, T0 = ${displayedSink}]`;
   }
   if (Number.isFinite(sourceC) && Number.isFinite(sinkC) && sourceC > sinkC) {
-    return ` [Th = ${formatBracketTemp(sourceC)}, T0 = ${formatBracketTemp(sinkC)}]`;
+    const displayedSource = formatBracketTemperature(sourceValue, sourceUnit, sourceC);
+    return ` [Th = ${displayedSource}, T0 = ${displayedSink}]`;
   }
   if (preset?.typedUnit?.endsWith("_solar") && Number.isFinite(preset.referenceC)) {
     return ` [T0 = ${formatBracketTemp(preset.referenceC)}]`;
@@ -488,6 +510,7 @@ window.EXERGY_FACTOR_CALCULATION_INTERNALS = Object.freeze({
   formatComparisonQuantity,
   displayEnergyUnit,
   displayUnit,
+  formatBracketTemperature,
 });
 
 function unitCompatibleWithForm(formKey, unit) {
@@ -592,6 +615,10 @@ function calculateFactor() {
         tier: "F2",
         coldC,
         sinkC: ambientC,
+        coldValue: fields["source-temp"]?.value,
+        coldUnit: sourceUnit(),
+        sinkValue: fields["sink-temp"]?.value,
+        sinkUnit: sinkUnit(),
       };
     }
 
@@ -614,6 +641,10 @@ function calculateFactor() {
         tier: "F2",
         sourceC: toCelsius(fields["source-temp"].value, sourceUnit()),
         sinkC: toCelsius(fields["sink-temp"].value, sinkUnit()),
+        sourceValue: fields["source-temp"].value,
+        sourceUnit: sourceUnit(),
+        sinkValue: fields["sink-temp"].value,
+        sinkUnit: sinkUnit(),
       };
     }
 
@@ -718,10 +749,26 @@ function compareRowTemperatures(side, preset) {
   const sinkK = tempToK(sinkValue, sinkUnit);
   if (preset.needsTemperature === "cooling") {
     if (sourceC >= sinkC || sourceK <= 0 || sinkK <= 0) return { factor: NaN };
-    return { factor: sinkK / sourceK - 1, coldC: sourceC, sinkC };
+    return {
+      factor: sinkK / sourceK - 1,
+      coldC: sourceC,
+      sinkC,
+      coldValue: sourceValue,
+      coldUnit: sourceUnit,
+      sinkValue,
+      sinkUnit,
+    };
   }
   if (sourceC <= sinkC || sourceK <= 0 || sinkK <= 0) return { factor: NaN };
-  return { factor: 1 - sinkK / sourceK, sourceC, sinkC };
+  return {
+    factor: 1 - sinkK / sourceK,
+    sourceC,
+    sinkC,
+    sourceValue,
+    sourceUnit,
+    sinkValue,
+    sinkUnit,
+  };
 }
 
 function compareRow(side) {
@@ -752,6 +799,12 @@ function compareRow(side) {
     sourceC: derived.sourceC,
     sinkC: derived.sinkC,
     coldC: derived.coldC,
+    sourceValue: derived.sourceValue,
+    sourceUnit: derived.sourceUnit,
+    sinkValue: derived.sinkValue,
+    sinkUnit: derived.sinkUnit,
+    coldValue: derived.coldValue,
+    coldUnit: derived.coldUnit,
     factor,
     energyJ,
     exergyJ,
@@ -844,16 +897,12 @@ function narrativeUnit(row) {
   return row.unit;
 }
 
-function narrativeTemperature(value) {
-  return `${format(value, 1)} °C`;
-}
-
 function compareContext(row) {
   if (row.presetKey === "heat" && Number.isFinite(row.sourceC) && Number.isFinite(row.sinkC)) {
-    return ` at ${narrativeTemperature(row.sourceC)} in a ${narrativeTemperature(row.sinkC)} environment`;
+    return ` at ${formatBracketTemperature(row.sourceValue, row.sourceUnit, row.sourceC)} in a ${formatBracketTemperature(row.sinkValue, row.sinkUnit, row.sinkC)} environment`;
   }
   if (row.presetKey === "cooling" && Number.isFinite(row.coldC) && Number.isFinite(row.sinkC)) {
-    return ` cooled to ${narrativeTemperature(row.coldC)} in a ${narrativeTemperature(row.sinkC)} environment`;
+    return ` cooled to ${formatBracketTemperature(row.coldValue, row.coldUnit, row.coldC)} in a ${formatBracketTemperature(row.sinkValue, row.sinkUnit, row.sinkC)} environment`;
   }
   return "";
 }
@@ -946,7 +995,7 @@ function updateCalculator() {
   const energyUnit = normalizeUnit(fields["energy-unit"].value);
   const { preset } = calculatorPreset();
   const energyJ = currentEnergyJ();
-  const { factor, method, tier, sourceC, sinkC, coldC } = calculateFactor();
+  const { factor, method, tier, sourceC, sinkC, coldC, sourceValue, sourceUnit: selectedSourceUnit, sinkValue, sinkUnit: selectedSinkUnit, coldValue, coldUnit: selectedColdUnit } = calculateFactor();
 
   if (!Number.isFinite(energy) || energy < 0 || !Number.isFinite(energyJ) || !Number.isFinite(factor)) {
     fields["notation-output"].textContent = "Check the inputs";
@@ -987,7 +1036,18 @@ function updateCalculator() {
   // had both temperatures in hand, while the methodology page promised the
   // notation "can be short or self-verifying" — so the claim was made and the
   // evidence withheld.
-  const bracket = declarationBracket({ preset, sourceC, sinkC, coldC });
+  const bracket = declarationBracket({
+    preset,
+    sourceC,
+    sinkC,
+    coldC,
+    sourceValue,
+    sourceUnit: selectedSourceUnit,
+    sinkValue,
+    sinkUnit: selectedSinkUnit,
+    coldValue,
+    coldUnit: selectedColdUnit,
+  });
   const notation = fixedForUnit
     ? `${format(energy, 4)} ${fields["energy-unit"].value} → ${format(notationQuantity, 4)} ${typedEnergyUnit}, fx = ${formatFactor(factor)}${bracket}`
     : `${format(notationQuantity, 4)} ${typedEnergyUnit}, fx = ${formatFactor(factor)}${bracket}`;

@@ -124,6 +124,8 @@ test("calculator form catalog defaults to heat and keeps fuel basis explicit", (
   assert.equal(internals.displayUnit("Btu", internals.comparePresets.heat), "BTU_th");
   assert.equal(internals.displayUnit("MMBtu", internals.comparePresets.heat), "MMBTU_th");
   assert.equal(internals.displayUnit("kWh", internals.comparePresets.naturalGasHhv), "kWh_HHV_NG");
+  assert.equal(internals.formatBracketTemperature("40", "F", 4.4), "40 °F");
+  assert.equal(internals.formatBracketTemperature("303.15", "K", 30), "303.2 K");
   assert.equal(internals.ENERGY_TO_J.PJ, 1e15);
   assert.equal(internals.ENERGY_TO_J.TWh, 3.6e15);
   assert.equal(internals.ENERGY_TO_J["ton-hour"], 12000 * 1055.05585262);
@@ -201,7 +203,8 @@ test("comparison defaults are internally consistent", () => {
   assert.match(source, /<div class="bar-value inaccessible-bar-value">/);
   assert.match(source, /formatDisplayEnergy\(row\.anergyInUnit\)/);
   assert.match(source, /function compareContext\(row\)/);
-  assert.match(source, /return ` at \$\{narrativeTemperature\(row\.sourceC\)\} in a \$\{narrativeTemperature\(row\.sinkC\)\} environment`/);
+  assert.match(source, /formatBracketTemperature\(row\.sourceValue, row\.sourceUnit, row\.sourceC\)/);
+  assert.match(source, /formatBracketTemperature\(row\.sinkValue, row\.sinkUnit, row\.sinkC\)/);
   assert.match(source, /\$\{narrativeUnit\(row\)\} of \$\{sentenceLabel\(row\)\}\$\{compareContext\(row\)\}/);
   assert.doesNotMatch(source, /Enter degrees Celsius/);
   assert.match(source, /const sourceC = toCelsius\(sourceValue, sourceUnit\)/);
