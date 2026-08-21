@@ -152,9 +152,8 @@ http://127.0.0.1:8000/v1/health
 For local work, run the optional API service and use its corresponding local
 base URL instead.
 
-The free deployment is intended for a low-volume public preview. It may sleep
-when idle and should not be treated as a high-availability or high-volume
-service.
+The free deployment is intended for a low-volume public service. It should not
+be treated as a high-availability or high-volume service.
 
 ## Scope
 
