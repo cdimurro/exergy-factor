@@ -72,6 +72,14 @@
 
               <div class="field-row">
                 <div class="field-label">
+                  <label for="energy-value">Energy Quantity</label>
+                  <button class="info-button" type="button" aria-label="Energy quantity help" data-tooltip="The accumulated amount of energy you want to report. Use the value from your meter, invoice, model, or dataset. Example: enter 1 for 1 MWh, 45 for 45 BTU, or 2.738 for 2.738 kWh.">ⓘ</button>
+                </div>
+                <input id="energy-value" type="number" min="0" step="any" value="5" inputmode="decimal" />
+              </div>
+
+              <div class="field-row">
+                <div class="field-label">
                   <label for="energy-unit">Unit</label>
                   <button id="energy-unit-help" class="info-button" type="button" aria-label="Unit help" data-tooltip="Choose the unit from your meter, invoice, model, or dataset. Fuel-volume shortcuts are shown only for their matching fuel form; their reference estimate appears here.">ⓘ</button>
                 </div>
@@ -101,14 +109,6 @@
                   <option value="Mcf(natural gas)">Mcf(natural gas)</option>
                   <option value="MMcf(natural gas)">MMcf(natural gas)</option>
                 </select>
-              </div>
-
-              <div class="field-row">
-                <div class="field-label">
-                  <label for="energy-value">Energy Quantity</label>
-                  <button class="info-button" type="button" aria-label="Energy quantity help" data-tooltip="The accumulated amount of energy you want to report. Use the value from your meter, invoice, model, or dataset. Example: enter 1 for 1 MWh, 45 for 45 BTU, or 2.738 for 2.738 kWh.">ⓘ</button>
-                </div>
-                <input id="energy-value" type="number" min="0" step="any" value="5" inputmode="decimal" />
               </div>
 
               <div class="field-row" id="energy-basis-row" hidden>
@@ -247,6 +247,6 @@
     </footer>
 
     <script src="data/reference_examples.js?v=20260821a"></script>
-    <script src="script.js?v=20260821ratio"></script>
+    <script src="script.js?v=20260821cooling"></script>
   </body>
 </html>

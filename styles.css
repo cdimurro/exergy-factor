@@ -761,11 +761,15 @@ button,
 
 .accessible-answer {
   grid-area: accessible;
+  justify-items: end;
+  text-align: right;
 }
 
 .inaccessible-answer {
   grid-area: inaccessible;
+  justify-items: end;
   padding-top: 12px;
+  text-align: right;
 }
 
 .result-explainer {
@@ -1454,6 +1458,12 @@ button:disabled {
 
   .bar-notation strong {
     white-space: normal;
+  }
+
+  .accessible-answer,
+  .inaccessible-answer {
+    justify-items: start;
+    text-align: left;
   }
 
   .field-row:nth-child(odd) {

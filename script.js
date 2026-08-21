@@ -575,8 +575,17 @@ function calculateFactor() {
       if (coldC > ambientC) {
         return { factor: NaN, method: "A cooling service cannot be warmer than the ambient it is rejected to.", tier: "F2" };
       }
+      let factor;
+      try {
+        // Use the same canonical kernel as the public API after converting each
+        // independently selected temperature unit to Celsius. This avoids a
+        // second UI-only equation drifting from the tested cooling calculation.
+        factor = coolingExergyFactorC(coldC, ambientC);
+      } catch (error) {
+        return { factor: NaN, method: error instanceof Error ? error.message : "Enter valid cooling and ambient temperatures.", tier: "F2" };
+      }
       return {
-        factor: (ambientC + 273.15) / (coldC + 273.15) - 1,
+        factor,
         method: "F2 cooling factor from your service and ambient temperatures.",
         tier: "F2",
         coldC,

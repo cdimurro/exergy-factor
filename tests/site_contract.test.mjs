@@ -104,8 +104,8 @@ test("calculator form catalog defaults to heat and keeps fuel basis explicit", (
   assert.match(html, /<option value="HHV" selected>HHV<\/option>/);
   assert.match(html, /id="energy-unit-help"/);
   assert.doesNotMatch(html, /id="fixed-note"/);
-  assert.ok(html.indexOf('id="energy-unit"') < html.indexOf('id="energy-value"'));
-  assert.ok(html.indexOf('id="energy-value"') < html.indexOf('id="energy-basis-row"'));
+  assert.ok(html.indexOf('id="energy-value"') < html.indexOf('id="energy-unit"'));
+  assert.ok(html.indexOf('id="energy-unit"') < html.indexOf('id="energy-basis-row"'));
   assert.doesNotMatch(html, /value="naturalGasHhv"/);
   assert.doesNotMatch(html, /value="naturalGasLhv"/);
 
@@ -207,6 +207,12 @@ test("comparison defaults are internally consistent", () => {
   assert.match(source, /accessible_exergy_color/);
   assert.match(source, /inaccessible_anergy_color/);
   assert.match(source, /formatTemperatureDisplay\(fields\["source-temp"\]\.value/);
+  assert.match(source, /factor = coolingExergyFactorC\(coldC, ambientC\)/);
+});
+
+test("cooling conversion accepts mixed temperature units", () => {
+  const coldC = ((40 - 32) * 5) / 9;
+  assert.ok(Math.abs(kernel.cooling_exergy_factor_c(coldC, 30) - 0.092) < 0.001);
 });
 
 test("comparison text spells out large ratios and quantities", () => {
