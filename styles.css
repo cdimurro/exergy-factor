@@ -823,7 +823,7 @@ button,
 
 .compare-bars {
   display: grid;
-  gap: 12px;
+  gap: 24px;
 }
 
 .bar-row {
