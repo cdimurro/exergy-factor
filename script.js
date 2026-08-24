@@ -769,6 +769,11 @@ function renderCompare() {
     </div>
     ${rows.map((row) => {
       const factorOnScale = Math.min(1, Math.max(0, row.factor));
+      const factorBarWidth = factorOnScale * 100;
+      // Keep the amber-to-teal scale anchored to the full track. A partial bar
+      // therefore shows the early (amber) part of the scale instead of squeezing
+      // the entire gradient into its own short width.
+      const factorGradientSize = factorOnScale > 0 ? 100 / factorOnScale : 100;
       const factorLabel = formatFactor(row.factor);
       const inaccessibleInUnit = (row.energyJ - row.exergyJ) / ENERGY_TO_J[row.unit];
       const bracket = row.bracket.trim();
@@ -777,8 +782,10 @@ function renderCompare() {
           <div class="compare-result-side">${row.side}</div>
           <div class="compare-result-notation">${format(row.quantity, 3)} ${row.displayUnit}, fx = ${formatFactor(row.factor)}${bracket ? `<span class="compare-result-bracket">${bracket}</span>` : ""}</div>
           <div class="compare-result-factor">
-            <span class="compare-factor-track" tabindex="0" role="meter" aria-label="${factorLabel} Exergy Factor" aria-valuemin="0" aria-valuemax="1" aria-valuenow="${factorOnScale}" aria-valuetext="${factorLabel}" data-tooltip="Exergy Factor: ${factorLabel}">
-              <span class="compare-factor-fill" style="width:${factorOnScale * 100}%"></span>
+            <span class="compare-factor-meter" tabindex="0" role="meter" aria-label="${factorLabel} Exergy Factor" aria-valuemin="0" aria-valuemax="1" aria-valuenow="${factorOnScale}" aria-valuetext="${factorLabel}" data-tooltip="Exergy Factor: ${factorLabel}">
+              <span class="compare-factor-track" aria-hidden="true">
+                <span class="compare-factor-fill" style="--factor-fill:${factorBarWidth}%;--factor-gradient-size:${factorGradientSize}%"></span>
+              </span>
             </span>
           </div>
           <strong class="compare-result-value accessible" data-label="Accessible Exergy">${formatDisplayEnergy(row.exergyInUnit)} ${row.unit}</strong>

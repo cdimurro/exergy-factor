@@ -83,3 +83,66 @@ test("every local HTML link resolves", () => {
     }
   }
 });
+
+test("comparison factor meters preserve partial widths and tooltip structure", () => {
+  const elements = new Map();
+  const field = (value = "") => ({
+    value,
+    dataset: {},
+    textContent: "",
+    innerHTML: "",
+    hidden: false,
+  });
+  for (const [id, value] of Object.entries({
+    "compare-a-preset": "electricity",
+    "compare-a-quantity": "5",
+    "compare-a-unit": "MWh",
+    "compare-a-factor": "1",
+    "compare-b-preset": "heat",
+    "compare-b-quantity": "5",
+    "compare-b-unit": "MWh",
+    "compare-b-factor": "0.17",
+    "compare-b-source": "100",
+    "compare-b-source-unit": "C",
+    "compare-b-sink": "20",
+    "compare-b-sink-unit": "C",
+    "compare-bars": "",
+    "compare-summary": "",
+    "compare-equivalence": "",
+  })) {
+    elements.set(id, field(value));
+  }
+
+  const comparisonSandbox = {
+    console,
+    document: {
+      addEventListener() {},
+      getElementById(id) { return elements.get(id) || null; },
+      querySelector() { return null; },
+      querySelectorAll() { return []; },
+    },
+    window: { location: { hostname: "example.test" } },
+  };
+  comparisonSandbox.window.window = comparisonSandbox.window;
+  vm.createContext(comparisonSandbox);
+  vm.runInContext(source, comparisonSandbox, { filename: "script.js" });
+  vm.runInContext("cacheFields(); renderCompare();", comparisonSandbox, { filename: "comparison-render.js" });
+
+  const resultHtml = elements.get("compare-bars").innerHTML;
+  const widths = [...resultHtml.matchAll(/--factor-fill:([0-9.]+)%/g)].map((match) => Number(match[1]));
+  assert.deepEqual(widths.length, 2);
+  assert.equal(widths[0], 100);
+  assert.ok(widths[1] > 0 && widths[1] < 100, `expected a partial Heat bar, received ${widths[1]}%`);
+  const gradientSizes = [...resultHtml.matchAll(/--factor-gradient-size:([0-9.]+)%/g)].map((match) => Number(match[1]));
+  assert.equal(gradientSizes[0], 100);
+  assert.ok(gradientSizes[1] > 100, `expected the partial Heat bar to use the early gradient range, received ${gradientSizes[1]}%`);
+  assert.match(resultHtml, /class="compare-factor-meter"/);
+  assert.match(resultHtml, /data-tooltip="Exergy Factor: 0\.214"/);
+
+  const css = fs.readFileSync(path.join(root, "styles.css"), "utf8");
+  const meterBlock = css.match(/\.compare-factor-meter\s*\{([\s\S]*?)\}/)?.[1] || "";
+  assert.doesNotMatch(meterBlock, /overflow\s*:/);
+  assert.match(css, /\.compare-factor-meter::after/);
+  assert.match(css, /\.compare-factor-track\s*\{[\s\S]*?overflow:\s*hidden/);
+  assert.match(css, /background-size:\s*var\(--factor-gradient-size, 100%\) 100%/);
+});

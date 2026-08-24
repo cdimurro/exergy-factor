@@ -463,24 +463,24 @@ label:hover + .info-button,
    not show an editable factor, so their three visible controls should use the
    available width instead of reserving a blank fourth column. */
 .compare-page .compare-rows {
-  gap: 18px;
-  padding: 16px;
+  gap: 14px;
+  padding: 14px 16px;
 }
 
 .compare-page .compare-row {
-  gap: 8px 12px;
+  gap: 6px 12px;
 }
 
 .compare-page .compare-row:not(.has-temps):not(.has-factor) {
-  grid-template-columns: 32px minmax(190px, 1.55fr) minmax(120px, 0.65fr) minmax(150px, 0.75fr);
+  grid-template-columns: 32px minmax(220px, 1.6fr) minmax(130px, 0.7fr) minmax(160px, 0.85fr);
 }
 
 .compare-page .compare-row.has-temps {
-  grid-template-columns: 32px minmax(170px, 1.15fr) minmax(100px, 0.6fr) minmax(150px, 0.75fr) minmax(260px, 1.45fr);
+  grid-template-columns: 32px minmax(190px, 1.2fr) minmax(110px, 0.65fr) minmax(150px, 0.8fr) minmax(280px, 1.55fr);
 }
 
 .compare-page .compare-row .field-row {
-  gap: 6px;
+  gap: 4px;
 }
 
 .compare-page .compare-row .field-label {
@@ -776,9 +776,9 @@ button,
 
 .compare-result {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
-  padding: 16px;
+  padding: 14px 16px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel);
@@ -841,7 +841,7 @@ button,
 
 .compare-bars {
   display: grid;
-  gap: 26px;
+  gap: 14px;
   min-width: 0;
 }
 
@@ -871,7 +871,7 @@ button,
 }
 
 .compare-result-row {
-  min-height: 54px;
+  min-height: 48px;
 }
 
 .compare-result-side {
@@ -896,18 +896,22 @@ button,
   min-width: 0;
 }
 
-.compare-factor-track {
+.compare-factor-meter {
   position: relative;
+  display: block;
+  cursor: help;
+  outline: none;
+}
+
+.compare-factor-track {
   display: block;
   height: 22px;
   overflow: hidden;
   border-radius: 999px;
   background: #e2ebe7;
-  cursor: help;
-  outline: none;
 }
 
-.compare-factor-track::after {
+.compare-factor-meter::after {
   position: absolute;
   left: 50%;
   bottom: calc(100% + 10px);
@@ -928,16 +932,25 @@ button,
   transition: opacity 0.15s ease;
 }
 
-.compare-factor-track:hover::after,
-.compare-factor-track:focus-visible::after {
+.compare-factor-meter:hover::after,
+.compare-factor-meter:focus-visible::after {
   opacity: 1;
+}
+
+.compare-factor-meter:focus-visible .compare-factor-track {
+  outline: 3px solid rgba(13, 118, 111, 0.18);
+  outline-offset: 2px;
 }
 
 .compare-factor-fill {
   display: block;
   height: 100%;
+  width: var(--factor-fill, 0%);
+  max-width: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--amber), var(--teal));
+  background-position: left center;
+  background-size: var(--factor-gradient-size, 100%) 100%;
 }
 
 .compare-result-value {
