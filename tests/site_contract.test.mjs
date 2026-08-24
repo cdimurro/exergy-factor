@@ -96,6 +96,7 @@ test("calculator defaults to 5 MWh of heat at 100 C", () => {
   assert.match(css, /\.answer-item strong\.accessible\s*\{\s*color: var\(--accessible-green\)/);
   assert.match(css, /\.answer-item strong\.inaccessible\s*\{\s*color: var\(--anergy-red\)/);
   assert.match(css, /\.exergy-notation-bracket,\s*\.compare-result-bracket\s*\{\s*display: inline-block;\s*white-space: nowrap/);
+  assert.match(css, /\.calculator-result\s*\{\s*grid-template-columns: minmax\(105px, 0\.55fr\) minmax\(0, 3\.2fr\) minmax\(125px, 0\.7fr\) minmax\(150px, 0\.85fr\)/);
 });
 
 test("every local HTML link resolves", () => {
