@@ -830,6 +830,16 @@ button,
   overflow-wrap: anywhere;
 }
 
+.exergy-notation-main {
+  overflow-wrap: anywhere;
+}
+
+.exergy-notation-bracket,
+.compare-result-bracket {
+  display: inline-block;
+  white-space: nowrap;
+}
+
 #fx-output {
   font-size: clamp(1.35rem, 3vw, 1.8rem);
   font-weight: 750;
@@ -911,8 +921,7 @@ button,
 }
 
 .compare-result-bracket {
-  display: block;
-  margin-top: 2px;
+  margin-left: 0.35ch;
 }
 
 .compare-result-factor {
@@ -966,7 +975,7 @@ button,
 .compare-factor-meter:focus-visible .compare-factor-chart {
   outline: 3px solid rgba(13, 118, 111, 0.18);
   outline-offset: 2px;
-  border-radius: 999px;
+  border-radius: 6px;
 }
 
 .compare-result-value {

@@ -78,16 +78,19 @@ test("calculator defaults to 5 MWh of heat at 100 C", () => {
   assert.match(html, /<option value="heat" selected>Heat<\/option>/);
   assert.match(html, /id="energy-value"[^>]*value="5"/);
   assert.match(html, /id="source-temp"[^>]*value="100"/);
+  assert.match(html, /class="exergy-notation-bracket">\[Th = 100 °C, T0 = 20 °C\]<\/span>/);
   assert.match(html, /<strong class="accessible" id="work-output">1\.072 MWh<\/strong>/);
   assert.match(html, /id="anergy-output">3\.928 MWh<\/strong>/);
   assert.match(source, /fields\["source-temp"\]\.value = preset\.needsTemperature === "heat" \? "100" : ""/);
   assert.match(source, /"Inaccessible Anergy", fields\["anergy-output"\]/);
   assert.match(source, /function displayExergyUnit\(unit\) \{\s*return unit\.replace/);
+  assert.match(source, /function renderNotation\(output, notation, bracket = ""\)/);
   const css = fs.readFileSync(path.join(root, "styles.css"), "utf8");
   assert.match(css, /--accessible-green: #16803d/);
   assert.match(css, /--anergy-red: #b2372f/);
   assert.match(css, /\.answer-item strong\.accessible\s*\{\s*color: var\(--accessible-green\)/);
   assert.match(css, /\.answer-item strong\.inaccessible\s*\{\s*color: var\(--anergy-red\)/);
+  assert.match(css, /\.exergy-notation-bracket,\s*\.compare-result-bracket\s*\{\s*display: inline-block;\s*white-space: nowrap/);
 });
 
 test("every local HTML link resolves", () => {
@@ -153,6 +156,7 @@ test("comparison factor meters preserve partial widths and tooltip structure", (
   assert.match(resultHtml, /gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="100" y2="0"/);
   assert.match(resultHtml, /clipPath id="compare-factor-clip-a"/);
   assert.match(resultHtml, /clip-path="url\(#compare-factor-clip-b\)"/);
+  assert.match(resultHtml, /<rect x="0" y="0" width="100" height="22" rx="5"><\/rect>/);
   assert.match(resultHtml, /class="compare-factor-meter"/);
   assert.match(resultHtml, /data-tooltip="Exergy Factor: 0\.214"/);
   assert.doesNotMatch(resultHtml, /style=/);

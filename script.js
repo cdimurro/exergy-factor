@@ -450,6 +450,23 @@ function declarationBracket({ preset, sourceC, sinkC, coldC }) {
   return "";
 }
 
+function renderNotation(output, notation, bracket = "") {
+  if (!output) return;
+  output.replaceChildren();
+
+  const main = document.createElement("span");
+  main.className = "exergy-notation-main";
+  main.textContent = notation;
+  output.append(main);
+
+  if (!bracket) return;
+  output.append(document.createTextNode(" "));
+  const conditions = document.createElement("span");
+  conditions.className = "exergy-notation-bracket";
+  conditions.textContent = bracket.trim();
+  output.append(conditions);
+}
+
 function formatDisplayEnergy(value) {
   return format(value, 3);
 }
@@ -788,10 +805,10 @@ function renderCompare() {
                     <stop offset="100%" stop-color="#0d766f"></stop>
                   </linearGradient>
                   <clipPath id="${factorClipId}">
-                    <rect x="0" y="0" width="100" height="22" rx="11"></rect>
+                    <rect x="0" y="0" width="100" height="22" rx="5"></rect>
                   </clipPath>
                 </defs>
-                <rect class="compare-factor-track" x="0" y="0" width="100" height="22" rx="11"></rect>
+                <rect class="compare-factor-track" x="0" y="0" width="100" height="22" rx="5"></rect>
                 <rect class="compare-factor-fill" x="0" y="0" width="${factorBarWidth}" height="22" clip-path="url(#${factorClipId})" fill="url(#${factorGradientId})"></rect>
               </svg>
             </span>
@@ -895,7 +912,7 @@ function updateCalculator() {
   const { factor, method, tier, sourceC, sinkC, coldC } = calculateFactor();
 
   if (!Number.isFinite(energy) || energy < 0 || !Number.isFinite(energyJ) || !Number.isFinite(factor)) {
-    fields["notation-output"].textContent = "Check the inputs";
+    renderNotation(fields["notation-output"], "Check the inputs");
     if (hasField("fx-output")) fields["fx-output"].textContent = "No result";
     if (hasField("work-output")) fields["work-output"].textContent = "No result";
     if (hasField("anergy-output")) fields["anergy-output"].textContent = "No result";
@@ -935,7 +952,7 @@ function updateCalculator() {
   // evidence withheld.
   const isCooling = Number.isFinite(coldC) && Number.isFinite(sinkC);
   const bracket = declarationBracket({ preset, sourceC, sinkC, coldC });
-  const notation = `${format(notationQuantity, 4)} ${typedEnergyUnit}, fx = ${formatFactor(factor)}${bracket}`;
+  const notation = `${format(notationQuantity, 4)} ${typedEnergyUnit}, fx = ${formatFactor(factor)}`;
   const exergyJ = energyJ * factor;
   const exergyInInputUnit = fixedForUnit
     ? exergyJ / reportInJ
@@ -946,7 +963,7 @@ function updateCalculator() {
     : inaccessibleJ / ENERGY_TO_J[fields["energy-unit"].value];
   const exergyUnit = fixedForUnit ? fixedForUnit.reportIn : displayExergyUnit(energyUnit);
 
-  fields["notation-output"].textContent = notation;
+  renderNotation(fields["notation-output"], notation, bracket);
   if (hasField("fx-output")) fields["fx-output"].textContent = formatFactor(factor);
   if (hasField("work-output")) fields["work-output"].textContent = `${formatDisplayEnergy(exergyInInputUnit)} ${exergyUnit}`;
   if (hasField("anergy-output")) fields["anergy-output"].textContent = `${formatDisplayEnergy(inaccessibleInInputUnit)} ${exergyUnit}`;
