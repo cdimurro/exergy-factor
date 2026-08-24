@@ -78,10 +78,12 @@ test("calculator defaults to 5 MWh of heat at 100 C", () => {
   assert.match(html, /<option value="heat" selected>Heat<\/option>/);
   assert.match(html, /id="energy-value"[^>]*value="5"/);
   assert.match(html, /id="source-temp"[^>]*value="100"/);
+  assert.match(html, /<option value="boe">boe \(oil\)<\/option>/);
   assert.match(html, /class="exergy-notation-bracket">\[Th = 100 °C, T0 = 20 °C\]<\/span>/);
   assert.match(html, /<strong class="accessible" id="work-output">1\.072 MWh<\/strong>/);
   assert.match(html, /id="anergy-output">3\.928 MWh<\/strong>/);
-  assert.match(source, /fields\["source-temp"\]\.value = preset\.needsTemperature === "heat" \? "100" : ""/);
+  assert.match(source, /preset\.needsTemperature === "cooling" \? "0" : ""/);
+  assert.doesNotMatch(source, /preset\.unit && ENERGY_TO_J\[preset\.unit\]\) fields\["energy-unit"\]\.value = preset\.unit/);
   assert.match(source, /"Inaccessible Anergy", fields\["anergy-output"\]/);
   assert.match(source, /function displayExergyUnit\(unit\) \{\s*return unit\.replace/);
   assert.match(source, /function renderNotation\(output, notation, bracket = ""\)/);
@@ -187,4 +189,40 @@ test("comparison factor meters preserve partial widths and tooltip structure", (
 test("anergy is never negative when an LHV exergy factor exceeds one", () => {
   assert.equal(kernel.inaccessible_anergy(5, 5.3), 0);
   assert.equal(kernel.inaccessible_anergy(5, 1.072), 3.928);
+});
+
+test("energy-form changes preserve the selected unit and default cooling to 0 C", () => {
+  const elements = new Map();
+  const field = (value = "") => ({ value, dataset: {}, textContent: "", hidden: false });
+  for (const [id, value] of Object.entries({
+    "energy-value": "5",
+    "energy-unit": "MMBtu",
+    "energy-form": "cooling",
+    "source-temp": "100",
+    "source-unit": "C",
+    "sink-temp": "20",
+    "sink-unit": "C",
+    "notation-output": "",
+  })) {
+    elements.set(id, field(value));
+  }
+
+  const calculatorSandbox = {
+    console,
+    document: {
+      addEventListener() {},
+      getElementById(id) { return elements.get(id) || null; },
+      querySelector() { return null; },
+      querySelectorAll() { return []; },
+    },
+    window: { location: { hostname: "example.test" } },
+  };
+  calculatorSandbox.window.window = calculatorSandbox.window;
+  vm.createContext(calculatorSandbox);
+  vm.runInContext(source, calculatorSandbox, { filename: "script.js" });
+  vm.runInContext("cacheFields(); syncPresetSelection('calculator'); applyCalculatorForm();", calculatorSandbox, { filename: "calculator-form.js" });
+
+  assert.equal(elements.get("energy-unit").value, "MMBtu");
+  assert.equal(elements.get("source-temp").value, "0");
+  assert.equal(elements.get("sink-temp").value, "30");
 });

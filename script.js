@@ -873,11 +873,14 @@ function applyCalculatorForm() {
   const presetKey = currentPresetKey("calculator");
   const preset = comparePresets[presetKey] || comparePresets.custom;
   updateFuelBasisControl("calculator", presetKey);
-  if (hasField("energy-unit") && preset.unit && ENERGY_TO_J[preset.unit]) fields["energy-unit"].value = preset.unit;
   if (hasField("factor-unit")) fields["factor-unit"].value = "decimal";
   if (hasField("exergy-factor")) fields["exergy-factor"].value = preset.fx;
   if (hasField("custom-factor")) fields["custom-factor"].value = "";
-  if (hasField("source-temp")) fields["source-temp"].value = preset.needsTemperature === "heat" ? "100" : "";
+  if (hasField("source-temp")) {
+    fields["source-temp"].value = preset.needsTemperature === "heat"
+      ? "100"
+      : preset.needsTemperature === "cooling" ? "0" : "";
+  }
   if (hasField("source-unit")) fields["source-unit"].value = "C";
   // Cooling is rejected to ambient, which is warmer than the service, so its
   // sensible default differs from heat's.
@@ -988,7 +991,6 @@ function applyComparePreset(side) {
   const presetKey = currentPresetKey(side);
   const preset = comparePresets[presetKey] || comparePresets.custom;
   updateFuelBasisControl(side, presetKey);
-  fields[`compare-${side}-unit`].value = preset.unit;
 
   // Show whichever control this carrier actually needs — the factor, or the two
   // temperatures it is derived from. They are alternatives, so the row does not
@@ -1014,7 +1016,7 @@ function applyComparePreset(side) {
     // Two bare boxes give no clue which is which, and a placeholder of "7" or
     // "80" only looks like a value someone forgot to type. They say what they are.
     if (source) {
-      source.value = cooling ? "" : "100";
+      source.value = cooling ? "0" : "100";
       source.placeholder = cooling ? "cooling to" : "source";
     }
     // Cooling is rejected to ambient, which is warmer than the service.
