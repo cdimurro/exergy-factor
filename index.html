@@ -81,7 +81,7 @@
               <div class="field-row">
                 <div class="field-label">
                   <label for="energy-unit">Unit</label>
-                  <button class="info-button" type="button" aria-label="Unit help" data-tooltip="The base unit used by your meter, invoice, model, or dataset. The calculator adds the typed suffix in the result, such as MWh_e, MWh_th, MWh_solar, or MWh_HHV_NG.">ⓘ</button>
+                  <button id="energy-unit-help" class="info-button" type="button" aria-label="Unit help" data-tooltip="The base unit used by your meter, invoice, model, or dataset. The calculator adds the typed suffix in the result, such as MWh_e, MWh_th, MWh_solar, or MWh_HHV_NG." data-default-tooltip="The base unit used by your meter, invoice, model, or dataset. The calculator adds the typed suffix in the result, such as MWh_e, MWh_th, MWh_solar, or MWh_HHV_NG.">ⓘ</button>
                 </div>
                 <select id="energy-unit" aria-label="Energy quantity unit">
                   <option value="J">J</option>
@@ -104,11 +104,6 @@
                   <option value="Mcf(natural gas)">Mcf(natural gas)</option>
                   <option value="MMcf(natural gas)">MMcf(natural gas)</option>
                 </select>
-                <!-- Only for the fuel-volume units, which need a heating value to
-                     become energy at all. A line of text rather than a locked
-                     input: the value is not something to fill in, so presenting it
-                     as an empty-looking field asks a question it does not have. -->
-                <p class="input-note" id="fixed-note" hidden></p>
               </div>
 
               <div class="field-row">
@@ -236,6 +231,6 @@
     </footer>
 
     <script src="data/reference_examples.js?v=20260824j"></script>
-    <script src="script.js?v=20260824u"></script>
+    <script src="script.js?v=20260824v"></script>
   </body>
 </html>

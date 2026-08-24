@@ -85,6 +85,11 @@ test("calculator defaults to 5 MWh of heat at 100 C", () => {
   assert.match(source, /"Inaccessible Anergy", fields\["anergy-output"\]/);
   assert.match(source, /function displayExergyUnit\(unit\) \{\s*return unit\.replace/);
   assert.match(source, /function renderNotation\(output, notation, bracket = ""\)/);
+  assert.match(source, /function inaccessibleAnergy\(energy, exergy\)/);
+  assert.match(source, /inaccessibleAnergy\(energyJ, exergyJ\)/);
+  assert.match(html, /id="energy-unit-help"[^>]*data-default-tooltip=/);
+  assert.doesNotMatch(html, /id="fixed-note"/);
+  assert.match(source, /unitHelp\.dataset\.tooltip = fuelVolumeTooltip\(fixed\)/);
   const css = fs.readFileSync(path.join(root, "styles.css"), "utf8");
   assert.match(css, /--accessible-green: #16803d/);
   assert.match(css, /--anergy-red: #b2372f/);
@@ -169,4 +174,16 @@ test("comparison factor meters preserve partial widths and tooltip structure", (
   assert.match(css, /\.compare-page \.temperature-pair\s*\{\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
   assert.match(css, /\.compare-page \.temperature-input\s*\{\s*grid-template-columns: minmax\(0, 1fr\) 72px/);
   assert.doesNotMatch(css, /--factor-fill/);
+
+  elements.get("compare-a-preset").value = "crudeOil";
+  elements.get("compare-a-quantity").value = "5";
+  elements.get("compare-a-unit").value = "Quad";
+  elements.get("compare-a-factor").value = "1.06";
+  vm.runInContext("renderCompare();", comparisonSandbox, { filename: "comparison-lhv-render.js" });
+  assert.match(elements.get("compare-bars").innerHTML, /data-label="Inaccessible Anergy">0 Quad<\/strong>/);
+});
+
+test("anergy is never negative when an LHV exergy factor exceeds one", () => {
+  assert.equal(kernel.inaccessible_anergy(5, 5.3), 0);
+  assert.equal(kernel.inaccessible_anergy(5, 1.072), 3.928);
 });

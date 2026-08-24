@@ -582,14 +582,6 @@ select:disabled {
   cursor: not-allowed;
 }
 
-/* Says what a locked value is and why, without taking a form row to do it. */
-.input-note {
-  color: var(--muted);
-  font-size: 0.84rem;
-  line-height: 1.4;
-  margin: 0;
-}
-
 /* Outside the results panel, on the page background, aligned to its right edge.
    Identical on both tools: inside the panel they inherited two different grids
    and came out different sizes and in different corners. */

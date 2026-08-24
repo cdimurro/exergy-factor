@@ -83,6 +83,13 @@ function accessibleExergy(energy, exergyFactor) {
   return quantity * factor;
 }
 
+function inaccessibleAnergy(energy, exergy) {
+  const quantity = finiteNumber(energy, "energy");
+  const accessible = finiteNumber(exergy, "exergy");
+  if (quantity < 0 || accessible < 0) throw new RangeError("energy and exergy must be nonnegative");
+  return Math.max(0, quantity - accessible);
+}
+
 function weightedExergyFactor(records) {
   if (!Array.isArray(records)) throw new TypeError("records must be an array");
   let energy = 0;
@@ -114,6 +121,7 @@ window.EXERGY_FACTOR_KERNEL = Object.freeze({
   sensible_heat_exergy_factor_c: sensibleHeatExergyFactorC,
   petela_exergy_factor: petelaExergyFactor,
   accessible_exergy: accessibleExergy,
+  inaccessible_anergy: inaccessibleAnergy,
   weighted_exergy_factor: weightedExergyFactor,
   format_energy_notation: formatEnergyNotation,
 });
@@ -513,6 +521,10 @@ const FUEL_VOLUME_UNITS = {
   "MMcf(natural gas)": { form: "naturalGasHhv", reportIn: "MWh", display: "1,036 MMBtu per MMcf (EIA 2026 estimated U.S. natural-gas average), HHV" },
 };
 
+function fuelVolumeTooltip(fixed) {
+  return `Uses ${fixed.display}. This is an estimated reference conversion, not a meter-specific heating value; use the Python library with your measured HHV or LHV when accuracy matters.`;
+}
+
 // Exposed for the repository's headless numerical conformance check. The public
 // UI still uses the same objects and functions directly.
 window.EXERGY_FACTOR_CALCULATION_INTERNALS = Object.freeze({
@@ -525,14 +537,11 @@ function applyFixedValuesForUnit() {
   if (!hasField("energy-unit") || !hasField("energy-form")) return;
   const selectedUnit = fields["energy-unit"].value;
   const fixed = FUEL_VOLUME_UNITS[selectedUnit];
-  const note = byId("fixed-note");
+  const unitHelp = byId("energy-unit-help");
   const form = fields["energy-form"];
 
   if (!fixed) {
-    if (note) {
-      note.hidden = true;
-      note.textContent = "";
-    }
+    if (unitHelp) unitHelp.dataset.tooltip = unitHelp.dataset.defaultTooltip || "";
     form.disabled = false;
     return;
   }
@@ -547,10 +556,7 @@ function applyFixedValuesForUnit() {
     fields["energy-unit"].value = selectedUnit;
   }
   form.disabled = true;
-  if (note) {
-    note.textContent = `Uses ${fixed.display}. This is an estimated reference conversion, not a meter-specific heating value; use the Python library with your measured HHV or LHV when accuracy matters.`;
-    note.hidden = false;
-  }
+  if (unitHelp) unitHelp.dataset.tooltip = fuelVolumeTooltip(fixed);
 }
 
 function tierDescription(tier) {
@@ -790,7 +796,7 @@ function renderCompare() {
       const factorLabel = formatFactor(row.factor);
       const factorGradientId = `compare-factor-gradient-${row.side.toLowerCase()}`;
       const factorClipId = `compare-factor-clip-${row.side.toLowerCase()}`;
-      const inaccessibleInUnit = (row.energyJ - row.exergyJ) / ENERGY_TO_J[row.unit];
+      const inaccessibleInUnit = inaccessibleAnergy(row.energyJ, row.exergyJ) / ENERGY_TO_J[row.unit];
       const bracket = row.bracket.trim();
       return `
         <div class="compare-result-row">
@@ -957,7 +963,7 @@ function updateCalculator() {
   const exergyInInputUnit = fixedForUnit
     ? exergyJ / reportInJ
     : exergyJ / ENERGY_TO_J[fields["energy-unit"].value];
-  const inaccessibleJ = energyJ - exergyJ;
+  const inaccessibleJ = inaccessibleAnergy(energyJ, exergyJ);
   const inaccessibleInInputUnit = fixedForUnit
     ? inaccessibleJ / reportInJ
     : inaccessibleJ / ENERGY_TO_J[fields["energy-unit"].value];
