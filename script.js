@@ -768,7 +768,8 @@ function renderCompare() {
       <span>Inaccessible Anergy</span>
     </div>
     ${rows.map((row) => {
-      const width = Math.min(100, Math.max(0, row.exergyInUnit * 100));
+      const factorOnScale = Math.min(1, Math.max(0, row.factor));
+      const factorLabel = formatFactor(row.factor);
       const inaccessibleInUnit = (row.energyJ - row.exergyJ) / ENERGY_TO_J[row.unit];
       const bracket = row.bracket.trim();
       return `
@@ -776,8 +777,8 @@ function renderCompare() {
           <div class="compare-result-side">${row.side}</div>
           <div class="compare-result-notation">${format(row.quantity, 3)} ${row.displayUnit}, fx = ${formatFactor(row.factor)}${bracket ? `<span class="compare-result-bracket">${bracket}</span>` : ""}</div>
           <div class="compare-result-factor">
-            <span class="compare-factor-track" aria-label="${formatFactor(row.factor)} Exergy Factor">
-              <span class="compare-factor-fill" style="width:${width}%"></span>
+            <span class="compare-factor-track" tabindex="0" role="meter" aria-label="${factorLabel} Exergy Factor" aria-valuemin="0" aria-valuemax="1" aria-valuenow="${factorOnScale}" aria-valuetext="${factorLabel}" data-tooltip="Exergy Factor: ${factorLabel}">
+              <span class="compare-factor-fill" style="width:${factorOnScale * 100}%"></span>
             </span>
           </div>
           <strong class="compare-result-value accessible" data-label="Accessible Exergy">${formatDisplayEnergy(row.exergyInUnit)} ${row.unit}</strong>

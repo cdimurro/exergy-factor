@@ -897,11 +897,40 @@ button,
 }
 
 .compare-factor-track {
+  position: relative;
   display: block;
   height: 22px;
   overflow: hidden;
   border-radius: 999px;
   background: #e2ebe7;
+  cursor: help;
+  outline: none;
+}
+
+.compare-factor-track::after {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  z-index: 20;
+  width: max-content;
+  max-width: min(280px, 72vw);
+  transform: translateX(-50%);
+  border-radius: 8px;
+  background: var(--ink);
+  color: #f7fbf9;
+  content: attr(data-tooltip);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.35;
+  opacity: 0;
+  padding: 10px 11px;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.compare-factor-track:hover::after,
+.compare-factor-track:focus-visible::after {
+  opacity: 1;
 }
 
 .compare-factor-fill {
