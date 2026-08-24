@@ -2,13 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; connect-src 'self' http://127.0.0.1:8000 https://exergy-factor-api.onrender.com; base-uri 'none'; form-action 'self'" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; connect-src 'self' http://127.0.0.1:8000 https://api.exergyfactor.com; base-uri 'none'; form-action 'self'" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Compare Energy Forms | Exergy Factor</title>
     <meta
       name="description"
-      content="Compare typed energy quantities using Exergy Factor so different energy forms can be evaluated by accessible exergy."
+      content="Compare the accessible exergy of different quantities of energy using Exergy Factor."
     />
     <link rel="canonical" href="https://exergyfactor.com/compare.html" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
@@ -35,7 +35,7 @@
           <p class="eyebrow">Comparison tool</p>
           <h1>Compare the Accessible Exergy of Different Energy Quantities.</h1>
           <p>
-            Two forms of energy can have the same quantity but very different abilities to do useful work. This tool compares their energy quantity and Exergy Factor to show how much accessible exergy each record carries.
+            Compare two energy quantities. Each result keeps its typed unit, <code>fx</code>, and known temperature or fuel-basis context so you can see both amount and quality.
           </p>
         </div>
 
@@ -66,7 +66,7 @@
                   <option value="coalLhv">Coal</option>
                   <option value="crudeOil">Crude oil</option>
                   <option value="solar">Solar radiation</option>
-                  <option value="custom">Custom</option>
+                  <option value="custom">Other / custom</option>
                 </select>
                 <div class="basis-control" id="compare-a-basis-control" hidden>
                   <span class="basis-control-label">Fuel basis</span>
@@ -96,23 +96,23 @@
                   <option value="MJ">MJ</option>
                   <option value="GJ">GJ</option>
                   <option value="TJ">TJ</option>
+                  <option value="PJ">PJ</option>
                   <option value="EJ">EJ</option>
                   <option value="Wh">Wh</option>
                   <option value="kWh">kWh</option>
                   <option value="MWh" selected>MWh</option>
                   <option value="GWh">GWh</option>
-                  <option value="Btu">Btu</option>
-                  <option value="MMBtu">MMBtu</option>
+                  <option value="TWh">TWh</option>
+                  <option value="Btu">BTU</option>
+                  <option value="MMBtu">MMBTU</option>
                   <option value="Quad">Quad</option>
                   <option value="therm">therm</option>
-                  <option value="boe">boe</option>
-                  <option value="bbl(oil)">bbl(oil)</option>
-                  <option value="scf(natural gas)">scf(natural gas)</option>
-                  <option value="Mcf(natural gas)">Mcf(natural gas)</option>
-                  <option value="MMcf(natural gas)">MMcf(natural gas)</option>
+                  <option value="dekatherm">dekatherm</option>
+                  <option value="Dth">Dth</option>
+                  <option value="ton-hour">ton-hour</option>
                 </select>
               </div>
-              <div class="field-row" id="compare-a-factor-row">
+              <div class="field-row" id="compare-a-factor-row" hidden>
                 <div class="field-label">
                   <label for="compare-a-factor">Exergy Factor</label>
                   <button class="info-button" type="button" aria-label="Comparison A Exergy Factor help" data-tooltip="The quality multiplier for side A. Presets fill this automatically, but you can edit it for a custom basis. Example: 1 for electricity, 0.17 for 80 °C hot water, or 0.73 for a custom record.">ⓘ</button>
@@ -171,7 +171,7 @@
                   <option value="coalLhv">Coal</option>
                   <option value="crudeOil">Crude oil</option>
                   <option value="solar">Solar radiation</option>
-                  <option value="custom">Custom</option>
+                  <option value="custom">Other / custom</option>
                 </select>
                 <div class="basis-control" id="compare-b-basis-control" hidden>
                   <span class="basis-control-label">Fuel basis</span>
@@ -186,7 +186,7 @@
               <div class="field-row">
                 <div class="field-label">
                   <label for="compare-b-quantity">Quantity</label>
-                  <button class="info-button" type="button" aria-label="Comparison B quantity help" data-tooltip="Enter the amount of energy for side B. Use the number from your meter, invoice, model, or dataset. Example: 1 for 1 MWh, 45 for 45 Btu, or 2.738 for 2.738 kWh.">ⓘ</button>
+                  <button class="info-button" type="button" aria-label="Comparison B quantity help" data-tooltip="Enter the amount of energy for side B. Use the number from your meter, invoice, model, or dataset. Example: 1 for 1 MWh, 45 for 45 BTU, or 2.738 for 2.738 kWh.">ⓘ</button>
                 </div>
                 <input id="compare-b-quantity" type="number" min="0" step="any" value="5" aria-label="Comparison B quantity" />
               </div>
@@ -201,20 +201,20 @@
                   <option value="MJ">MJ</option>
                   <option value="GJ">GJ</option>
                   <option value="TJ">TJ</option>
+                  <option value="PJ">PJ</option>
                   <option value="EJ">EJ</option>
                   <option value="Wh">Wh</option>
                   <option value="kWh">kWh</option>
                   <option value="MWh" selected>MWh</option>
                   <option value="GWh">GWh</option>
-                  <option value="Btu">Btu</option>
-                  <option value="MMBtu">MMBtu</option>
+                  <option value="TWh">TWh</option>
+                  <option value="Btu">BTU</option>
+                  <option value="MMBtu">MMBTU</option>
                   <option value="Quad">Quad</option>
                   <option value="therm">therm</option>
-                  <option value="boe">boe</option>
-                  <option value="bbl(oil)">bbl(oil)</option>
-                  <option value="scf(natural gas)">scf(natural gas)</option>
-                  <option value="Mcf(natural gas)">Mcf(natural gas)</option>
-                  <option value="MMcf(natural gas)">MMcf(natural gas)</option>
+                  <option value="dekatherm">dekatherm</option>
+                  <option value="Dth">Dth</option>
+                  <option value="ton-hour">ton-hour</option>
                 </select>
               </div>
               <div class="field-row" id="compare-b-factor-row">
@@ -222,7 +222,7 @@
                   <label for="compare-b-factor">Exergy Factor</label>
                   <button class="info-button" type="button" aria-label="Comparison B Exergy Factor help" data-tooltip="The quality multiplier for side B. Presets fill this automatically, but you can edit it for a custom basis. Example: 1 for electricity, 0.17 for 80 °C hot water, or 0.73 for a custom record.">ⓘ</button>
                 </div>
-                <input id="compare-b-factor" type="number" min="0" step="any" value="0.17" aria-label="Comparison B Exergy Factor" />
+                <input id="compare-b-factor" type="number" min="0" step="any" value="1" aria-label="Comparison B Exergy Factor" />
               </div>
               <div class="field-row" id="compare-b-temps" hidden>
                 <div class="input-pair temperature-pair">
@@ -259,17 +259,24 @@
           </div>
 
           <div class="compare-result" aria-live="polite">
+            <div class="compare-chart-header">
+              <span class="compare-chart-side-spacer" aria-hidden="true"></span>
+              <h3 class="compare-chart-title">Exergy Factor Notation</h3>
+              <h3 class="compare-chart-title">Exergy Factor</h3>
+              <h3 class="compare-chart-title">Accessible Exergy</h3>
+              <h3 class="compare-chart-title">Inaccessible Anergy</h3>
+            </div>
             <div class="compare-bars" id="compare-bars"></div>
           </div>
 
           <div class="compare-answers" aria-live="polite">
-            <div class="answer-item">
+            <div class="answer-item ratio-answer">
               <span class="result-label">Accessible Exergy Ratio</span>
-              <strong id="compare-summary">Electricity carries 5.88x the accessible exergy of 80 °C hot water for these quantities.</strong>
+              <strong id="compare-summary">5 MWh of electricity carries 4.66 times the accessible exergy of 5 MWh of heat at 100 °C in a 20 °C environment.</strong>
             </div>
-            <div class="answer-item">
+            <div class="answer-item equivalence-answer">
               <span class="result-label">Equivalent Quantity</span>
-              <strong id="compare-equivalence">1 MWh_e of electricity is equivalent to 5.882 MWh_th of 80 °C hot water.</strong>
+              <strong id="compare-equivalence">5 MWh of electricity carries the same accessible exergy as 23.322 MWh of heat at 100 °C in a 20 °C environment.</strong>
             </div>
           </div>
 
@@ -300,7 +307,7 @@
             </p>
             <pre><code>Accessible Exergy = Energy Quantity x Exergy Factor</code></pre>
             <p>
-              This provides an additional layer so that different forms of energy can be analyzed on equivalent thermodynamic terms.
+              The Exergy Factor is a per-unit quality measure, so it does not depend on the size of the quantity. Heat, cooling, radiation, and fuel factors still require their relevant state, reference, or basis to be declared.
             </p>
           </article>
         </div>
@@ -315,7 +322,7 @@
         </p>
         <p class="legal-links"><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p>
       </div>
-      <a class="primary-link" href="paper/quantity-and-quality-standard-reporting-framework.pdf">Download the paper</a>
+      <a class="primary-link" href="paper/quantity-and-quality-standard-reporting-framework.pdf" download="quantity-and-quality-standard-reporting-framework.pdf" type="application/pdf">Download the paper</a>
     </footer>
 
     <script src="data/reference_examples.js?v=20260824i"></script>
