@@ -78,7 +78,11 @@ test("calculator defaults to 5 MWh of heat at 100 C", () => {
   assert.match(html, /<option value="heat" selected>Heat<\/option>/);
   assert.match(html, /id="energy-value"[^>]*value="5"/);
   assert.match(html, /id="source-temp"[^>]*value="100"/);
+  assert.match(html, /<strong class="accessible" id="work-output">1\.072 MWh<\/strong>/);
+  assert.match(html, /id="anergy-output">3\.928 MWh<\/strong>/);
   assert.match(source, /fields\["source-temp"\]\.value = preset\.needsTemperature === "heat" \? "100" : ""/);
+  assert.match(source, /"Inaccessible Anergy", fields\["anergy-output"\]/);
+  assert.match(source, /function displayExergyUnit\(unit\) \{\s*return unit\.replace/);
 });
 
 test("every local HTML link resolves", () => {

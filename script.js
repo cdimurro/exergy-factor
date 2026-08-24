@@ -335,6 +335,7 @@ function cacheFields() {
     "notation-output",
     "fx-output",
     "work-output",
+    "anergy-output",
     "exergy-output",
     "method-output",
     "tier-output",
@@ -469,8 +470,7 @@ function displayUnit(unit, preset = null) {
 }
 
 function displayExergyUnit(unit) {
-  const baseUnit = unit.replace(/\(.+\)/, "");
-  return `${baseUnit}_ex`;
+  return unit.replace(/\(.+\)/, "");
 }
 
 // Fuel-volume units carry a heating value the calculator applies for you.
@@ -898,6 +898,7 @@ function updateCalculator() {
     fields["notation-output"].textContent = "Check the inputs";
     if (hasField("fx-output")) fields["fx-output"].textContent = "No result";
     if (hasField("work-output")) fields["work-output"].textContent = "No result";
+    if (hasField("anergy-output")) fields["anergy-output"].textContent = "No result";
     if (hasField("exergy-output")) fields["exergy-output"].textContent = "No result";
     if (hasField("method-output")) fields["method-output"].textContent = method;
     if (hasField("tier-output")) fields["tier-output"].textContent = tierDescription(tier);
@@ -939,11 +940,16 @@ function updateCalculator() {
   const exergyInInputUnit = fixedForUnit
     ? exergyJ / reportInJ
     : exergyJ / ENERGY_TO_J[fields["energy-unit"].value];
-  const exergyUnit = fixedForUnit ? `${fixedForUnit.reportIn}_ex` : displayExergyUnit(energyUnit);
+  const inaccessibleJ = energyJ - exergyJ;
+  const inaccessibleInInputUnit = fixedForUnit
+    ? inaccessibleJ / reportInJ
+    : inaccessibleJ / ENERGY_TO_J[fields["energy-unit"].value];
+  const exergyUnit = fixedForUnit ? fixedForUnit.reportIn : displayExergyUnit(energyUnit);
 
   fields["notation-output"].textContent = notation;
   if (hasField("fx-output")) fields["fx-output"].textContent = formatFactor(factor);
   if (hasField("work-output")) fields["work-output"].textContent = `${formatDisplayEnergy(exergyInInputUnit)} ${exergyUnit}`;
+  if (hasField("anergy-output")) fields["anergy-output"].textContent = `${formatDisplayEnergy(inaccessibleInInputUnit)} ${exergyUnit}`;
   if (hasField("exergy-output")) fields["exergy-output"].textContent = `${formatDisplayEnergy(exergyInInputUnit)} ${exergyUnit}`;
   if (hasField("method-output")) fields["method-output"].textContent = method;
   if (hasField("tier-output")) fields["tier-output"].textContent = tierDescription(tier);
@@ -1075,6 +1081,7 @@ function exportModel() {
         ["Exergy Factor", fields["fx-output"]?.textContent.trim() || ""],
         ["Exergy Factor Notation", fields["notation-output"].textContent.trim()],
         ["Accessible Exergy", fields["work-output"].textContent.trim()],
+        ["Inaccessible Anergy", fields["anergy-output"]?.textContent.trim() || ""],
       ],
       stamp,
     };
