@@ -15,8 +15,8 @@ const ENERGY_TO_J = {
   // NIST U.S. legal therm. It intentionally differs slightly from 100,000
   // International Table Btu.
   therm: 105480400,
-  // Nominal BOE and pinned EIA 2026 U.S.-average fuel estimates. A measured
-  // heating value is required for a composition-specific result.
+  // BOE is a carrier-neutral energy-equivalent unit. The fuel-volume shortcuts
+  // below use pinned EIA 2026 U.S.-average heating values.
   boe: 5.8 * 1.05505585262e9,
   "bbl(oil)": 5.689 * 1.05505585262e9,
   "scf(natural gas)": 1036 * 1055.05585262,
@@ -514,11 +514,14 @@ function displayExergyUnit(unit) {
 // 0.0003, and its exergy rounds to a bare "0" on screen — a number that looks like
 // an error rather than a small quantity.
 const FUEL_VOLUME_UNITS = {
-  "boe": { form: "crudeOil", reportIn: "MWh", display: "5.800 MMBtu per barrel of oil equivalent (nominal U.S. DOE convention)" },
   "bbl(oil)": { form: "crudeOil", reportIn: "MWh", display: "5.689 MMBtu per barrel (EIA 2026 estimated U.S. crude-oil average)" },
   "scf(natural gas)": { form: "naturalGasHhv", reportIn: "kWh", display: "1,036 Btu per scf (EIA 2026 estimated U.S. natural-gas average), HHV" },
   "Mcf(natural gas)": { form: "naturalGasHhv", reportIn: "MWh", display: "1.036 MMBtu per Mcf (EIA 2026 estimated U.S. natural-gas average), HHV" },
   "MMcf(natural gas)": { form: "naturalGasHhv", reportIn: "MWh", display: "1,036 MMBtu per MMcf (EIA 2026 estimated U.S. natural-gas average), HHV" },
+};
+
+const ENERGY_UNIT_TOOLTIPS = {
+  boe: "1 boe is defined here as 5.800 MMBtu (nominal U.S. DOE convention). It is an energy-equivalent unit, not a barrel of crude oil or a meter-specific heating value.",
 };
 
 function fuelVolumeTooltip(fixed) {
@@ -541,7 +544,7 @@ function applyFixedValuesForUnit() {
   const form = fields["energy-form"];
 
   if (!fixed) {
-    if (unitHelp) unitHelp.dataset.tooltip = unitHelp.dataset.defaultTooltip || "";
+    if (unitHelp) unitHelp.dataset.tooltip = ENERGY_UNIT_TOOLTIPS[selectedUnit] || unitHelp.dataset.defaultTooltip || "";
     form.disabled = false;
     return;
   }
@@ -551,9 +554,6 @@ function applyFixedValuesForUnit() {
     form.value = fixed.form;
     syncPresetSelection("calculator");
     applyCalculatorForm();
-    // applyCalculatorForm resets the unit to the carrier's default, which would
-    // undo the very choice that got us here.
-    fields["energy-unit"].value = selectedUnit;
   }
   form.disabled = true;
   if (unitHelp) unitHelp.dataset.tooltip = fuelVolumeTooltip(fixed);

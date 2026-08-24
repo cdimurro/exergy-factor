@@ -78,7 +78,7 @@ test("calculator defaults to 5 MWh of heat at 100 C", () => {
   assert.match(html, /<option value="heat" selected>Heat<\/option>/);
   assert.match(html, /id="energy-value"[^>]*value="5"/);
   assert.match(html, /id="source-temp"[^>]*value="100"/);
-  assert.match(html, /<option value="boe">boe \(oil\)<\/option>/);
+  assert.match(html, /<option value="boe">boe<\/option>/);
   assert.match(html, /class="exergy-notation-bracket">\[Th = 100 °C, T0 = 20 °C\]<\/span>/);
   assert.match(html, /<strong class="accessible" id="work-output">1\.072 MWh<\/strong>/);
   assert.match(html, /id="anergy-output">3\.928 MWh<\/strong>/);
@@ -92,6 +92,8 @@ test("calculator defaults to 5 MWh of heat at 100 C", () => {
   assert.match(html, /id="energy-unit-help"[^>]*data-default-tooltip=/);
   assert.doesNotMatch(html, /id="fixed-note"/);
   assert.match(source, /unitHelp\.dataset\.tooltip = fuelVolumeTooltip\(fixed\)/);
+  assert.doesNotMatch(source, /"boe": \{ form: "crudeOil"/);
+  assert.match(source, /boe: "1 boe is defined here as 5\.800 MMBtu/);
   const css = fs.readFileSync(path.join(root, "styles.css"), "utf8");
   assert.match(css, /--accessible-green: #16803d/);
   assert.match(css, /--anergy-red: #b2372f/);
@@ -225,4 +227,11 @@ test("energy-form changes preserve the selected unit and default cooling to 0 C"
   assert.equal(elements.get("energy-unit").value, "MMBtu");
   assert.equal(elements.get("source-temp").value, "0");
   assert.equal(elements.get("sink-temp").value, "30");
+
+  elements.get("energy-unit").value = "boe";
+  elements.get("energy-form").value = "electricity";
+  vm.runInContext("syncPresetSelection('calculator'); applyCalculatorForm(); applyFixedValuesForUnit();", calculatorSandbox, { filename: "calculator-boe.js" });
+  assert.equal(elements.get("energy-unit").value, "boe");
+  assert.equal(elements.get("energy-form").value, "electricity");
+  assert.equal(elements.get("energy-form").disabled, false);
 });
