@@ -73,6 +73,14 @@ test("hosted API page points to the live keyless service", () => {
   assert.doesNotMatch(source, /api-keys\/request|requestApiKey|accept_terms/);
 });
 
+test("calculator defaults to 5 MWh of heat at 100 C", () => {
+  const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+  assert.match(html, /<option value="heat" selected>Heat<\/option>/);
+  assert.match(html, /id="energy-value"[^>]*value="5"/);
+  assert.match(html, /id="source-temp"[^>]*value="100"/);
+  assert.match(source, /fields\["source-temp"\]\.value = preset\.needsTemperature === "heat" \? "100" : ""/);
+});
+
 test("every local HTML link resolves", () => {
   for (const filename of fs.readdirSync(root).filter((name) => name.endsWith(".html"))) {
     const html = fs.readFileSync(path.join(root, filename), "utf8");
@@ -129,20 +137,19 @@ test("comparison factor meters preserve partial widths and tooltip structure", (
   vm.runInContext("cacheFields(); renderCompare();", comparisonSandbox, { filename: "comparison-render.js" });
 
   const resultHtml = elements.get("compare-bars").innerHTML;
-  const widths = [...resultHtml.matchAll(/--factor-fill:([0-9.]+)%/g)].map((match) => Number(match[1]));
+  const widths = [...resultHtml.matchAll(/<rect class="compare-factor-fill"[^>]*width="([0-9.]+)"/g)].map((match) => Number(match[1]));
   assert.deepEqual(widths.length, 2);
   assert.equal(widths[0], 100);
   assert.ok(widths[1] > 0 && widths[1] < 100, `expected a partial Heat bar, received ${widths[1]}%`);
-  const gradientSizes = [...resultHtml.matchAll(/--factor-gradient-size:([0-9.]+)%/g)].map((match) => Number(match[1]));
-  assert.equal(gradientSizes[0], 100);
-  assert.ok(gradientSizes[1] > 100, `expected the partial Heat bar to use the early gradient range, received ${gradientSizes[1]}%`);
+  assert.match(resultHtml, /gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="100" y2="0"/);
   assert.match(resultHtml, /class="compare-factor-meter"/);
   assert.match(resultHtml, /data-tooltip="Exergy Factor: 0\.214"/);
+  assert.doesNotMatch(resultHtml, /style=/);
 
   const css = fs.readFileSync(path.join(root, "styles.css"), "utf8");
   const meterBlock = css.match(/\.compare-factor-meter\s*\{([\s\S]*?)\}/)?.[1] || "";
   assert.doesNotMatch(meterBlock, /overflow\s*:/);
   assert.match(css, /\.compare-factor-meter::after/);
-  assert.match(css, /\.compare-factor-track\s*\{[\s\S]*?overflow:\s*hidden/);
-  assert.match(css, /background-size:\s*var\(--factor-gradient-size, 100%\) 100%/);
+  assert.match(css, /\.compare-factor-chart\s*\{/);
+  assert.doesNotMatch(css, /--factor-fill/);
 });

@@ -770,11 +770,8 @@ function renderCompare() {
     ${rows.map((row) => {
       const factorOnScale = Math.min(1, Math.max(0, row.factor));
       const factorBarWidth = factorOnScale * 100;
-      // Keep the amber-to-teal scale anchored to the full track. A partial bar
-      // therefore shows the early (amber) part of the scale instead of squeezing
-      // the entire gradient into its own short width.
-      const factorGradientSize = factorOnScale > 0 ? 100 / factorOnScale : 100;
       const factorLabel = formatFactor(row.factor);
+      const factorGradientId = `compare-factor-gradient-${row.side.toLowerCase()}`;
       const inaccessibleInUnit = (row.energyJ - row.exergyJ) / ENERGY_TO_J[row.unit];
       const bracket = row.bracket.trim();
       return `
@@ -783,9 +780,16 @@ function renderCompare() {
           <div class="compare-result-notation">${format(row.quantity, 3)} ${row.displayUnit}, fx = ${formatFactor(row.factor)}${bracket ? `<span class="compare-result-bracket">${bracket}</span>` : ""}</div>
           <div class="compare-result-factor">
             <span class="compare-factor-meter" tabindex="0" role="meter" aria-label="${factorLabel} Exergy Factor" aria-valuemin="0" aria-valuemax="1" aria-valuenow="${factorOnScale}" aria-valuetext="${factorLabel}" data-tooltip="Exergy Factor: ${factorLabel}">
-              <span class="compare-factor-track" aria-hidden="true">
-                <span class="compare-factor-fill" style="--factor-fill:${factorBarWidth}%;--factor-gradient-size:${factorGradientSize}%"></span>
-              </span>
+              <svg class="compare-factor-chart" viewBox="0 0 100 22" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                <defs>
+                  <linearGradient id="${factorGradientId}" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="100" y2="0">
+                    <stop offset="0%" stop-color="#b66d12"></stop>
+                    <stop offset="100%" stop-color="#0d766f"></stop>
+                  </linearGradient>
+                </defs>
+                <rect class="compare-factor-track" x="0" y="0" width="100" height="22" rx="11"></rect>
+                <rect class="compare-factor-fill" x="0" y="0" width="${factorBarWidth}" height="22" rx="11" fill="url(#${factorGradientId})"></rect>
+              </svg>
             </span>
           </div>
           <strong class="compare-result-value accessible" data-label="Accessible Exergy">${formatDisplayEnergy(row.exergyInUnit)} ${row.unit}</strong>
@@ -846,7 +850,7 @@ function applyCalculatorForm() {
   if (hasField("factor-unit")) fields["factor-unit"].value = "decimal";
   if (hasField("exergy-factor")) fields["exergy-factor"].value = preset.fx;
   if (hasField("custom-factor")) fields["custom-factor"].value = "";
-  if (hasField("source-temp")) fields["source-temp"].value = "";
+  if (hasField("source-temp")) fields["source-temp"].value = preset.needsTemperature === "heat" ? "100" : "";
   if (hasField("source-unit")) fields["source-unit"].value = "C";
   // Cooling is rejected to ambient, which is warmer than the service, so its
   // sensible default differs from heat's.
