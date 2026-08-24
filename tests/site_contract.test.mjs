@@ -156,7 +156,7 @@ test("comparison factor meters preserve partial widths and tooltip structure", (
   assert.match(resultHtml, /gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="100" y2="0"/);
   assert.match(resultHtml, /clipPath id="compare-factor-clip-a"/);
   assert.match(resultHtml, /clip-path="url\(#compare-factor-clip-b\)"/);
-  assert.match(resultHtml, /<rect x="0" y="0" width="100" height="22" rx="11"><\/rect>/);
+  assert.match(resultHtml, /<rect x="0" y="0" width="100" height="22" rx="8"><\/rect>/);
   assert.match(resultHtml, /class="compare-factor-meter"/);
   assert.match(resultHtml, /data-tooltip="Exergy Factor: 0\.214"/);
   assert.doesNotMatch(resultHtml, /style=/);

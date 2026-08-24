@@ -805,10 +805,10 @@ function renderCompare() {
                     <stop offset="100%" stop-color="#0d766f"></stop>
                   </linearGradient>
                   <clipPath id="${factorClipId}">
-                    <rect x="0" y="0" width="100" height="22" rx="11"></rect>
+                    <rect x="0" y="0" width="100" height="22" rx="8"></rect>
                   </clipPath>
                 </defs>
-                <rect class="compare-factor-track" x="0" y="0" width="100" height="22" rx="11"></rect>
+                <rect class="compare-factor-track" x="0" y="0" width="100" height="22" rx="8"></rect>
                 <rect class="compare-factor-fill" x="0" y="0" width="${factorBarWidth}" height="22" clip-path="url(#${factorClipId})" fill="url(#${factorGradientId})"></rect>
               </svg>
             </span>
