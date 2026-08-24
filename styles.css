@@ -193,6 +193,7 @@ p {
   gap: 16px;
   align-content: start;
   width: 100%;
+  min-width: 0;
   padding: 20px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -276,6 +277,83 @@ form {
   justify-self: start;
 }
 
+.basis-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(203, 216, 211, 0.75);
+}
+
+.basis-control-label {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 850;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.basis-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.basis-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.basis-switch-track {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 22px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #b9c8c2;
+  transition: background-color 120ms ease;
+}
+
+.basis-switch-track::after {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(23, 32, 29, 0.24);
+  content: "";
+  transition: transform 120ms ease;
+}
+
+.basis-switch input:checked + .basis-switch-track {
+  background: var(--teal);
+}
+
+.basis-switch input:checked + .basis-switch-track::after {
+  transform: translateX(20px);
+}
+
+.basis-switch input:focus-visible + .basis-switch-track {
+  outline: 3px solid rgba(13, 118, 111, 0.2);
+  outline-offset: 2px;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -355,6 +433,19 @@ label:hover + .info-button,
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
+.temperature-field {
+  display: grid;
+  min-width: 0;
+  gap: 9px;
+}
+
+.temperature-input {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 78px;
+  gap: 8px;
+  min-width: 0;
+}
+
 /* Five fields in a two-column grid leave one cell empty wherever they fall. The
    carrier takes the whole row — it is the widest control and the first decision —
    so the remaining four pair up evenly: quantity with unit, source with sink. */
@@ -366,6 +457,38 @@ label:hover + .info-button,
    factor box did. */
 .compare-row.has-temps {
   grid-template-columns: 32px minmax(170px, 1fr) minmax(90px, 0.38fr) minmax(150px, 0.55fr) minmax(180px, 0.8fr);
+}
+
+/* Keep the comparison inputs dense like the calculator inputs. Preset rows do
+   not show an editable factor, so their three visible controls should use the
+   available width instead of reserving a blank fourth column. */
+.compare-page .compare-rows {
+  gap: 18px;
+  padding: 16px;
+}
+
+.compare-page .compare-row {
+  gap: 8px 12px;
+}
+
+.compare-page .compare-row:not(.has-temps):not(.has-factor) {
+  grid-template-columns: 32px minmax(190px, 1.55fr) minmax(120px, 0.65fr) minmax(150px, 0.75fr);
+}
+
+.compare-page .compare-row.has-temps {
+  grid-template-columns: 32px minmax(170px, 1.15fr) minmax(100px, 0.6fr) minmax(150px, 0.75fr) minmax(260px, 1.45fr);
+}
+
+.compare-page .compare-row .field-row {
+  gap: 6px;
+}
+
+.compare-page .compare-row .field-label {
+  min-height: 30px;
+}
+
+.compare-page .compare-side-label {
+  margin-bottom: 0;
 }
 
 input,
@@ -611,11 +734,13 @@ button,
 .compare-panel {
   display: grid;
   gap: 16px;
+  min-width: 0;
 }
 
 .compare-rows {
   display: grid;
   gap: 14px;
+  min-width: 0;
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -652,6 +777,7 @@ button,
 .compare-result {
   display: grid;
   gap: 12px;
+  min-width: 0;
   padding: 16px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -715,63 +841,90 @@ button,
 
 .compare-bars {
   display: grid;
-  gap: 12px;
-}
-
-.bar-row {
-  display: grid;
-  grid-template-columns: minmax(150px, 0.85fr) minmax(180px, 1fr) minmax(92px, 0.4fr);
-  align-items: center;
-  gap: 12px;
-}
-
-.bar-meta {
-  display: grid;
-  gap: 2px;
+  gap: 26px;
   min-width: 0;
 }
 
-.bar-meta span {
-  color: var(--teal-deep);
-  font-size: 0.72rem;
-  font-weight: 900;
+.compare-result-head,
+.compare-result-row {
+  display: grid;
+  align-items: center;
+  grid-template-columns: 52px minmax(0, 2.35fr) minmax(180px, 1.2fr) minmax(150px, 0.9fr) minmax(170px, 1fr);
+  column-gap: 22px;
+  min-width: 0;
 }
 
-.bar-meta strong,
-.bar-meta em,
-.bar-value {
+.compare-result-head {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.compare-result-head > span:not(:first-child) {
+  text-align: center;
+}
+
+.compare-result-head > span:nth-child(2) {
+  text-align: left;
+}
+
+.compare-result-row {
+  min-height: 54px;
+}
+
+.compare-result-side {
+  color: var(--teal-deep);
+  font-size: 1.7rem;
+  font-weight: 850;
+}
+
+.compare-result-notation {
+  color: var(--teal-deep);
+  font-size: clamp(1rem, 1.8vw, 1.4rem);
+  line-height: 1.3;
   overflow-wrap: anywhere;
 }
 
-.bar-meta strong {
-  font-size: 0.92rem;
+.compare-result-bracket {
+  display: block;
+  margin-top: 2px;
 }
 
-.bar-meta em {
-  color: var(--muted);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.78rem;
-  font-style: normal;
+.compare-result-factor {
+  min-width: 0;
 }
 
-.bar-track {
-  height: 14px;
+.compare-factor-track {
+  display: block;
+  height: 22px;
   overflow: hidden;
   border-radius: 999px;
   background: #e2ebe7;
 }
 
-.bar-fill {
+.compare-factor-fill {
   display: block;
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--amber), var(--teal));
 }
 
-.bar-value {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.86rem;
-  text-align: right;
+.compare-result-value {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: clamp(1rem, 1.8vw, 1.4rem);
+  font-weight: 600;
+  text-align: center;
+}
+
+.compare-result-value.accessible {
+  color: var(--teal);
+}
+
+.compare-result-value.inaccessible {
+  color: var(--red);
 }
 
 .section-band,
@@ -1035,6 +1188,96 @@ button:disabled {
   .registry-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  /* The comparison form has five desktop columns. Collapse it before the
+     viewport gets narrow enough for those minimum widths to overflow. */
+  .compare-row,
+  .compare-row.has-temps {
+    grid-template-columns: 32px minmax(0, 1fr);
+    row-gap: 12px;
+  }
+
+  .compare-row > .field-row {
+    grid-column: 2;
+  }
+
+  .compare-side-label {
+    grid-column: 1;
+    grid-row: 1 / span 4;
+    align-self: start;
+    margin-top: 5px;
+  }
+
+  /* Let a long temperature declaration occupy the full row before the
+     graphic. This keeps text such as the B-side 100 Â°C / 20 Â°C annotation
+     completely separate from the exergy bar. */
+  .compare-page .compare-row,
+  .compare-page .compare-row.has-temps {
+    grid-template-columns: 32px minmax(0, 1fr);
+    row-gap: 16px;
+  }
+
+  .compare-page .compare-row:not(.has-temps):not(.has-factor),
+  .compare-page .compare-row.has-temps {
+    grid-template-columns: 32px minmax(0, 1fr);
+  }
+
+  .compare-page .compare-row > .field-row {
+    grid-column: 2;
+  }
+
+  .compare-page .compare-side-label {
+    width: 32px;
+    height: 32px;
+    grid-column: 1;
+    grid-row: 1 / span 4;
+    align-self: start;
+    margin-top: 5px;
+    font-size: 0.95rem;
+  }
+
+  .compare-result-head {
+    display: none;
+  }
+
+  .compare-result-row {
+    grid-template-columns: 32px minmax(0, 1fr);
+    column-gap: 12px;
+    row-gap: 12px;
+    padding: 16px 0;
+    border-top: 1px solid rgba(23, 32, 29, 0.1);
+  }
+
+  .compare-result-row:nth-child(2) {
+    border-top: 0;
+  }
+
+  .compare-result-side {
+    grid-column: 1;
+    grid-row: 1 / span 4;
+  }
+
+  .compare-result-notation,
+  .compare-result-factor,
+  .compare-result-value {
+    grid-column: 2;
+    text-align: left;
+  }
+
+  .compare-result-value {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .compare-result-value::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 850;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
 }
 
 @media (max-width: 720px) {
@@ -1044,8 +1287,42 @@ button:disabled {
     flex-direction: column;
   }
 
+  .site-header {
+    gap: 10px;
+    padding: 12px 16px 14px;
+  }
+
+  .brand {
+    gap: 10px;
+    font-size: 1.05rem;
+  }
+
+  .brand-mark {
+    width: 28px;
+    height: 28px;
+  }
+
   nav {
+    width: 100%;
     justify-content: flex-start;
+    gap: 8px 18px;
+    padding-right: 0;
+    font-size: 0.92rem;
+  }
+
+  nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+  }
+
+  .hero {
+    gap: 24px;
+    padding: 32px 16px 40px;
+  }
+
+  .tool-card {
+    padding: 16px;
   }
 
   form,
@@ -1060,8 +1337,7 @@ button:disabled {
   .example-grid,
   .link-grid,
   .registry-grid,
-  .compare-row,
-  .bar-row {
+  .compare-row {
     grid-template-columns: 1fr;
   }
 
@@ -1074,8 +1350,47 @@ button:disabled {
     text-align: left;
   }
 
-  .bar-value {
-    text-align: left;
+  .compare-page .compare-row,
+  .compare-page .compare-row.has-temps {
+    grid-template-columns: 1fr;
+  }
+
+  .compare-page .compare-row:not(.has-temps):not(.has-factor),
+  .compare-page .compare-row.has-temps {
+    grid-template-columns: 1fr;
+  }
+
+  .compare-page .compare-row > .field-row {
+    grid-column: auto;
+  }
+
+  .compare-page .compare-side-label {
+    grid-column: auto;
+    grid-row: auto;
+    align-self: center;
+    margin-top: 0;
+  }
+
+  .compare-rows,
+  .compare-result,
+  .compare-answers {
+    padding: 12px;
+  }
+
+  .compare-result-row {
+    grid-template-columns: 1fr;
+  }
+
+  .compare-result-side,
+  .compare-result-notation,
+  .compare-result-factor,
+  .compare-result-value {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .compare-result-side {
+    font-size: 1.35rem;
   }
 
   .field-row:nth-child(odd) {
@@ -1084,5 +1399,16 @@ button:disabled {
 
   .input-pair {
     grid-template-columns: 1fr;
+  }
+
+  .export-actions {
+    justify-content: stretch;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .export-actions button {
+    flex: 1 1 132px;
+    min-width: 0;
   }
 }

@@ -12,7 +12,7 @@
     />
     <link rel="canonical" href="https://exergyfactor.com/" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="styles.css?v=20260818c" />
+    <link rel="stylesheet" href="styles.css?v=20260824i" />
   </head>
   <body>
     <header class="site-header">
@@ -33,7 +33,7 @@
       <section id="calculator" class="hero">
         <div class="intro">
           <p class="eyebrow">Energy Quantity + Energy Quality</p>
-          <h1>Find the Exergy Factor of an energy stream.</h1>
+          <h1>Calculate the Exergy Factor of Different Forms of Energy.</h1>
           <p>
             Choose the energy form and enter what you know. For heat or cooling, add the temperatures. The calculator gives you <code>fx</code> and the accessible exergy.
           </p>
@@ -52,22 +52,30 @@
               <div class="field-row field-row-wide">
                 <div class="field-label">
                   <label for="energy-form">Energy Form</label>
-                  <button class="info-button" type="button" aria-label="Energy form help" data-tooltip="What kind of energy is being reported. Choose the closest match from the list, such as Electricity, 150 °C steam, Natural gas HHV, or Crude oil. This selects the reference Exergy Factor and typed carrier suffix unless you provide an optional override.">ⓘ</button>
+                  <button class="info-button" type="button" aria-label="Energy form help" data-tooltip="What kind of energy is being reported. Choose the closest match from the list, such as Electricity, mechanical work, 150 °C steam, Natural gas, or Crude oil. For fuels with both bases available, use the HHV/LHV switch to match your reporting basis.">ⓘ</button>
                 </div>
                 <select id="energy-form" aria-label="Energy form or reporting basis">
                   <option value="electricity" selected>Electricity</option>
+                  <option value="mechanical">Mechanical work</option>
                   <option value="heat">Heat</option>
                   <option value="cooling">Cooling</option>
-                  <option value="naturalGasHhv">Natural gas HHV</option>
-                  <option value="naturalGasLhv">Natural gas LHV</option>
-                  <option value="hydrogen">Hydrogen HHV</option>
-                  <option value="hydrogenLhv">Hydrogen LHV</option>
-                  <option value="dieselLhv">Diesel LHV</option>
-                  <option value="gasolineLhv">Gasoline LHV</option>
-                  <option value="coalLhv">Coal LHV</option>
+                  <option value="naturalGasHhv">Natural gas</option>
+                  <option value="hydrogen">Hydrogen</option>
+                  <option value="dieselLhv">Diesel</option>
+                  <option value="gasolineLhv">Gasoline</option>
+                  <option value="coalLhv">Coal</option>
                   <option value="crudeOil">Crude oil</option>
                   <option value="solar">Solar radiation</option>
                 </select>
+                <div class="basis-control" id="energy-basis-control" hidden>
+                  <span class="basis-control-label">Fuel basis</span>
+                  <label class="basis-switch">
+                    <span aria-hidden="true">LHV</span>
+                    <input id="energy-basis-toggle" type="checkbox" role="switch" aria-label="Fuel basis" />
+                    <span class="basis-switch-track" aria-hidden="true"></span>
+                    <span aria-hidden="true">HHV</span>
+                  </label>
+                </div>
               </div>
 
               <div class="field-row">
@@ -164,10 +172,6 @@
             </div>
           </section>
 
-          <p class="result-explainer">
-            <code>fx</code> measures the stream's thermodynamic distinction from its declared reference. If the states are indistinguishable, <code>fx = 0</code> and no work potential remains.
-          </p>
-
           <div class="export-actions">
             <button type="button" id="export-csv">Export CSV</button>
             <button type="button" id="export-png">Export PNG</button>
@@ -227,7 +231,7 @@
       <a class="primary-link" href="paper/quantity-and-quality-standard-reporting-framework.pdf">Download the paper</a>
     </footer>
 
-    <script src="data/reference_examples.js?v=20260818c"></script>
-    <script src="script.js?v=20260818c"></script>
+    <script src="data/reference_examples.js?v=20260824i"></script>
+    <script src="script.js?v=20260824i"></script>
   </body>
 </html>

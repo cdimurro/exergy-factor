@@ -12,9 +12,9 @@
     />
     <link rel="canonical" href="https://exergyfactor.com/compare.html" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="styles.css?v=20260818c" />
+    <link rel="stylesheet" href="styles.css?v=20260824i" />
   </head>
-  <body>
+  <body class="compare-page">
     <header class="site-header">
       <a class="brand" href="index.html" aria-label="Exergy Factor calculator">
         <span class="brand-mark" aria-hidden="true"></span>
@@ -33,7 +33,7 @@
       <section id="compare" class="hero">
         <div class="intro">
           <p class="eyebrow">Comparison tool</p>
-          <h1>Compare different forms of energy to each other.</h1>
+          <h1>Compare the Accessible Exergy of Different Energy Quantities.</h1>
           <p>
             Two forms of energy can have the same quantity but very different abilities to do useful work. This tool compares their energy quantity and Exergy Factor to show how much accessible exergy each record carries.
           </p>
@@ -42,7 +42,7 @@
         <section class="compare-panel tool-card" aria-label="Compare energy forms">
           <div class="compare-head">
             <div>
-              <h2>Energy Quality Comparison Tool</h2>
+              <h2>Energy Quality Comparison</h2>
             </div>
           </div>
 
@@ -52,30 +52,38 @@
               <div class="field-row">
                 <div class="field-label">
                   <label for="compare-a-preset">Energy Form</label>
-                  <button class="info-button" type="button" aria-label="Comparison A energy form help" data-tooltip="Choose the first energy form you want to compare. Example: Electricity, 150 °C steam, Natural gas HHV, or Custom. This sets the reference Exergy Factor and typed carrier suffix unless you edit it.">ⓘ</button>
+                  <button class="info-button" type="button" aria-label="Comparison A energy form help" data-tooltip="Choose the first energy form you want to compare. Example: Electricity, mechanical work, 150 °C steam, Natural gas, or Custom. For fuels with both bases available, use the HHV/LHV switch to match your reporting basis.">ⓘ</button>
                 </div>
                 <select id="compare-a-preset" aria-label="Comparison A energy form">
-                  <option value="electricity">Electricity</option>
+                  <option value="electricity" selected>Electricity</option>
+                  <option value="mechanical">Mechanical work</option>
                   <option value="heat">Heat</option>
                   <option value="cooling">Cooling</option>
-                  <option value="naturalGasHhv">Natural gas HHV</option>
-                  <option value="naturalGasLhv">Natural gas LHV</option>
-                  <option value="hydrogen">Hydrogen HHV</option>
-                  <option value="hydrogenLhv">Hydrogen LHV</option>
-                  <option value="dieselLhv">Diesel LHV</option>
-                  <option value="gasolineLhv">Gasoline LHV</option>
-                  <option value="coalLhv">Coal LHV</option>
+                  <option value="naturalGasHhv">Natural gas</option>
+                  <option value="hydrogen">Hydrogen</option>
+                  <option value="dieselLhv">Diesel</option>
+                  <option value="gasolineLhv">Gasoline</option>
+                  <option value="coalLhv">Coal</option>
                   <option value="crudeOil">Crude oil</option>
                   <option value="solar">Solar radiation</option>
                   <option value="custom">Custom</option>
                 </select>
+                <div class="basis-control" id="compare-a-basis-control" hidden>
+                  <span class="basis-control-label">Fuel basis</span>
+                  <label class="basis-switch">
+                    <span aria-hidden="true">LHV</span>
+                    <input id="compare-a-basis-toggle" type="checkbox" role="switch" aria-label="Fuel basis" />
+                    <span class="basis-switch-track" aria-hidden="true"></span>
+                    <span aria-hidden="true">HHV</span>
+                  </label>
+                </div>
               </div>
               <div class="field-row">
                 <div class="field-label">
                   <label for="compare-a-quantity">Quantity</label>
                   <button class="info-button" type="button" aria-label="Comparison A quantity help" data-tooltip="Enter the amount of energy for side A. Use the number from your meter, invoice, model, or dataset. Example: 1 for 1 MWh, 500 for 500 kWh, or 2.738 for 2.738 GJ.">ⓘ</button>
                 </div>
-                <input id="compare-a-quantity" type="number" min="0" step="any" value="1" aria-label="Comparison A quantity" />
+                <input id="compare-a-quantity" type="number" min="0" step="any" value="5" aria-label="Comparison A quantity" />
               </div>
               <div class="field-row">
                 <div class="field-label">
@@ -112,13 +120,34 @@
                 <input id="compare-a-factor" type="number" min="0" step="any" value="1" aria-label="Comparison A Exergy Factor" />
               </div>
               <div class="field-row" id="compare-a-temps" hidden>
-                <div class="field-label">
-                  <label for="compare-a-source">Temperatures (°C)</label>
-                  <button class="info-button" type="button" aria-label="Comparison A temperatures help" data-tooltip="The temperature the heat is delivered at, and the reference environment it is rejected to. For cooling, the temperature you are cooling to and the ambient. These set the Exergy Factor for this row.">ⓘ</button>
-                </div>
                 <div class="input-pair temperature-pair">
-                  <input id="compare-a-source" type="number" step="any" inputmode="decimal" placeholder="source °C" aria-label="Comparison A source temperature in degrees Celsius" />
-                  <input id="compare-a-sink" type="number" step="any" inputmode="decimal" placeholder="ref °C" aria-label="Comparison A reference temperature in degrees Celsius" />
+                  <div class="temperature-field">
+                    <div class="field-label">
+                      <label for="compare-a-source">Source Temperature</label>
+                      <button class="info-button" type="button" aria-label="Comparison A temperatures help" data-tooltip="The temperature the heat is delivered at, and the reference environment it is rejected to. For cooling, the temperature you are cooling to and the ambient. These set the Exergy Factor for this row.">ⓘ</button>
+                    </div>
+                    <div class="temperature-input">
+                      <input id="compare-a-source" type="number" step="any" inputmode="decimal" placeholder="source" aria-label="Comparison A source temperature" />
+                      <select id="compare-a-source-unit" aria-label="Comparison A source temperature unit">
+                        <option value="C" selected>°C</option>
+                        <option value="F">°F</option>
+                        <option value="K">K</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="temperature-field">
+                    <div class="field-label">
+                      <label for="compare-a-sink">Sink Temperature</label>
+                    </div>
+                    <div class="temperature-input">
+                      <input id="compare-a-sink" type="number" step="any" inputmode="decimal" placeholder="reference" aria-label="Comparison A reference temperature" />
+                      <select id="compare-a-sink-unit" aria-label="Comparison A reference temperature unit">
+                        <option value="C" selected>°C</option>
+                        <option value="F">°F</option>
+                        <option value="K">K</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -126,35 +155,43 @@
             <div class="compare-row" data-compare-row="b">
               <div class="compare-side-label" aria-hidden="true">B</div>
               <div class="field-row">
-                <div class="field-label visually-hidden">
+                <div class="field-label">
                   <label for="compare-b-preset">Energy Form</label>
-                  <button class="info-button" type="button" aria-label="Comparison B energy form help" data-tooltip="Choose the second energy form you want to compare. Example: Electricity, 80 °C hot water, hydrogen HHV, or Custom. This sets the reference Exergy Factor and typed carrier suffix unless you edit it.">ⓘ</button>
+                  <button class="info-button" type="button" aria-label="Comparison B energy form help" data-tooltip="Choose the second energy form you want to compare. Example: Electricity, mechanical work, 80 °C hot water, hydrogen, or Custom. For fuels with both bases available, use the HHV/LHV switch to match your reporting basis.">ⓘ</button>
                 </div>
                 <select id="compare-b-preset" aria-label="Comparison B energy form">
                   <option value="electricity">Electricity</option>
-                  <option value="heat">Heat</option>
+                  <option value="mechanical">Mechanical work</option>
+                  <option value="heat" selected>Heat</option>
                   <option value="cooling">Cooling</option>
-                  <option value="naturalGasHhv">Natural gas HHV</option>
-                  <option value="naturalGasLhv">Natural gas LHV</option>
-                  <option value="hydrogen">Hydrogen HHV</option>
-                  <option value="hydrogenLhv">Hydrogen LHV</option>
-                  <option value="dieselLhv">Diesel LHV</option>
-                  <option value="gasolineLhv">Gasoline LHV</option>
-                  <option value="coalLhv">Coal LHV</option>
+                  <option value="naturalGasHhv">Natural gas</option>
+                  <option value="hydrogen">Hydrogen</option>
+                  <option value="dieselLhv">Diesel</option>
+                  <option value="gasolineLhv">Gasoline</option>
+                  <option value="coalLhv">Coal</option>
                   <option value="crudeOil">Crude oil</option>
                   <option value="solar">Solar radiation</option>
                   <option value="custom">Custom</option>
                 </select>
+                <div class="basis-control" id="compare-b-basis-control" hidden>
+                  <span class="basis-control-label">Fuel basis</span>
+                  <label class="basis-switch">
+                    <span aria-hidden="true">LHV</span>
+                    <input id="compare-b-basis-toggle" type="checkbox" role="switch" aria-label="Fuel basis" />
+                    <span class="basis-switch-track" aria-hidden="true"></span>
+                    <span aria-hidden="true">HHV</span>
+                  </label>
+                </div>
               </div>
               <div class="field-row">
-                <div class="field-label visually-hidden">
+                <div class="field-label">
                   <label for="compare-b-quantity">Quantity</label>
                   <button class="info-button" type="button" aria-label="Comparison B quantity help" data-tooltip="Enter the amount of energy for side B. Use the number from your meter, invoice, model, or dataset. Example: 1 for 1 MWh, 45 for 45 Btu, or 2.738 for 2.738 kWh.">ⓘ</button>
                 </div>
-                <input id="compare-b-quantity" type="number" min="0" step="any" value="1" aria-label="Comparison B quantity" />
+                <input id="compare-b-quantity" type="number" min="0" step="any" value="5" aria-label="Comparison B quantity" />
               </div>
               <div class="field-row">
-                <div class="field-label visually-hidden">
+                <div class="field-label">
                   <label for="compare-b-unit">Unit</label>
                   <button class="info-button" type="button" aria-label="Comparison B unit help" data-tooltip="Select the base unit for side B. The result adds the typed suffix, such as MWh_e, MWh_th, or MWh_HHV_NG.">ⓘ</button>
                 </div>
@@ -181,20 +218,41 @@
                 </select>
               </div>
               <div class="field-row" id="compare-b-factor-row">
-                <div class="field-label visually-hidden">
+                <div class="field-label">
                   <label for="compare-b-factor">Exergy Factor</label>
                   <button class="info-button" type="button" aria-label="Comparison B Exergy Factor help" data-tooltip="The quality multiplier for side B. Presets fill this automatically, but you can edit it for a custom basis. Example: 1 for electricity, 0.17 for 80 °C hot water, or 0.73 for a custom record.">ⓘ</button>
                 </div>
                 <input id="compare-b-factor" type="number" min="0" step="any" value="0.17" aria-label="Comparison B Exergy Factor" />
               </div>
               <div class="field-row" id="compare-b-temps" hidden>
-                <div class="field-label visually-hidden">
-                  <label for="compare-b-source">Temperatures (°C)</label>
-                  <button class="info-button" type="button" aria-label="Comparison B temperatures help" data-tooltip="The temperature the heat is delivered at, and the reference environment it is rejected to. For cooling, the temperature you are cooling to and the ambient. These set the Exergy Factor for this row.">ⓘ</button>
-                </div>
                 <div class="input-pair temperature-pair">
-                  <input id="compare-b-source" type="number" step="any" inputmode="decimal" placeholder="source °C" aria-label="Comparison B source temperature in degrees Celsius" />
-                  <input id="compare-b-sink" type="number" step="any" inputmode="decimal" placeholder="ref °C" aria-label="Comparison B reference temperature in degrees Celsius" />
+                  <div class="temperature-field">
+                    <div class="field-label">
+                      <label for="compare-b-source">Source Temperature</label>
+                      <button class="info-button" type="button" aria-label="Comparison B temperatures help" data-tooltip="The temperature the heat is delivered at, and the reference environment it is rejected to. For cooling, the temperature you are cooling to and the ambient. These set the Exergy Factor for this row.">ⓘ</button>
+                    </div>
+                    <div class="temperature-input">
+                      <input id="compare-b-source" type="number" step="any" inputmode="decimal" placeholder="source" aria-label="Comparison B source temperature" />
+                      <select id="compare-b-source-unit" aria-label="Comparison B source temperature unit">
+                        <option value="C" selected>°C</option>
+                        <option value="F">°F</option>
+                        <option value="K">K</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="temperature-field">
+                    <div class="field-label">
+                      <label for="compare-b-sink">Sink Temperature</label>
+                    </div>
+                    <div class="temperature-input">
+                      <input id="compare-b-sink" type="number" step="any" inputmode="decimal" placeholder="reference" aria-label="Comparison B reference temperature" />
+                      <select id="compare-b-sink-unit" aria-label="Comparison B reference temperature unit">
+                        <option value="C" selected>°C</option>
+                        <option value="F">°F</option>
+                        <option value="K">K</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -260,7 +318,7 @@
       <a class="primary-link" href="paper/quantity-and-quality-standard-reporting-framework.pdf">Download the paper</a>
     </footer>
 
-    <script src="data/reference_examples.js?v=20260818c"></script>
-    <script src="script.js?v=20260818c"></script>
+    <script src="data/reference_examples.js?v=20260824i"></script>
+    <script src="script.js?v=20260824i"></script>
   </body>
 </html>

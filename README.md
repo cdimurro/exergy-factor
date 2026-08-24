@@ -51,10 +51,11 @@ served directly by GitHub Pages.
 | `methodology.html` | The thermodynamic basis, and the limits of the method |
 | `api-key.html` | Use the public API and open its interactive documentation |
 
-Supported: typed carrier notation (`MWh_e`, `MWh_th`, `MWh_solar`,
-`MWh_HHV_NG`), temperature-based thermal Exergy Factors, cooling services below
-ambient, unit conversion for energy and accessible exergy, and the Carrier
-Registry / Fidelity Tier summaries.
+Supported: typed carrier notation (`MWh_e`, `MWh_m`, `MWh_th`, `MWh_solar`,
+`MWh_HHV_NG`), an HHV/LHV basis toggle for supported combustible fuels,
+temperature-based thermal Exergy Factors, cooling services below ambient, unit
+conversion for energy and accessible exergy, and the Carrier Registry / Fidelity
+Tier summaries.
 
 Fuel volumes cannot determine an exact energy quantity without a measured
 heating value. The calculator labels its `scf(natural gas)` and `bbl(oil)`
