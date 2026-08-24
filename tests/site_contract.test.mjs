@@ -83,6 +83,11 @@ test("calculator defaults to 5 MWh of heat at 100 C", () => {
   assert.match(source, /fields\["source-temp"\]\.value = preset\.needsTemperature === "heat" \? "100" : ""/);
   assert.match(source, /"Inaccessible Anergy", fields\["anergy-output"\]/);
   assert.match(source, /function displayExergyUnit\(unit\) \{\s*return unit\.replace/);
+  const css = fs.readFileSync(path.join(root, "styles.css"), "utf8");
+  assert.match(css, /--accessible-green: #16803d/);
+  assert.match(css, /--anergy-red: #b2372f/);
+  assert.match(css, /\.answer-item strong\.accessible\s*\{\s*color: var\(--accessible-green\)/);
+  assert.match(css, /\.answer-item strong\.inaccessible\s*\{\s*color: var\(--anergy-red\)/);
 });
 
 test("every local HTML link resolves", () => {

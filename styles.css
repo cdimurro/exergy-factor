@@ -10,7 +10,8 @@
   --teal-deep: #0a4f4a;
   --amber: #b66d12;
   --blue: #315f97;
-  --red: #a84732;
+  --accessible-green: #16803d;
+  --anergy-red: #b2372f;
   --shadow: 0 20px 50px rgba(23, 32, 29, 0.12);
 }
 
@@ -860,11 +861,11 @@ button,
 }
 
 .answer-item strong.accessible {
-  color: var(--teal);
+  color: var(--accessible-green);
 }
 
 .answer-item strong.inaccessible {
-  color: var(--red);
+  color: var(--anergy-red);
 }
 
 .compare-result-head,
@@ -977,11 +978,11 @@ button,
 }
 
 .compare-result-value.accessible {
-  color: var(--teal);
+  color: var(--accessible-green);
 }
 
 .compare-result-value.inaccessible {
-  color: var(--red);
+  color: var(--anergy-red);
 }
 
 .section-band,
