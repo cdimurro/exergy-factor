@@ -1,42 +1,39 @@
 # Exergy Factor
 
-**[exergyfactor.com](https://exergyfactor.com)** — a free calculator for reporting energy as *quantity plus quality*.
+**[exergyfactor.com](https://www.exergyfactor.com)** — a free online calculating and comparing the *quality* of different forms of energy.
 
 [![Site](https://img.shields.io/website?url=https%3A%2F%2Fexergyfactor.com&label=exergyfactor.com)](https://exergyfactor.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## The problem
 
-A megawatt-hour is not a megawatt-hour. One MWh of electricity can do a full
-MWh of work. One MWh of 80 °C hot water, against a 20 °C environment, can do
-about 0.17 MWh of work — the rest cannot be recovered, no matter how good your
-equipment is. Add them up as "2 MWh" and the number is arithmetically fine and
-physically meaningless.
-
-Energy reporting almost universally records the first law (how much) and
-discards the second (how useful). Decisions get made on the sum.
+One MWh of electricity can do one MWh of useful work, whereas one MWh of 80 °C water, in a 20 °C environment, can do
+about 0.17 MWh of useful work. They both contain the same amount of *energy* but their ability to perform *useful work* is vastly different. This tool allows you to calculate and understand those differences.
 
 ## The fix
 
 Report one extra field alongside the quantity:
 
 ```text
-1 MWh_th, fx = 0.170 [Th = 80 C, T0 = 20 C]
+1 MWh, fx = 0.170 
 ```
 
 `fx` is the **Exergy Factor**: accessible work potential per unit of reported
-energy, against a stated reference environment. It is nonnegative and can exceed
-1 when the denominator is an accounting basis such as LHV. It is computed from
-stated conditions rather than assumed, and it makes
-electricity, fuels, heat, cooling, and storage comparable on the axis that
-actually determines what they can do.
+energy, against a stated reference environment.
 
-The reference environment is part of the report, not a hidden default — the
-same 80 °C stream is worth more in winter than in summer, and the notation says
-so.
+The reference environment can also be included when desired. This is essential because
+same 80 °C stream is worth more in the middle of winter than in the middle of summer, because the environmental conditions are different
 
-The distinction from that environment is what makes work possible. The
-calculator reports it through `fx`; it does not apply a separate
+The full self-verifiable notion is written as followed:
+
+```text
+5 MWh_th, fx = 0.170 [Th = 80 °C, T0 = 20 °C]
+```
+
+This tells you much more than just writing 5 MWh. 
+
+Distinguishability between the source and the environment is what makes work possible. If the energy source has the same temperature as the environment then it is not possible to perform useful work using that energy source. 
+The calculator displays this through `fx`; it does not apply a separate
 "distinguishability factor." At the same state as the reference, `fx = 0`.
 
 ## What this repo is
