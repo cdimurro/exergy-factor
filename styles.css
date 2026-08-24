@@ -10,9 +10,7 @@
   --teal-deep: #0a4f4a;
   --amber: #b66d12;
   --blue: #315f97;
-  --green-deep: #187a4b;
   --red: #a84732;
-  --red-deep: #8f2d2d;
   --shadow: 0 20px 50px rgba(23, 32, 29, 0.12);
 }
 
@@ -751,7 +749,7 @@ button,
 
 .compare-row {
   display: grid;
-  grid-template-columns: 32px minmax(0, 0.5fr) minmax(0, 0.27fr) minmax(0, 0.3fr) minmax(0, 1.1fr);
+  grid-template-columns: 32px minmax(190px, 1fr) minmax(100px, 0.42fr) minmax(170px, 0.65fr) minmax(110px, 0.45fr);
   align-items: end;
   gap: 12px;
 }
@@ -761,7 +759,7 @@ button,
   width: 28px;
   height: 28px;
   place-items: center;
-  align-self: end;
+  align-self: center;
   margin-bottom: 5px;
   border-radius: 50%;
   background: var(--ink);
@@ -772,38 +770,8 @@ button,
 
 .compare-row input,
 .compare-row select {
-  min-width: 0;
   min-height: 38px;
   font-size: 0.92rem;
-}
-
-.compare-row .field-row {
-  min-width: 0;
-}
-
-.compare-row select {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.temperature-field {
-  display: grid;
-  min-width: 0;
-  gap: 6px;
-}
-
-.temperature-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 38px;
-}
-
-.temperature-label label {
-  color: var(--ink);
-  font-size: inherit;
-  font-weight: 750;
-  line-height: 1.2;
 }
 
 .compare-result {
@@ -816,26 +784,6 @@ button,
   background: var(--panel);
 }
 
-.compare-chart-title {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.75rem;
-  font-weight: 850;
-  letter-spacing: 0;
-  text-transform: uppercase;
-}
-
-.compare-chart-header .compare-chart-title:nth-of-type(3),
-.compare-chart-header .compare-chart-title:nth-of-type(4) {
-  text-align: center;
-}
-
-.compare-chart-header {
-  display: grid;
-  grid-template-columns: 32px minmax(330px, 1.75fr) minmax(160px, 0.9fr) minmax(130px, 0.6fr) minmax(140px, 0.65fr);
-  gap: 12px;
-}
-
 .compare-answers {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -846,58 +794,12 @@ button,
   background: #eef8f5;
 }
 
-.compare-answers strong {
-  overflow-wrap: anywhere;
-}
-
-.compare-panel > .compare-answers {
-  grid-template-areas: "ratio equivalent";
-}
-
-.ratio-answer {
-  grid-area: ratio;
-}
-
-.equivalence-answer {
-  grid-area: equivalent;
-}
-
-/* Keep the four headline results in a predictable 2x2 reading order: factor,
-   notation, accessible exergy, and inaccessible anergy. */
+/* Put the number visitors came for first, then the complete notation and the
+   accessible-exergy quantity. */
 .calculator-result {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-areas:
-    "factor accessible"
-    "notation inaccessible";
+  grid-template-columns: minmax(110px, 0.65fr) minmax(0, 1.9fr) minmax(0, 1fr);
   align-items: start;
   gap: 8px 20px;
-}
-
-.factor-answer {
-  grid-area: factor;
-  gap: 2px;
-}
-
-.factor-answer .result-label {
-  margin-bottom: 0;
-}
-
-.notation-answer {
-  grid-area: notation;
-  padding-top: 12px;
-}
-
-.accessible-answer {
-  grid-area: accessible;
-  justify-items: center;
-  text-align: center;
-}
-
-.inaccessible-answer {
-  grid-area: inaccessible;
-  justify-items: center;
-  padding-top: 12px;
-  text-align: center;
 }
 
 .result-explainer {
@@ -930,18 +832,6 @@ button,
   font-size: clamp(0.98rem, 2vw, 1.25rem);
   font-weight: 600;
   line-height: 1.25;
-}
-
-.accessible-answer strong {
-  color: var(--green-deep);
-}
-
-/* Anergy is the part of the quantity that cannot be applied as work. Keep it
-   visually distinct from accessible exergy wherever the result is shown. */
-.inaccessible-answer strong,
-.conversion-card.inaccessible-anergy span,
-.conversion-card.inaccessible-anergy strong {
-  color: var(--red-deep);
 }
 
 .result-wide {
@@ -995,7 +885,6 @@ button,
   font-size: clamp(1rem, 1.8vw, 1.4rem);
   line-height: 1.3;
   overflow-wrap: anywhere;
-  white-space: nowrap;
 }
 
 .compare-result-bracket {
@@ -1011,7 +900,6 @@ button,
   display: block;
   height: 22px;
   overflow: hidden;
-  border: 0;
   border-radius: 999px;
   background: #e2ebe7;
 }
@@ -1059,7 +947,7 @@ button,
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: clamp(24px, 5vw, 56px);
   max-width: 1120px;
-  margin: 0;
+  margin: 0 auto;
 }
 
 pre {
@@ -1069,127 +957,6 @@ pre {
   border-radius: 8px;
   background: transparent;
   color: var(--ink);
-}
-
-.accounting-chain {
-  --accounting-energy-column: 170px;
-  --accounting-exergy-column: 170px;
-  --accounting-anergy-column: 170px;
-  --accounting-columns: var(--accounting-energy-column) 32px var(--accounting-exergy-column) 32px var(--accounting-anergy-column);
-  display: grid;
-  width: 100%;
-  max-width: 640px;
-  gap: 8px;
-  margin: 0;
-  overflow-x: auto;
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--paper);
-  font-family: inherit;
-}
-
-.accounting-stage {
-  display: grid;
-  width: 100%;
-  min-width: 0;
-  margin: 0;
-  align-items: center;
-  grid-template-columns: var(--accounting-columns);
-  justify-content: start;
-  gap: 8px;
-  padding: 0;
-  color: var(--ink);
-  font-family: inherit;
-  font-size: clamp(0.78rem, 1.5vw, 1.05rem);
-  font-weight: 700;
-  letter-spacing: normal;
-  line-height: 1.3;
-  text-align: center;
-}
-
-.accounting-stage > .accounting-token {
-  width: 100%;
-  justify-self: start;
-}
-
-.accounting-stage > .accounting-operator {
-  justify-self: center;
-}
-
-.accounting-token {
-  display: inline-flex;
-  min-width: 0;
-  align-items: center;
-  min-height: 30px;
-  padding: 7px 10px;
-  border: 1px solid transparent;
-  border-inline-start-width: 4px;
-  border-radius: 6px;
-  border-color: #e1e6e3;
-  border-inline-start-color: #c2cbc7;
-  background: #f5f7f6;
-  color: var(--ink);
-  font-family: inherit;
-  white-space: nowrap;
-}
-
-.accounting-energy {
-  color: var(--ink);
-}
-
-.accounting-exergy {
-  color: var(--green-deep);
-}
-
-.accounting-applied-exergy {
-  color: var(--amber);
-}
-
-.accounting-anergy {
-  color: var(--red-deep);
-}
-
-.accounting-operator {
-  font-family: inherit;
-  color: var(--ink);
-}
-
-.accounting-arrow {
-  display: grid;
-  width: 100%;
-  min-height: 28px;
-  margin: 0;
-  grid-template-columns: var(--accounting-columns);
-  justify-content: start;
-  gap: 8px;
-  color: var(--ink);
-  font-family: inherit;
-  font-size: 1.55rem;
-  font-weight: 750;
-  line-height: 1;
-}
-
-.accounting-arrow > span {
-  grid-column: 3;
-  justify-self: center;
-  text-align: center;
-}
-
-.accounting-service {
-  color: var(--blue);
-}
-
-.accounting-service-stage {
-  display: grid;
-  grid-template-columns: var(--accounting-columns);
-  justify-content: start;
-}
-
-.accounting-service-stage .accounting-service {
-  grid-column: 3;
-  width: 100%;
-  justify-self: start;
 }
 
 .link-grid {
@@ -1242,20 +1009,7 @@ pre {
 }
 
 .api-key-section {
-  padding-top: clamp(4px, 2vw, 18px);
-}
-
-.api-hero {
-  max-width: 860px;
-  padding-bottom: clamp(18px, 3vw, 34px);
-}
-
-.api-hero h1 {
-  max-width: 760px;
-}
-
-.api-hero p:last-child {
-  max-width: 700px;
+  padding-top: clamp(12px, 3vw, 28px);
 }
 
 .api-key-layout {
@@ -1268,89 +1022,6 @@ pre {
 
 .api-key-form {
   align-self: start;
-}
-
-.api-access-card {
-  gap: 18px;
-}
-
-.api-card-heading {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.api-card-heading h2 {
-  margin: 0;
-}
-
-.api-badge {
-  display: inline-flex;
-  align-items: center;
-  min-height: 30px;
-  padding: 4px 10px;
-  border: 1px solid rgba(13, 118, 111, 0.25);
-  border-radius: 999px;
-  background: #eef8f5;
-  color: var(--teal-deep);
-  font-size: 0.78rem;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.api-label {
-  margin: 0;
-  color: var(--teal-deep);
-  font-size: 0.78rem;
-  font-weight: 850;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.api-base-url {
-  display: block;
-  padding: 13px 14px;
-  overflow-wrap: anywhere;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--band);
-  color: var(--ink);
-  font-size: 0.94rem;
-}
-
-.api-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.api-actions a {
-  text-decoration: none;
-}
-
-.secondary-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 38px;
-  padding: 8px 14px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--panel);
-  color: var(--teal-deep);
-  font-weight: 800;
-}
-
-.secondary-link:hover,
-.secondary-link:focus-visible {
-  border-color: var(--teal);
-  background: #eef8f5;
-}
-
-.api-note {
-  margin: 0;
-  font-size: 0.92rem;
 }
 
 .terms-consent,
@@ -1400,6 +1071,16 @@ button:disabled {
 
 .api-status[data-state="pending"] {
   background: #f7fbf9;
+}
+
+.api-dev-key {
+  display: block;
+  overflow-x: auto;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--ink);
 }
 
 .api-info {
@@ -1465,8 +1146,6 @@ button:disabled {
   min-height: 58px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   text-align: left;
-  white-space: normal;
-  overflow-wrap: anywhere;
 }
 
 .paper-strip {
@@ -1650,6 +1329,8 @@ button:disabled {
   #calculator-form,
   .input-section,
   .field-row,
+  .calculator-result,
+  .compare-answers,
   .advanced-options,
   .results,
   .conversion-grid,

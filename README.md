@@ -21,7 +21,7 @@ discards the second (how useful). Decisions get made on the sum.
 Report one extra field alongside the quantity:
 
 ```text
-1 MWh_th, fx = 0.170 [Th = 80 °C, T0 = 20 °C]
+1 MWh_th, fx = 0.170 [Th = 80 C, T0 = 20 C]
 ```
 
 `fx` is the **Exergy Factor**: accessible work potential per unit of reported
@@ -32,7 +32,7 @@ electricity, fuels, heat, cooling, and storage comparable on the axis that
 actually determines what they can do.
 
 The reference environment is part of the report, not a hidden default — the
-same 80 °C heat quantity is worth more in winter than in summer, and the notation says
+same 80 °C stream is worth more in winter than in summer, and the notation says
 so.
 
 The distinction from that environment is what makes work possible. The
@@ -46,10 +46,10 @@ served directly by GitHub Pages.
 
 | Page | What it does |
 |---|---|
-| `index.html` | Single-record calculator producing full quantity-plus-quality notation |
+| `index.html` | Single-record calculator producing `quantity, fx = value` |
 | `compare.html` | Compares two energy forms by accessible exergy in `MWh_ex` |
 | `methodology.html` | The thermodynamic basis, and the limits of the method |
-| `api-key.html` | Inspect and use the public API contract |
+| `api-key.html` | Use the public API and open its interactive documentation |
 
 Supported: typed carrier notation (`MWh_e`, `MWh_m`, `MWh_th`, `MWh_solar`,
 `MWh_HHV_NG`), an HHV/LHV basis toggle for supported combustible fuels,
@@ -57,35 +57,15 @@ temperature-based thermal Exergy Factors, cooling services below ambient, unit
 conversion for energy and accessible exergy, and the Carrier Registry / Fidelity
 Tier summaries.
 
-The browser unit selector includes SI energy units through PJ and TWh, customary
-BTU/MMBTU and therm units, refrigeration ton-hours for cooling, and named fuel
-volume shortcuts.
-
-When the carrier and quality context are known, the calculator uses the full
-notation as its standard output:
-
-```text
-5 BTU_th, fx = 0.214 [Th = 100 °C, T0 = 20 °C]
-1.3 MWh_HHV_NG, fx = 0.930 [basis = HHV]
-```
-
-The short form (`quantity typed_unit, fx = value`) remains valid when the source
-or reference context is unavailable. The typed suffix still matters: `BTU_th`
-identifies thermal energy, while `MWh_HHV_NG` identifies natural gas on an HHV
-denominator; a bare `BTU` or `MWh` leaves that carrier or basis implicit.
-
 Fuel volumes cannot determine an exact energy quantity without a measured
-heating value. The calculator keeps its `scf(natural gas)` and `bbl(oil)`
-shortcuts tied to the matching fuel form and places the pinned EIA 2026
-U.S.-average estimate in the Unit info tooltip; use the companion library with
-a measured HHV or LHV for a composition-specific result.
+heating value. The calculator labels its `scf(natural gas)` and `bbl(oil)`
+shortcuts as pinned EIA 2026 U.S.-average estimates; use the companion library
+with a measured HHV or LHV for a composition-specific result.
 
-The companion library also accepts Primary, Secondary, Final, and Useful Exergy
-boundaries alongside the corresponding energy records, then records Applied
-Exergy at the task and a separate non-energy service outcome. It preserves
-historical substitution-method data as a statistical equivalent without
-treating it as physical exergy. This additional accounting does not add
-complexity to the browser calculator.
+The companion library also accepts primary, secondary, final, and useful energy
+boundaries. It preserves historical substitution-method data as a statistical
+equivalent without treating it as physical exergy. This additional accounting
+does not add complexity to the browser calculator.
 
 ## Related projects
 
@@ -130,50 +110,31 @@ python -m quantity_quality export-web-data \
 Commit the regenerated `data/` files together with whatever library change
 caused them to move.
 
-## API access
+## Hosted API
 
-The hosted public beta is keyless. Use the canonical endpoint:
-
-```text
-https://api.exergyfactor.com/v1
-```
-
-The health check is:
+The public beta API is keyless and available at:
 
 ```text
-https://api.exergyfactor.com/v1/health
+https://exergy-factor-api.onrender.com/v1
 ```
 
-Local previews use:
-
-```text
-http://127.0.0.1:8000/v1/health
-```
-
-For local work, run the optional API service and use its corresponding local
-base URL instead.
-
-The free deployment is intended for a low-volume public service. It should not
-be treated as a high-availability or high-volume service.
+Interactive documentation is at
+<https://exergy-factor-api.onrender.com/docs>. A health check and sample
+calculation are available from the `API` page on the website. The service
+retains the same units, reference conditions, bases, boundaries, Fidelity Tiers,
+assumptions, and warnings as the Python package. Free hosting may sleep after
+inactivity; use the local package or deploy the container under your control for
+production workloads.
 
 ## Scope
 
-This is a calculator for individual, accumulated energy quantities. It returns the quantity,
+This is a calculator for individual energy streams. It returns the quantity,
 Exergy Factor, and accessible exergy. It does not perform process, technology,
 emissions, health, or economic analysis; The Exergy Imperative handles that
 downstream work. The companion Python library offers an optional accounting
-record for Primary, Secondary, Final, and Useful Exergy, Applied Exergy at the
-task, and a separate non-energy service outcome. When total task-boundary
-energy is measured, the methodology also distinguishes its Applied Energy and
-Applied Anergy residual; this website does not add that complexity to the
-calculator.
-
-The browser presets cover heat, electricity, cooling, mechanical work, common
-fuels, and solar radiation. Natural gas and hydrogen default to HHV, with LHV
-available when the source record explicitly uses it. Heterogeneous fuels and
-state-specific forms such as biomass, radiation, nuclear, and plasma use the
-library/API or the calculator's custom factor input rather than an invented
-universal preset.
+record for primary, secondary, final, and useful energy, Applied Exergy at the
+task, and a separate non-energy service outcome; this website does not add that
+complexity to the calculator.
 
 ## Citing
 

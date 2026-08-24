@@ -3,13 +3,11 @@ const ENERGY_TO_J = {
   kWh: 3.6e6,
   MWh: 3.6e9,
   GWh: 3.6e12,
-  TWh: 3.6e15,
   J: 1,
   kJ: 1e3,
   MJ: 1e6,
   GJ: 1e9,
   TJ: 1e12,
-  PJ: 1e15,
   EJ: 1e18,
   Btu: 1055.05585262,
   MMBtu: 1.05505585262e9,
@@ -17,9 +15,6 @@ const ENERGY_TO_J = {
   // NIST U.S. legal therm. It intentionally differs slightly from 100,000
   // International Table Btu.
   therm: 105480400,
-  dekatherm: 10 * 105480400,
-  Dth: 10 * 105480400,
-  "ton-hour": 12000 * 1055.05585262,
   // Nominal BOE and pinned EIA 2026 U.S.-average fuel estimates. A measured
   // heating value is required for a composition-specific result.
   boe: 5.8 * 1.05505585262e9,
@@ -123,6 +118,14 @@ window.EXERGY_FACTOR_KERNEL = Object.freeze({
   format_energy_notation: formatEnergyNotation,
 });
 
+function apiBaseUrl() {
+  if (window.EXERGY_FACTOR_API_BASE_URL) return String(window.EXERGY_FACTOR_API_BASE_URL).replace(/\/$/, "");
+  if (window.location && ["localhost", "127.0.0.1"].includes(window.location.hostname)) {
+    return "http://127.0.0.1:8000/v1";
+  }
+  return "https://exergy-factor-api.onrender.com/v1";
+}
+
 // These name carriers, so they had to follow the carrier list when it was
 // deduplicated: `heat80`, `steam150` and `methaneHhv` no longer exist, and
 // setting a <select> to a value that is not in it leaves the control on whatever
@@ -136,8 +139,8 @@ const examples = {
   cooling7: { energy: 1, unit: "MWh", form: "cooling", source: 7, sourceUnit: "C", sink: 30, sinkUnit: "C", auto: true },
   heat80: { energy: 4, unit: "MWh", form: "heat", source: 80, sourceUnit: "C", sink: 20, sinkUnit: "C", auto: true },
   steam150: { energy: 0.5, unit: "Btu", form: "heat", source: 150, sourceUnit: "C", sink: 20, sinkUnit: "C", auto: true },
-  methane: { energy: 1.3, unit: "MWh", form: "naturalGas", basis: "HHV", fx: 0.93, auto: false },
-  hydrogen: { energy: 2.47, unit: "MWh", form: "hydrogen", basis: "HHV", fx: 0.83, auto: false },
+  methane: { energy: 1.3, unit: "MWh", form: "naturalGasHhv", fx: 0.93, auto: false },
+  hydrogen: { energy: 2.47, unit: "MWh", form: "hydrogen", fx: 0.83, auto: false },
 };
 
 const comparePresets = {
@@ -153,10 +156,7 @@ const comparePresets = {
   // 120, 150, 180, 250, 500 °C — and the chance a real stream sits exactly on one
   // of them is close to nil, so almost every visitor either picked a wrong
   // neighbour or gave up. The temperature is the answer; it should be typed in.
-  // Btu is the friendlier default for a heat quantity on the public calculator;
-  // keep the canonical comparison/reporting unit in MWh so the comparison page
-  // remains stable and users can still choose any supported unit explicitly.
-  heat: { label: "Heat", unit: "MWh", calculatorUnit: "Btu", typedUnit: "MWh_th", tier: "F2", needsTemperature: "heat", basis: "Carnot factor from your source and reference temperatures" },
+  heat: { label: "Heat", unit: "MWh", typedUnit: "MWh_th", tier: "F2", needsTemperature: "heat", basis: "Carnot factor from your source and reference temperatures" },
   cooling: { label: "Cooling", unit: "MWh", typedUnit: "MWh_cooling", tier: "F2", needsTemperature: "cooling", basis: "Cooling service against your stated ambient" },
 
   // Natural gas is ~93% methane and the framework's screening factor is the same
@@ -179,7 +179,7 @@ const comparePresets = {
   crudeOilHhv: { label: "Crude oil HHV", unit: "MWh", typedUnit: "MWh_HHV_crude", fx: 1.00, tier: "F1", basis: "Approximate crude oil chemical exergy factor on a higher heating value basis" },
   crudeOil: { label: "Crude oil", unit: "MWh", typedUnit: "MWh_LHV_crude", fx: 1.06, tier: "F1", basis: "Approximate crude oil chemical exergy factor" },
 
-  solar: { label: "Solar radiation", unit: "MWh", typedUnit: "MWh_solar", fx: 0.932, tier: "F2", basis: "Petela radiation Exergy Factor", referenceC: 20 },
+  solar: { label: "Solar radiation", unit: "MWh", typedUnit: "MWh_solar", fx: 0.932, tier: "F2", basis: "Petela radiation Exergy Factor" },
   custom: { label: "Custom", unit: "MWh", typedUnit: "", fx: 0.73, tier: "F1", needsCustomFactor: true, basis: "User-defined Exergy Factor" },
 };
 
@@ -294,7 +294,6 @@ function applyCanonicalReferenceData(presets, canonicalPresets) {
     if (canonical.adoption_note) preset.adoptionNote = canonical.adoption_note;
     if (Number.isFinite(canonical.sourceC)) preset.sourceC = canonical.sourceC;
     if (Number.isFinite(canonical.sinkC)) preset.sinkC = canonical.sinkC;
-    if (Number.isFinite(canonical.referenceC)) preset.referenceC = canonical.referenceC;
   });
 }
 
@@ -310,15 +309,12 @@ function hasCalculator() {
   return hasField("energy-value") && hasField("energy-unit") && hasField("notation-output");
 }
 
-function compareSides() {
-  return Array.from(document.querySelectorAll("[data-compare-row]"))
-    .map((row) => row.dataset.compareRow)
-    .filter(Boolean)
-    .slice(0, 2);
+function hasCompare() {
+  return hasField("compare-a-preset") && hasField("compare-b-preset") && hasField("compare-bars");
 }
 
-function hasCompare() {
-  return compareSides().length === 2 && hasField("compare-bars");
+function hasApiHealthCheck() {
+  return hasField("api-health-check") && hasField("api-health-status");
 }
 
 function cacheFields() {
@@ -339,7 +335,6 @@ function cacheFields() {
     "notation-output",
     "fx-output",
     "work-output",
-    "inaccessible-output",
     "exergy-output",
     "method-output",
     "tier-output",
@@ -366,15 +361,12 @@ function cacheFields() {
     "compare-bars",
     "compare-summary",
     "compare-equivalence",
+    "api-health-check",
+    "api-health-status",
     "export-csv",
     "export-png",
   ].forEach((id) => {
     fields[id] = byId(id);
-  });
-
-  // Cache comparison controls by id so each row uses the same calculation path.
-  document.querySelectorAll("[id^='compare-']").forEach((element) => {
-    fields[element.id] = element;
   });
 }
 
@@ -387,9 +379,8 @@ function tempToK(value, unit) {
   return NaN;
 }
 
-// The calculation always converts temperatures to Kelvin internally, but the
-// declaration bracket preserves the units the user selected. That keeps a copied
-// record faithful to the source data: `Th = 212 °F` stays visibly Fahrenheit.
+// The declaration bracket is published in Celsius whatever the user typed, so two
+// records from two people are comparable without unit archaeology.
 function toCelsius(value, unit) {
   const kelvin = tempToK(value, unit);
   return Number.isFinite(kelvin) ? kelvin - 273.15 : NaN;
@@ -406,50 +397,12 @@ function sinkUnit() {
   return fields["sink-unit"]?.value || "C";
 }
 
-function formatTemperatureDisplay(value, unit) {
-  const symbols = { C: "°C", F: "°F", K: "K" };
-  return `${value} ${symbols[unit] || unit}`;
-}
-
 function format(value, precision = 4) {
   if (!Number.isFinite(value)) return "invalid";
   if (value === 0) return "0";
   const abs = Math.abs(value);
   if (abs >= 100000 || abs < 0.0001) return value.toExponential(3);
   return Number(value.toFixed(precision)).toString();
-}
-
-// Comparison text is meant to be read by people, not copied from a calculator
-// log. Keep scientific notation in the general formatter for technical exports,
-// but spell out large comparison values so `1.880e+7x` becomes `18.8 million
-// times` and an equivalent quantity becomes `94 million BTU`.
-const COMPARISON_SCALES = Object.freeze([
-  { divisor: 1e18, label: "quintillion" },
-  { divisor: 1e15, label: "quadrillion" },
-  { divisor: 1e12, label: "trillion" },
-  { divisor: 1e9, label: "billion" },
-  { divisor: 1e6, label: "million" },
-  { divisor: 1e3, label: "thousand" },
-]);
-
-function formatComparisonMagnitude(value, precision = 2) {
-  const scale = COMPARISON_SCALES.find(({ divisor }) => Math.abs(value) >= divisor);
-  if (!scale) return Number(value.toFixed(precision)).toString();
-  return `${Number((value / scale.divisor).toFixed(precision))} ${scale.label}`;
-}
-
-function formatComparisonRatio(value) {
-  if (!Number.isFinite(value)) return "invalid";
-  if (value === 0) return "0 times";
-  return `${formatComparisonMagnitude(value, 2)} times`;
-}
-
-function formatComparisonQuantity(value) {
-  if (!Number.isFinite(value)) return "invalid";
-  if (value === 0) return "0";
-  if (Math.abs(value) >= 1000) return formatComparisonMagnitude(value, 2);
-  if (Math.abs(value) < 0.001) return Number(value.toPrecision(3)).toString();
-  return Number(value.toFixed(3)).toString();
 }
 
 // A COMPUTED Exergy Factor keeps its trailing zeros: 0.170, not 0.17, and 0.730,
@@ -482,32 +435,14 @@ function formatBracketTemp(celsius) {
 //
 // A fuel has something to declare too, and it was being dropped: HHV and LHV give
 // materially different factors for the same fuel (0.930 against 1.040 for natural
-// gas), so the full record is `1 MWh_HHV_NG, fx = 0.930 [basis = HHV]` rather
-// than leaving the basis to be inferred from the unit suffix. The library states
-// it the same way; so does this.
-function declarationBracket({
-  preset,
-  sourceC,
-  sinkC,
-  coldC,
-  sourceValue,
-  sourceUnit,
-  sinkValue,
-  sinkUnit,
-  coldValue,
-  coldUnit,
-}) {
-  const displayedSink = formatBracketTemperature(sinkValue, sinkUnit, sinkC);
+// gas), so a bare `1 MWh_HHV_NG, fx = 0.930` leaves the reader to infer the basis
+// from the unit suffix. The library states it as `[basis = HHV]`; so does this.
+function declarationBracket({ preset, sourceC, sinkC, coldC }) {
   if (Number.isFinite(coldC) && Number.isFinite(sinkC)) {
-    const displayedCold = formatBracketTemperature(coldValue ?? sourceValue, coldUnit ?? sourceUnit, coldC);
-    return ` [Tcold = ${displayedCold}, T0 = ${displayedSink}]`;
+    return ` [Tcold = ${formatBracketTemp(coldC)}, T0 = ${formatBracketTemp(sinkC)}]`;
   }
   if (Number.isFinite(sourceC) && Number.isFinite(sinkC) && sourceC > sinkC) {
-    const displayedSource = formatBracketTemperature(sourceValue, sourceUnit, sourceC);
-    return ` [Th = ${displayedSource}, T0 = ${displayedSink}]`;
-  }
-  if (preset?.typedUnit?.endsWith("_solar") && Number.isFinite(preset.referenceC)) {
-    return ` [T0 = ${formatBracketTemp(preset.referenceC)}]`;
+    return ` [Th = ${formatBracketTemp(sourceC)}, T0 = ${formatBracketTemp(sinkC)}]`;
   }
   const basis = /_(HHV|LHV)_/.exec(preset?.typedUnit || "");
   if (basis) return ` [basis = ${basis[1]}]`;
@@ -516,10 +451,6 @@ function declarationBracket({
 
 function formatDisplayEnergy(value) {
   return format(value, 3);
-}
-
-function displayEnergyUnit(unit) {
-  return String(unit).replaceAll("MMBtu", "MMBTU").replaceAll("Btu", "BTU");
 }
 
 function normalizeUnit(unit) {
@@ -532,17 +463,17 @@ function typedSuffix(typedUnit) {
 }
 
 function displayUnit(unit, preset = null) {
-  if (!preset || !preset.typedUnit || unit.includes("(")) return displayEnergyUnit(unit);
+  if (!preset || !preset.typedUnit || unit.includes("(")) return unit;
   const suffix = typedSuffix(preset.typedUnit);
-  return displayEnergyUnit(suffix ? `${unit}${suffix}` : unit);
+  return suffix ? `${unit}${suffix}` : unit;
 }
 
-function displayAccessibleUnit(unit) {
+function displayExergyUnit(unit) {
   const baseUnit = unit.replace(/\(.+\)/, "");
-  return baseUnit === "J" ? "Joules" : displayEnergyUnit(baseUnit);
+  return `${baseUnit}_ex`;
 }
 
-// Fuel-volume units carry a reference heating value the calculator applies for you.
+// Fuel-volume units carry a heating value the calculator applies for you.
 //
 // A barrel and an scf measure VOLUME, so `ENERGY_TO_J` is already assuming an
 // energy content to convert them — here, pinned EIA 2026 U.S.-average estimates.
@@ -551,81 +482,41 @@ function displayAccessibleUnit(unit) {
 // heating value they had just accepted, and the carrier they picked in the form
 // above could contradict the one the unit implies.
 //
-// They are offered only when the matching fuel form is selected. The form stays
-// under the user's control, and the estimate is kept in the Unit info tooltip so
-// it does not insert a moving note into the input stack.
+// Both are now locked and shown. The unit already decides the fuel and its energy
+// content, so those two fields stop being editable, which is also the clearest
+// way to show what IS still theirs to enter.
 // `reportIn` keeps the reported figure at a readable size. A single scf in MWh is
 // 0.0003, and its exergy rounds to a bare "0" on screen — a number that looks like
 // an error rather than a small quantity.
 const FUEL_VOLUME_UNITS = {
-  "boe": { form: "crudeOil", reportIn: "MWh", display: "5.800 MMBTU per barrel of oil equivalent (nominal U.S. DOE convention)" },
-  "bbl(oil)": { form: "crudeOil", reportIn: "MWh", display: "5.689 MMBTU per barrel (EIA 2026 estimated U.S. crude-oil average)" },
-  "scf(natural gas)": { form: "naturalGas", basis: "HHV", reportIn: "kWh", display: "1,036 BTU per scf (EIA 2026 estimated U.S. natural-gas average), HHV" },
-  "Mcf(natural gas)": { form: "naturalGas", basis: "HHV", reportIn: "MWh", display: "1.036 MMBTU per Mcf (EIA 2026 estimated U.S. natural-gas average), HHV" },
-  "MMcf(natural gas)": { form: "naturalGas", basis: "HHV", reportIn: "MWh", display: "1,036 MMBTU per MMcf (EIA 2026 estimated U.S. natural-gas average), HHV" },
+  "boe": { form: "crudeOil", reportIn: "MWh", display: "5.800 MMBtu per barrel of oil equivalent (nominal U.S. DOE convention)" },
+  "bbl(oil)": { form: "crudeOil", reportIn: "MWh", display: "5.689 MMBtu per barrel (EIA 2026 estimated U.S. crude-oil average)" },
+  "scf(natural gas)": { form: "naturalGasHhv", reportIn: "kWh", display: "1,036 Btu per scf (EIA 2026 estimated U.S. natural-gas average), HHV" },
+  "Mcf(natural gas)": { form: "naturalGasHhv", reportIn: "MWh", display: "1.036 MMBtu per Mcf (EIA 2026 estimated U.S. natural-gas average), HHV" },
+  "MMcf(natural gas)": { form: "naturalGasHhv", reportIn: "MWh", display: "1,036 MMBtu per MMcf (EIA 2026 estimated U.S. natural-gas average), HHV" },
 };
-
-const COOLING_SERVICE_UNITS = new Set(["ton-hour"]);
-
-const DEFAULT_UNIT_TOOLTIP = "Choose the unit from your meter, invoice, model, or dataset. Fuel-volume shortcuts are shown only for their matching fuel form; their reference estimate appears here.";
 
 // Exposed for the repository's headless numerical conformance check. The public
 // UI still uses the same objects and functions directly.
 window.EXERGY_FACTOR_CALCULATION_INTERNALS = Object.freeze({
   ENERGY_TO_J,
   FUEL_VOLUME_UNITS,
-  COOLING_SERVICE_UNITS,
-  FORM_BASIS_KEYS,
-  comparePresets,
-  formPresetKey,
-  unitCompatibleWithForm,
   thermalFactorFromTemperatures,
-  formatComparisonRatio,
-  formatComparisonQuantity,
-  displayEnergyUnit,
-  displayUnit,
-  formatBracketTemperature,
 });
 
-function unitCompatibleWithForm(formKey, unit) {
-  const fixed = FUEL_VOLUME_UNITS[unit];
-  if (fixed && fixed.form !== formKey) return false;
-  if (COOLING_SERVICE_UNITS.has(unit) && formKey !== "cooling") return false;
-  return true;
-}
-
-function updateUnitOptions() {
+function applyFixedValuesForUnit() {
   if (!hasField("energy-unit") || !hasField("energy-form")) return;
-
-  const formKey = fields["energy-form"].value;
-  const select = fields["energy-unit"];
-  for (const option of select.options) {
-    const compatible = unitCompatibleWithForm(formKey, option.value);
-    option.hidden = !compatible;
-    option.disabled = !compatible;
-  }
-
-  if (!unitCompatibleWithForm(formKey, select.value)) {
-    const { preset } = calculatorPreset();
-    const fallback = preset.calculatorUnit || preset.unit;
-    if (fallback && unitCompatibleWithForm(formKey, fallback)) select.value = fallback;
-  }
-}
-
-function updateUnitContext() {
-  if (!hasField("energy-unit")) return;
-
   const selectedUnit = fields["energy-unit"].value;
   const fixed = FUEL_VOLUME_UNITS[selectedUnit];
-  const help = byId("energy-unit-help");
-  if (fixed) {
-    if (hasField("energy-basis")) {
-      if (fixed.basis) fields["energy-basis"].value = fixed.basis;
-      fields["energy-basis"].disabled = Boolean(fixed.basis);
+  const note = byId("fixed-note");
+  const form = fields["energy-form"];
+
+  if (!fixed) {
+    if (note) {
+      note.hidden = true;
+      note.textContent = "";
     }
-    if (help) {
-      help.dataset.tooltip = `Reference conversion: ${fixed.display}. This is an estimated reference, not a meter-specific heating value; use a measured HHV or LHV with the Python library or API when accuracy matters.`;
-    }
+    form.disabled = false;
     return;
   }
 
@@ -687,25 +578,12 @@ function calculateFactor() {
       if (coldC > ambientC) {
         return { factor: NaN, method: "A cooling service cannot be warmer than the ambient it is rejected to.", tier: "F2" };
       }
-      let factor;
-      try {
-        // Use the same canonical kernel as the public API after converting each
-        // independently selected temperature unit to Celsius. This avoids a
-        // second UI-only equation drifting from the tested cooling calculation.
-        factor = coolingExergyFactorC(coldC, ambientC);
-      } catch (error) {
-        return { factor: NaN, method: error instanceof Error ? error.message : "Enter valid cooling and ambient temperatures.", tier: "F2" };
-      }
       return {
-        factor,
+        factor: (ambientC + 273.15) / (coldC + 273.15) - 1,
         method: "F2 cooling factor from your service and ambient temperatures.",
         tier: "F2",
         coldC,
         sinkC: ambientC,
-        coldValue: fields["source-temp"]?.value,
-        coldUnit: sourceUnit(),
-        sinkValue: fields["sink-temp"]?.value,
-        sinkUnit: sinkUnit(),
       };
     }
 
@@ -728,10 +606,6 @@ function calculateFactor() {
         tier: "F2",
         sourceC: toCelsius(fields["source-temp"].value, sourceUnit()),
         sinkC: toCelsius(fields["sink-temp"].value, sinkUnit()),
-        sourceValue: fields["source-temp"].value,
-        sourceUnit: sourceUnit(),
-        sinkValue: fields["sink-temp"].value,
-        sinkUnit: sinkUnit(),
       };
     }
 
@@ -790,28 +664,24 @@ function currentEnergyJ() {
   return quantity * ENERGY_TO_J[unit];
 }
 
-function renderConversions(energyJ, exergyJ, inaccessibleJ = energyJ - exergyJ) {
+function renderConversions(energyJ, exergyJ) {
   if (!hasField("conversion-grid")) return;
 
   const rows = [
     ["Energy", `${formatDisplayEnergy(energyJ / ENERGY_TO_J.kWh)} kWh`],
     ["Energy", `${formatDisplayEnergy(energyJ / ENERGY_TO_J.MWh)} MWh`],
     ["Energy", `${formatDisplayEnergy(energyJ / ENERGY_TO_J.GJ)} GJ`],
-    ["Energy", `${formatDisplayEnergy(energyJ / ENERGY_TO_J.MMBtu)} MMBTU`],
-    ["Accessible Exergy", `${formatDisplayEnergy(exergyJ / ENERGY_TO_J.kWh)} kWh`],
-    ["Accessible Exergy", `${formatDisplayEnergy(exergyJ / ENERGY_TO_J.MWh)} MWh`],
-    ["Accessible Exergy", `${formatDisplayEnergy(exergyJ / ENERGY_TO_J.GJ)} GJ`],
-    ["Accessible Exergy", `${formatDisplayEnergy(exergyJ / ENERGY_TO_J.MMBtu)} MMBTU`],
-    ["Inaccessible Anergy", `${formatDisplayEnergy(inaccessibleJ / ENERGY_TO_J.kWh)} kWh`],
-    ["Inaccessible Anergy", `${formatDisplayEnergy(inaccessibleJ / ENERGY_TO_J.MWh)} MWh`],
-    ["Inaccessible Anergy", `${formatDisplayEnergy(inaccessibleJ / ENERGY_TO_J.GJ)} GJ`],
-    ["Inaccessible Anergy", `${formatDisplayEnergy(inaccessibleJ / ENERGY_TO_J.MMBtu)} MMBTU`],
+    ["Energy", `${formatDisplayEnergy(energyJ / ENERGY_TO_J.MMBtu)} MMBtu`],
+    ["Exergy", `${formatDisplayEnergy(exergyJ / ENERGY_TO_J.kWh)} kWh_ex`],
+    ["Exergy", `${formatDisplayEnergy(exergyJ / ENERGY_TO_J.MWh)} MWh_ex`],
+    ["Exergy", `${formatDisplayEnergy(exergyJ / ENERGY_TO_J.GJ)} GJ_ex`],
+    ["Exergy", `${formatDisplayEnergy(exergyJ / ENERGY_TO_J.MMBtu)} MMBtu_ex`],
   ];
 
   fields["conversion-grid"].innerHTML = rows
     .map(
-          ([label, value]) => `
-        <div class="conversion-card${label === "Inaccessible Anergy" ? " inaccessible-anergy" : ""}">
+      ([label, value]) => `
+        <div class="conversion-card">
           <span>${label}</span>
           <strong>${value}</strong>
         </div>
@@ -856,7 +726,6 @@ function compareRow(side) {
   const exergyJ = Number.isFinite(energyJ) && Number.isFinite(factor) && factor >= 0
     ? energyJ * factor
     : NaN;
-  const anergyJ = Number.isFinite(energyJ) && Number.isFinite(exergyJ) ? energyJ - exergyJ : NaN;
   return {
     side: side.toUpperCase(),
     presetKey,
@@ -873,10 +742,8 @@ function compareRow(side) {
     factor,
     energyJ,
     exergyJ,
-    anergyJ,
     exergyInUnit: exergyJ / ENERGY_TO_J[unit],
-    anergyInUnit: anergyJ / ENERGY_TO_J[unit],
-    exergyUnit: displayAccessibleUnit(unit),
+    exergyUnit: displayExergyUnit(unit),
     mwhEx: exergyJ / ENERGY_TO_J.MWh,
   };
 }
@@ -884,7 +751,7 @@ function compareRow(side) {
 function renderCompare() {
   if (!hasCompare()) return;
 
-  const rows = compareSides().map(compareRow);
+  const rows = [compareRow("a"), compareRow("b")];
   if (rows.some((row) => !Number.isFinite(row.exergyJ))) {
     fields["compare-bars"].innerHTML = "";
     fields["compare-summary"].textContent = "Check comparison inputs.";
@@ -920,16 +787,16 @@ function renderCompare() {
     }).join("")}
   `;
 
-  const allZero = rows.every((row) => row.mwhEx === 0);
-  if (allZero) {
-    fields["compare-summary"].textContent = `${rows.map(compareQuantityLabel).join(" and ")} all have zero accessible exergy.`;
+  const [a, b] = rows;
+  if (a.mwhEx === 0 && b.mwhEx === 0) {
+    fields["compare-summary"].textContent = "Both records have zero accessible exergy.";
     if (hasField("compare-equivalence")) fields["compare-equivalence"].textContent = "";
     return;
   }
-  const higher = rows.reduce((best, row) => (row.mwhEx >= best.mwhEx ? row : best));
-  const lower = rows.reduce((worst, row) => (row.mwhEx <= worst.mwhEx ? row : worst));
+  const higher = a.mwhEx >= b.mwhEx ? a : b;
+  const lower = a.mwhEx >= b.mwhEx ? b : a;
   if (lower.mwhEx === 0) {
-    fields["compare-summary"].textContent = `${compareQuantityLabel(higher)} carries accessible exergy; ${compareQuantityLabel(lower)} has zero accessible exergy.`;
+    fields["compare-summary"].textContent = `${higher.label} carries accessible exergy; ${lower.label} is zero for these inputs.`;
     renderEquivalence(rows);
     return;
   }
@@ -951,13 +818,9 @@ function sentenceLabel(row) {
 function renderEquivalence(rows) {
   if (!hasField("compare-equivalence")) return;
 
-  const [reference, ...comparisons] = rows;
-  const equivalents = comparisons
-    .filter((row) => Number.isFinite(row.factor) && row.factor > 0 && ENERGY_TO_J[row.unit])
-    .map((row) => `${compareQuantityLabel(reference)} carries the same accessible exergy as ${formatComparisonQuantity(reference.exergyJ / (row.factor * ENERGY_TO_J[row.unit]))} ${narrativeUnit(row)} of ${sentenceLabel(row)}${compareContext(row)}`);
-
-  if (!equivalents.length) {
-    fields["compare-equivalence"].textContent = "Equivalence requires another row to have a positive Exergy Factor.";
+  const [a, b] = rows;
+  if (!Number.isFinite(b.factor) || b.factor <= 0 || !ENERGY_TO_J[b.unit]) {
+    fields["compare-equivalence"].textContent = "Equivalence requires row B to have a positive Exergy Factor.";
     return;
   }
 
@@ -975,14 +838,7 @@ function applyCalculatorForm() {
   if (hasField("factor-unit")) fields["factor-unit"].value = "decimal";
   if (hasField("exergy-factor")) fields["exergy-factor"].value = preset.fx;
   if (hasField("custom-factor")) fields["custom-factor"].value = "";
-  const wantsTemps = Boolean(preset.needsTemperature);
-  if (hasField("source-temp")) {
-    fields["source-temp"].value = preset.needsTemperature === "heat"
-      ? "100"
-      : preset.needsTemperature === "cooling"
-        ? "7"
-        : "";
-  }
+  if (hasField("source-temp")) fields["source-temp"].value = "";
   if (hasField("source-unit")) fields["source-unit"].value = "C";
   // Cooling is rejected to ambient, which is warmer than the service, so its
   // sensible default differs from heat's.
@@ -992,12 +848,11 @@ function applyCalculatorForm() {
   // Show the temperatures only for the carriers whose factor depends on them,
   // the way the comparison page does. A fuel's factor is a property of the fuel;
   // leaving two temperature boxes sitting there implied they did something.
+  const wantsTemps = Boolean(preset.needsTemperature);
   const sourceRow = byId("source-temp-row");
   const sinkRow = byId("sink-temp-row");
   if (sourceRow) sourceRow.hidden = !wantsTemps;
   if (sinkRow) sinkRow.hidden = !wantsTemps;
-  const customRow = byId("custom-factor-row");
-  if (customRow) customRow.hidden = formKey !== "custom";
 
   // "Source" and "Sink" are the wrong words for a chiller: nothing is sourced
   // from the cold side, and the ambient is what heat is rejected TO.
@@ -1006,9 +861,7 @@ function applyCalculatorForm() {
   const sinkLabel = sinkRow?.querySelector("label");
   if (sourceLabel) sourceLabel.textContent = cooling ? "Cooling Temperature" : "Source Temperature";
   if (sinkLabel) sinkLabel.textContent = cooling ? "Ambient Temperature" : "Sink Temperature";
-  if (hasField("source-temp")) fields["source-temp"].placeholder = cooling ? "7" : "100";
-  updateUnitOptions();
-  updateUnitContext();
+  if (hasField("source-temp")) fields["source-temp"].placeholder = cooling ? "7" : "80";
 }
 
 function updateCalculator() {
@@ -1017,23 +870,18 @@ function updateCalculator() {
     return;
   }
 
-  // Keep the carrier selected by the user. Volume shortcuts are only offered
-  // for the fuel they name, and their reference conversion is shown in the
-  // Unit help tooltip rather than inserting a moving note into the form.
-  updateUnitOptions();
-  updateUnitContext();
+  applyFixedValuesForUnit();
 
   const energy = Number(fields["energy-value"].value);
   const energyUnit = normalizeUnit(fields["energy-unit"].value);
   const preset = comparePresets[currentPresetKey("calculator")] || comparePresets.custom;
   const energyJ = currentEnergyJ();
-  const { factor, method, tier, sourceC, sinkC, coldC, sourceValue, sourceUnit: selectedSourceUnit, sinkValue, sinkUnit: selectedSinkUnit, coldValue, coldUnit: selectedColdUnit } = calculateFactor();
+  const { factor, method, tier, sourceC, sinkC, coldC } = calculateFactor();
 
   if (!Number.isFinite(energy) || energy < 0 || !Number.isFinite(energyJ) || !Number.isFinite(factor)) {
     fields["notation-output"].textContent = "Check the inputs";
     if (hasField("fx-output")) fields["fx-output"].textContent = "No result";
     if (hasField("work-output")) fields["work-output"].textContent = "No result";
-    if (hasField("inaccessible-output")) fields["inaccessible-output"].textContent = "No result";
     if (hasField("exergy-output")) fields["exergy-output"].textContent = "No result";
     if (hasField("method-output")) fields["method-output"].textContent = method;
     if (hasField("tier-output")) fields["tier-output"].textContent = tierDescription(tier);
@@ -1060,7 +908,7 @@ function updateCalculator() {
 
   // THE FULL OPERATIONAL NOTATION.
   //
-//     1 MWh_th, fx = 0.170 [Th = 80 °C, T0 = 20 °C]
+  //     1 MWh, fx = 0.170 [Th = 80 C, T0 = 20 C]
   //
   // The bracket is the whole point: it is what lets whoever receives the record
   // re-derive the factor themselves, in one division, without trusting this
@@ -1068,65 +916,25 @@ function updateCalculator() {
   // had both temperatures in hand, while the methodology page promised the
   // notation "can be short or self-verifying" — so the claim was made and the
   // evidence withheld.
-  const bracket = declarationBracket({
-    preset,
-    sourceC,
-    sinkC,
-    coldC,
-    sourceValue,
-    sourceUnit: selectedSourceUnit,
-    sinkValue,
-    sinkUnit: selectedSinkUnit,
-    coldValue,
-    coldUnit: selectedColdUnit,
-  });
-  const notation = fixedForUnit
-    ? `${format(energy, 4)} ${fields["energy-unit"].value} → ${format(notationQuantity, 4)} ${typedEnergyUnit}, fx = ${formatFactor(factor)}${bracket}`
-    : `${format(notationQuantity, 4)} ${typedEnergyUnit}, fx = ${formatFactor(factor)}${bracket}`;
+  const isCooling = Number.isFinite(coldC) && Number.isFinite(sinkC);
+  const bracket = declarationBracket({ preset, sourceC, sinkC, coldC });
+  const notation = `${format(notationQuantity, 4)} ${typedEnergyUnit}, fx = ${formatFactor(factor)}${bracket}`;
   const exergyJ = energyJ * factor;
-  const inaccessibleJ = Math.max(0, energyJ - exergyJ);
   const exergyInInputUnit = fixedForUnit
     ? exergyJ / reportInJ
     : exergyJ / ENERGY_TO_J[fields["energy-unit"].value];
-  const inaccessibleInInputUnit = fixedForUnit
-    ? inaccessibleJ / reportInJ
-    : inaccessibleJ / ENERGY_TO_J[fields["energy-unit"].value];
-  const exergyUnit = fixedForUnit
-    ? displayAccessibleUnit(fixedForUnit.reportIn)
-    : displayAccessibleUnit(energyUnit);
+  const exergyUnit = fixedForUnit ? `${fixedForUnit.reportIn}_ex` : displayExergyUnit(energyUnit);
 
   fields["notation-output"].textContent = notation;
   if (hasField("fx-output")) fields["fx-output"].textContent = formatFactor(factor);
   if (hasField("work-output")) fields["work-output"].textContent = `${formatDisplayEnergy(exergyInInputUnit)} ${exergyUnit}`;
-  if (hasField("inaccessible-output")) fields["inaccessible-output"].textContent = `${formatDisplayEnergy(inaccessibleInInputUnit)} ${exergyUnit}`;
   if (hasField("exergy-output")) fields["exergy-output"].textContent = `${formatDisplayEnergy(exergyInInputUnit)} ${exergyUnit}`;
   if (hasField("method-output")) fields["method-output"].textContent = method;
   if (hasField("tier-output")) fields["tier-output"].textContent = tierDescription(tier);
   if (hasField("basis-output")) fields["basis-output"].textContent = preset.basis || method;
   if (hasField("calculator-result")) fields["calculator-result"].hidden = false;
-  renderConversions(energyJ, exergyJ, inaccessibleJ);
+  renderConversions(energyJ, exergyJ);
   renderCompare();
-}
-
-function bindCompareRow(side) {
-  const preset = fields[`compare-${side}-preset`];
-  if (!preset || preset.dataset.compareBound === "true") return;
-
-  applyComparePreset(side);
-  preset.addEventListener("change", () => applyComparePreset(side));
-  fields[`compare-${side}-quantity`]?.addEventListener("input", renderCompare);
-  fields[`compare-${side}-unit`]?.addEventListener("change", renderCompare);
-  fields[`compare-${side}-factor`]?.addEventListener("input", () => {
-    fields[`compare-${side}-preset`].value = "custom";
-    renderCompare();
-  });
-  [`compare-${side}-source`, `compare-${side}-sink`].forEach((id) => {
-    fields[id]?.addEventListener("input", renderCompare);
-  });
-  [`compare-${side}-source-unit`, `compare-${side}-sink-unit`].forEach((id) => {
-    fields[id]?.addEventListener("change", renderCompare);
-  });
-  preset.dataset.compareBound = "true";
 }
 
 function applyComparePreset(side) {
@@ -1137,8 +945,10 @@ function applyComparePreset(side) {
   updateFuelBasisControl(side, presetKey);
   fields[`compare-${side}-unit`].value = preset.unit;
 
-  // Known presets already define fx (or derive it from temperatures). Only an
-  // Other / custom row needs a factor input from the user.
+  // Show whichever control this carrier actually needs — the factor, or the two
+  // temperatures it is derived from. They are alternatives, so the row does not
+  // grow. Heat and cooling used to show an empty "enter fx" box with nowhere to
+  // get the number, which asked the visitor for the one thing they came without.
   const factorRow = byId(`compare-${side}-factor-row`);
   const tempsRow = byId(`compare-${side}-temps`);
   const needsTemps = Boolean(preset.needsTemperature);
@@ -1156,14 +966,8 @@ function applyComparePreset(side) {
     const cooling = preset.needsTemperature === "cooling";
     const source = fields[`compare-${side}-source`];
     const sink = fields[`compare-${side}-sink`];
-    const sourceUnitField = fields[`compare-${side}-source-unit`];
-    const sinkUnitField = fields[`compare-${side}-sink-unit`];
-    const sourceLabel = byId(`compare-${side}-source-label`);
-    const sinkLabel = byId(`compare-${side}-sink-label`);
-    if (sourceLabel) sourceLabel.textContent = cooling ? "Cooling Temperature" : "Source Temperature";
-    if (sinkLabel) sinkLabel.textContent = cooling ? "Ambient Temperature" : "Sink Temperature";
     // Two bare boxes give no clue which is which, and a placeholder of "7" or
-    // "100" only looks like a value someone forgot to type. They say what they are.
+    // "80" only looks like a value someone forgot to type. They say what they are.
     if (source) {
       source.value = cooling ? "" : "100";
       source.placeholder = cooling ? "cooling to" : "source";
@@ -1227,17 +1031,6 @@ function setExample(name) {
 // everywhere — and it cannot capture something the reader did not mean to share.
 // ---------------------------------------------------------------------------
 
-const EXPORT_COLORS = Object.freeze({
-  accessible: "#187a4b",
-  inaccessible: "#8f2d2d",
-});
-
-function exportColorFor(label) {
-  if (/^Accessible Exergy|^Accessible exergy/i.test(label)) return EXPORT_COLORS.accessible;
-  if (/^Inaccessible Anergy|^Inaccessible anergy/i.test(label)) return EXPORT_COLORS.inaccessible;
-  return "";
-}
-
 /** What is currently on screen, in one shape both exporters can use. */
 function exportModel() {
   const stamp = new Date().toISOString().slice(0, 19).replace("T", " ") + " UTC";
@@ -1247,17 +1040,14 @@ function exportModel() {
     const inputs = [
       ["Carrier", preset.label],
       ["Quantity", fields["energy-value"].value],
-      ["Unit", displayEnergyUnit(fields["energy-unit"].value)],
+      ["Unit", fields["energy-unit"].value],
     ];
     if (preset.needsTemperature) {
       const isCooling = preset.needsTemperature === "cooling";
       inputs.push([isCooling ? "Cooling to" : "Source temperature",
-        formatTemperatureDisplay(fields["source-temp"].value, sourceUnit())]);
+        `${fields["source-temp"].value} ${sourceUnit()}`]);
       inputs.push([isCooling ? "Ambient" : "Reference temperature",
-        formatTemperatureDisplay(fields["sink-temp"].value, sinkUnit())]);
-    }
-    if (FORM_BASIS_KEYS[fields["energy-form"]?.value]) {
-      inputs.push(["Fuel basis", fields["energy-basis"].value]);
+        `${fields["sink-temp"].value} ${sinkUnit()}`]);
     }
     const fixed = FUEL_VOLUME_UNITS[fields["energy-unit"].value];
     if (fixed) inputs.push(["Heating value", fixed.display]);
@@ -1269,26 +1059,24 @@ function exportModel() {
         ["Exergy Factor", fields["fx-output"]?.textContent.trim() || ""],
         ["Exergy Factor Notation", fields["notation-output"].textContent.trim()],
         ["Accessible Exergy", fields["work-output"].textContent.trim()],
-        ["Inaccessible Anergy", fields["inaccessible-output"]?.textContent.trim() || ""],
       ],
       stamp,
     };
   }
 
   if (hasCompare()) {
-    const rows = compareSides().map(compareRow);
+    const rows = [compareRow("a"), compareRow("b")];
     return {
       kind: "compare",
-      title: "Accessible exergy comparison",
+      title: "Exergy Factor — comparison",
       rows: rows.map((row) => ({
         side: row.side,
         carrier: row.label,
         quantity: row.quantity,
         unit: row.unit,
         factor: row.factor,
-        notation: `${formatComparisonQuantity(row.quantity)} ${row.displayUnit}, fx = ${formatFactor(row.factor)}${row.bracket}`,
+        notation: `${format(row.quantity, 3)} ${row.displayUnit}, fx = ${formatFactor(row.factor)}${row.bracket}`,
         exergy: `${formatDisplayEnergy(row.exergyInUnit)} ${row.exergyUnit}`,
-        anergy: `${formatDisplayEnergy(row.anergyInUnit)} ${row.exergyUnit}`,
       })),
       results: [
         ["Accessible Exergy Ratio", fields["compare-summary"].textContent.trim()],
@@ -1322,36 +1110,14 @@ function exportCsv() {
   if (!model) return;
   let lines;
   if (model.kind === "compare") {
-    lines = [[
-      "side",
-      "carrier",
-      "quantity",
-      "unit",
-      "exergy_factor",
-      "notation",
-      "accessible_exergy",
-      "accessible_exergy_color",
-      "inaccessible_anergy",
-      "inaccessible_anergy_color",
-    ].join(",")];
+    lines = [["side", "carrier", "quantity", "unit", "exergy_factor", "notation", "accessible_exergy"].join(",")];
     for (const row of model.rows) {
-      lines.push([
-        row.side,
-        row.carrier,
-        row.quantity,
-        row.unit,
-        formatFactor(row.factor),
-        row.notation,
-        row.exergy,
-        EXPORT_COLORS.accessible,
-        row.anergy,
-        EXPORT_COLORS.inaccessible,
-      ].map(csvCell).join(","));
+      lines.push([row.side, row.carrier, row.quantity, row.unit, formatFactor(row.factor), row.notation, row.exergy].map(csvCell).join(","));
     }
   } else {
-    lines = [["field", "value", "display_color"].join(",")];
+    lines = [["field", "value"].join(",")];
     for (const [key, value] of [...model.inputs, ...model.results]) {
-      lines.push([key, value, exportColorFor(key)].map(csvCell).join(","));
+      lines.push([key, value].map(csvCell).join(","));
     }
   }
   lines.push([].join(""));
@@ -1382,8 +1148,7 @@ function exportPng() {
     for (const row of model.rows) {
       blocks.push({ type: "label", text: `Side ${row.side} — ${row.carrier}` });
       blocks.push({ type: "value", text: row.notation });
-      blocks.push({ type: "value", text: `Accessible exergy: ${row.exergy}`, color: EXPORT_COLORS.accessible });
-      blocks.push({ type: "value", text: `Inaccessible anergy: ${row.anergy}`, color: EXPORT_COLORS.inaccessible });
+      blocks.push({ type: "value", text: `Accessible exergy: ${row.exergy}` });
       blocks.push({ type: "gap" });
     }
   } else {
@@ -1391,9 +1156,8 @@ function exportPng() {
     blocks.push({ type: "gap" });
   }
   for (const [key, value] of model.results) {
-    const color = exportColorFor(key);
-    blocks.push({ type: "label", text: key, color });
-    blocks.push({ type: "value", text: value, color });
+    blocks.push({ type: "label", text: key });
+    blocks.push({ type: "value", text: value });
   }
 
   // ONE definition of how far each block advances, used to size the canvas and
@@ -1428,7 +1192,7 @@ function exportPng() {
       ctx.font = "700 24px Arial, Helvetica, sans-serif";
       ctx.fillText(block.text, pad, y);
     } else if (block.type === "label") {
-      ctx.fillStyle = block.color || "#5b6b68";
+      ctx.fillStyle = "#5b6b68";
       ctx.font = "600 13px Arial, Helvetica, sans-serif";
       ctx.fillText(block.text.toUpperCase(), pad, y);
     } else if (block.type === "pair") {
@@ -1439,7 +1203,7 @@ function exportPng() {
       ctx.font = "600 15px Arial, Helvetica, sans-serif";
       ctx.fillText(String(block.text), pad + 250, y);
     } else if (block.type === "value") {
-      ctx.fillStyle = block.color || "#1d2b2b";
+      ctx.fillStyle = "#1d2b2b";
       ctx.font = "600 17px Arial, Helvetica, sans-serif";
       ctx.fillText(block.text, pad, y);
     }
@@ -1453,6 +1217,34 @@ function exportPng() {
   canvas.toBlob((blob) => {
     if (blob) downloadBlob(blob, `exergy-factor-${model.kind}-${model.stamp.slice(0, 10)}.png`);
   }, "image/png");
+}
+
+async function checkApiHealth() {
+  if (!hasApiHealthCheck()) return;
+
+  const status = fields["api-health-status"];
+  const button = fields["api-health-check"];
+  const baseUrl = apiBaseUrl();
+  status.dataset.state = "pending";
+  status.textContent = "Checking the live API...";
+  button.disabled = true;
+
+  try {
+    const response = await fetch(`${baseUrl}/health`, {
+      headers: { Accept: "application/json" },
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.ok) {
+      throw new Error(data.detail || `Health check returned HTTP ${response.status}.`);
+    }
+    status.dataset.state = "success";
+    status.textContent = `Live API is healthy (${data.schema_version}).`;
+  } catch (error) {
+    status.dataset.state = "error";
+    status.textContent = error && error.message ? error.message : "Unable to reach the live API.";
+  } finally {
+    button.disabled = false;
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -1512,6 +1304,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (hasField("export-csv")) fields["export-csv"].addEventListener("click", exportCsv);
   if (hasField("export-png")) fields["export-png"].addEventListener("click", exportPng);
+
+  if (hasApiHealthCheck()) {
+    fields["api-health-check"].addEventListener("click", checkApiHealth);
+  }
 
   if (hasCompare()) renderCompare();
 });
