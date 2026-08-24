@@ -975,7 +975,7 @@ button,
 .compare-factor-meter:focus-visible .compare-factor-chart {
   outline: 3px solid rgba(13, 118, 111, 0.18);
   outline-offset: 2px;
-  border-radius: 6px;
+  border-radius: 999px;
 }
 
 .compare-result-value {
