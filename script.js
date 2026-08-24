@@ -772,6 +772,7 @@ function renderCompare() {
       const factorBarWidth = factorOnScale * 100;
       const factorLabel = formatFactor(row.factor);
       const factorGradientId = `compare-factor-gradient-${row.side.toLowerCase()}`;
+      const factorClipId = `compare-factor-clip-${row.side.toLowerCase()}`;
       const inaccessibleInUnit = (row.energyJ - row.exergyJ) / ENERGY_TO_J[row.unit];
       const bracket = row.bracket.trim();
       return `
@@ -786,9 +787,12 @@ function renderCompare() {
                     <stop offset="0%" stop-color="#b66d12"></stop>
                     <stop offset="100%" stop-color="#0d766f"></stop>
                   </linearGradient>
+                  <clipPath id="${factorClipId}">
+                    <rect x="0" y="0" width="100" height="22" rx="11"></rect>
+                  </clipPath>
                 </defs>
                 <rect class="compare-factor-track" x="0" y="0" width="100" height="22" rx="11"></rect>
-                <rect class="compare-factor-fill" x="0" y="0" width="${factorBarWidth}" height="22" rx="11" fill="url(#${factorGradientId})"></rect>
+                <rect class="compare-factor-fill" x="0" y="0" width="${factorBarWidth}" height="22" clip-path="url(#${factorClipId})" fill="url(#${factorGradientId})"></rect>
               </svg>
             </span>
           </div>

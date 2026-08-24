@@ -476,7 +476,7 @@ label:hover + .info-button,
 }
 
 .compare-page .compare-row.has-temps {
-  grid-template-columns: 32px minmax(190px, 1.2fr) minmax(110px, 0.65fr) minmax(150px, 0.8fr) minmax(280px, 1.55fr);
+  grid-template-columns: 32px minmax(0, 1.1fr) minmax(0, 0.55fr) minmax(0, 0.7fr) minmax(0, 1.65fr);
 }
 
 .compare-page .compare-row .field-row {
@@ -485,6 +485,20 @@ label:hover + .info-button,
 
 .compare-page .compare-row .field-label {
   min-height: 30px;
+}
+
+/* Source and sink are one paired control. Keep both halves and their number/unit
+   splits identical instead of letting one temperature claim more of the row. */
+.compare-page .temperature-pair {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.compare-page .temperature-field {
+  min-width: 0;
+}
+
+.compare-page .temperature-input {
+  grid-template-columns: minmax(0, 1fr) 72px;
 }
 
 .compare-page .compare-side-label {

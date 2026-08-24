@@ -142,6 +142,8 @@ test("comparison factor meters preserve partial widths and tooltip structure", (
   assert.equal(widths[0], 100);
   assert.ok(widths[1] > 0 && widths[1] < 100, `expected a partial Heat bar, received ${widths[1]}%`);
   assert.match(resultHtml, /gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="100" y2="0"/);
+  assert.match(resultHtml, /clipPath id="compare-factor-clip-a"/);
+  assert.match(resultHtml, /clip-path="url\(#compare-factor-clip-b\)"/);
   assert.match(resultHtml, /class="compare-factor-meter"/);
   assert.match(resultHtml, /data-tooltip="Exergy Factor: 0\.214"/);
   assert.doesNotMatch(resultHtml, /style=/);
@@ -151,5 +153,7 @@ test("comparison factor meters preserve partial widths and tooltip structure", (
   assert.doesNotMatch(meterBlock, /overflow\s*:/);
   assert.match(css, /\.compare-factor-meter::after/);
   assert.match(css, /\.compare-factor-chart\s*\{/);
+  assert.match(css, /\.compare-page \.temperature-pair\s*\{\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(css, /\.compare-page \.temperature-input\s*\{\s*grid-template-columns: minmax\(0, 1fr\) 72px/);
   assert.doesNotMatch(css, /--factor-fill/);
 });
