@@ -29,7 +29,7 @@ The full self-verifiable notation is written as followed:
 5 MWh_th, fx = 0.170 [Th = 80 °C, T0 = 20 °C]
 ```
 
-This tells you much more than just writing 5 MWh. 
+This tells you much more than 5 MWh alone ever can. 
 
 Distinguishability between the source and the environment is what makes work possible. If the energy source has the same temperature as the environment then it is not possible to perform useful work using that energy source. 
 The calculator displays this through `fx`; it does not apply a separate
