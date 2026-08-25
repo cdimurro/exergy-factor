@@ -1,6 +1,6 @@
 # Exergy Factor
 
-**[exergyfactor.com](https://www.exergyfactor.com)** — a free online calculating and comparing the *quality* of different forms of energy.
+**[exergyfactor.com](https://www.exergyfactor.com)** — a free online website calculating and comparing the *quality* of different forms of energy.
 
 [![Site](https://img.shields.io/website?url=https%3A%2F%2Fexergyfactor.com&label=exergyfactor.com)](https://exergyfactor.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
