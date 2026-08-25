@@ -7,7 +7,7 @@
 
 ## The problem
 
-One MWh of electricity can do one MWh of useful work, whereas one MWh of 80 °C water, in a 20 °C environment, can do
+One MWh of electricity can do one MWh of useful work, whereas one MWh of 80 °C water in a 20 °C environment, can only do 
 about 0.17 MWh of useful work. They both contain the same amount of *energy* but their ability to perform *useful work* is vastly different. This tool allows you to calculate and understand those differences.
 
 ## The fix
