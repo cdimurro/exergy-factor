@@ -7,8 +7,7 @@
 
 ## The problem
 
-One MWh of electricity can do one MWh of useful work, whereas one MWh of 80 °C water in a 20 °C environment, can only do 
-about 0.17 MWh of useful work. They both contain the same amount of *energy* but their ability to perform *useful work* is vastly different. This tool allows you to calculate and understand those differences.
+One MWh of electricity can do one MWh of useful work, whereas one MWh of 80 °C water in a 20 °C environment can do only about 0.17 MWh of useful work. Both contain the same amount of energy, but their ability to perform useful work is vastly different. This tool allows you to calculate and understand those differences.
 
 ## The fix
 
@@ -24,7 +23,7 @@ energy, against a stated reference environment.
 The reference environment can also be included when desired. This is essential because
 same 80 °C stream is worth more in the middle of winter than in the middle of summer, because the environmental conditions are different
 
-The full self-verifiable notion is written as followed:
+The full self-verifiable notation is written as followed:
 
 ```text
 5 MWh_th, fx = 0.170 [Th = 80 °C, T0 = 20 °C]
