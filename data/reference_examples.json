@@ -1,7 +1,7 @@
 {
   "schema_version": "exergy_factor_web_data_v1",
   "source": "quantity-quality bundled reference_examples.json",
-  "source_version": "quantity-and-quality@0.13.1",
+  "source_version": "quantity-and-quality@0.13.2",
   "source_sha256": "1516296fb21ead8800099b3d87d0f12ca290b6c4e9766d490936f81f1459b7da",
   "conformance_contract": {
     "schema_version": "exergy_conformance_contract_v1",
