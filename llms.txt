@@ -1,0 +1,14 @@
+# Exergy Factor
+
+> A free browser calculator for energy quantity, energy quality and accessible exergy.
+
+The reference environment and accounting basis are part of each calculation. The browser calculator works locally; it has no analytics or tracking cookies. This file describes public pages only.
+
+## Public references
+- [Calculator](https://exergyfactor.com/): calculate Exergy Factor and accessible exergy.
+- [Compare](https://exergyfactor.com/compare.html): compare energy forms against stated conditions.
+- [Methodology](https://exergyfactor.com/methodology.html): definitions, reference environment and methods.
+- [API](https://exergyfactor.com/api-key.html): public beta API documentation.
+- [Privacy](https://exergyfactor.com/privacy.html)
+- [Terms](https://exergyfactor.com/terms.html)
+- [Exergy Lab products](https://exergy-lab.com/products)
