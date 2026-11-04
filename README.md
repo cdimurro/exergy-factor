@@ -86,6 +86,7 @@ Before publishing changes:
 
 ```bash
 python scripts/check_site.py
+python scripts/check_search_metadata.py
 node --check script.js
 node scripts/check_calculations.js
 ```

@@ -27,3 +27,11 @@ syntax, calculator checks and existing site contracts. The release uses the live
 GitHub Pages source d9a411ec9933871f7dcc91288c69778eb3182a96 as its parent and
 preserves unrelated local work. Production receipts and engine-submission status
 are recorded in the Exergy Analyst search publication report.
+
+Published source: e8e0e5d06328192bf130100ebda5fb0af99958bd. GitHub Pages reports
+the build completed at 2026-11-04T15:42:52Z. Live HTTP confirms all six public HTML
+files and the preview image, sitemap, ownership file and llms.txt match that source.
+IndexNow acknowledged the six URLs with HTTP 202 at 15:43 UTC; acknowledgement
+does not establish indexing, ranking or AI citations. Google Search Console
+verification/submission could not be established because the current OAuth token
+does not grant webmasters access. No new analytics collection was introduced.
