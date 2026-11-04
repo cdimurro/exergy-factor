@@ -35,3 +35,8 @@ IndexNow acknowledged the six URLs with HTTP 202 at 15:43 UTC; acknowledgement
 does not establish indexing, ranking or AI citations. Google Search Console
 verification/submission could not be established because the current OAuth token
 does not grant webmasters access. No new analytics collection was introduced.
+
+A follow-up corrects only the exported source_version labels from 0.13.1 to the
+published canonical Quantity and Quality 0.13.3. All numerical values, source
+hashes and the conformance contract remain unchanged; the cross-repository CI
+comparison is retained as the independent check.
